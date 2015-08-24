@@ -1,0 +1,10 @@
+# IntelliJ
+.idea
+*.iml
+
+# Build
+lib
+out
+build
+TEST-RESULT
+*.log

@@ -139,11 +139,12 @@ SkyCave starter kit for the "Cloud Computing and Architecture" course.
     <junit printsummary="yes" fork="yes"
 	   forkmode="once"
 	   haltonfailure="yes">
-      <formatter type="plain"/>
+      <formatter type="plain" />
+      <formatter type="xml" />
       <batchtest fork="yes" todir="${test.output.directory}">
-	<fileset dir="${test.dir}">
-	  <include name="**/Test*.java"/>
-	</fileset>
+        <fileset dir="${test.dir}">
+          <include name="**/Test*.java"/>
+        </fileset>
       </batchtest>
       <classpath refid="run.path.id"/>
     </junit>
@@ -156,13 +157,14 @@ SkyCave starter kit for the "Cloud Computing and Architecture" course.
       <junit printsummary="yes" fork="yes"
 	     forkmode="once"
 	     haltonfailure="yes">
-	<formatter type="plain"/>
-	<batchtest fork="yes" todir="${test.output.directory}">
-	  <fileset dir="${test.dir}">
-	    <include name="**/Test*.java"/>
-	  </fileset>
-	</batchtest>
-	<classpath refid="run.path.id"/>
+        <formatter type="plain" />
+        <formatter type="xml" />
+        <batchtest fork="yes" todir="${test.output.directory}">
+          <fileset dir="${test.dir}">
+            <include name="**/Test*.java"/>
+          </fileset>
+        </batchtest>
+        <classpath refid="run.path.id"/>
       </junit>
     </jacoco:coverage>
   </target>
@@ -177,15 +179,15 @@ SkyCave starter kit for the "Cloud Computing and Architecture" course.
       <structure name="Coverage of SkyCave" >
         <classfiles>
           <fileset dir="${build.dir}">
-            <!-- We do not generate coverage for the test case source code
-                 nor the socket based impl. The former is not production code
-                 the latter is tested manually -->
-	    <exclude name="**/Test*"/>
-	    <exclude name="**/socket/**"/>
-	  </fileset>
+                <!-- We do not generate coverage for the test case source code
+                     nor the socket based impl. The former is not production code
+                     the latter is tested manually -->
+            <exclude name="**/Test*"/>
+            <exclude name="**/socket/**"/>
+          </fileset>
         </classfiles>
         <sourcefiles encoding="UTF-8" tabwidth="2">
-	  <fileset dir="${src.dir}"/>
+          <fileset dir="${src.dir}"/>
         </sourcefiles>
       </structure>
       <html destdir="${jacoco.report.dir}"/>
