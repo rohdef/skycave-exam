@@ -15,11 +15,11 @@ import cloud.cave.ipc.*;
  *
  */
 public class PlayerDispatcher implements Dispatcher {
-  
   private PlayerSessionCache cache;
 
   public PlayerDispatcher(Cave cave) {
-    // TODO: Nasty hack - but we need to get that cache; and the
+    //
+    // TODO Empty stub, to be implemented by students TODO: Nasty hack - but we need to get that cache; and the
     // dispatcher is of course only used on the server side...
     StandardServerCave scave = (StandardServerCave) cave;
     cache = scave.getCache(); 
@@ -49,77 +49,88 @@ public class PlayerDispatcher implements Dispatcher {
       }
 
       // === SHORT ROOM
-      if (methodKey
-          .equals(MarshalingKeys.GET_SHORT_ROOM_DESCRIPTION_METHOD_KEY)) {
-        reply = Marshaling.createValidReplyWithReturnValue(player
-            .getShortRoomDescription());
-      }
-      // === LONG ROOM
-      else if (methodKey
-          .equals(MarshalingKeys.GET_LONG_ROOM_DESCRIPTION_METHOD_KEY)) {
-        reply = Marshaling.createValidReplyWithReturnValue(player
-            .getLongRoomDescription());
-      }
-      // === REGION
-      else if (methodKey.equals(MarshalingKeys.GET_REGION_METHOD_KEY)) {
-        reply = Marshaling.createValidReplyWithReturnValue(player.getRegion()
-            .toString());
-      }
-      // === POSITION
-      else if (methodKey.equals(MarshalingKeys.GET_POSITION_METHOD_KEY)) {
-        reply = Marshaling
-            .createValidReplyWithReturnValue(player.getPosition());
-      }
-      // === PLAYERS HERE
-      else if (methodKey.equals(MarshalingKeys.GET_PLAYERS_HERE_METHOD_KEY)) {
-        List<String> playersHere = player.getPlayersHere();
-        String[] asArray = new String[playersHere.size()];
-        playersHere.toArray(asArray);
+      switch (methodKey) {
+        case MarshalingKeys.GET_SHORT_ROOM_DESCRIPTION_METHOD_KEY:
+          reply = Marshaling.createValidReplyWithReturnValue(player
+                  .getShortRoomDescription());
+          break;
+        // === LONG ROOM
+        case MarshalingKeys.GET_LONG_ROOM_DESCRIPTION_METHOD_KEY:
+          reply = Marshaling.createValidReplyWithReturnValue(player
+                  .getLongRoomDescription());
+          break;
+        // === REGION
+        case MarshalingKeys.GET_REGION_METHOD_KEY:
+          reply = Marshaling.createValidReplyWithReturnValue(player.getRegion()
+                  .toString());
+          break;
+        // === POSITION
+        case MarshalingKeys.GET_POSITION_METHOD_KEY:
+          reply = Marshaling
+                  .createValidReplyWithReturnValue(player.getPosition());
+          break;
+        // === PLAYERS HERE
+        case MarshalingKeys.GET_PLAYERS_HERE_METHOD_KEY: {
+          List<String> playersHere = player.getPlayersHere();
+          String[] asArray = new String[playersHere.size()];
+          playersHere.toArray(asArray);
 
-        // It is easier to not use the HEAD and just put the array in the TAIL
-        // of the answer
-        reply = Marshaling.createValidReplyWithReturnValue("notused", asArray);
-      }
-      // === EXIT SET
-      else if (methodKey.equals(MarshalingKeys.GET_EXITSET_METHOD_KEY)) {
-        List<Direction> exitSet = player.getExitSet();
-        String[] asArray = new String[exitSet.size()];
-        int i = 0;
-        // Convert each enum to string representation
-        for (Direction d : exitSet) {
-          asArray[i++] = d.toString();
+          // It is easier to not use the HEAD and just put the array in the TAIL
+          // of the answer
+          reply = Marshaling.createValidReplyWithReturnValue("notused", asArray);
+          break;
         }
-        // It is easier to not use the HEAD and just put the array in the TAIL
-        // of the answer
-        reply = Marshaling.createValidReplyWithReturnValue("notused", asArray);
-      }
-      // === MOVE
-      else if (methodKey.equals(MarshalingKeys.MOVE_METHOD_KEY)) {
-        // move(direction)
-        Direction direction = Direction.valueOf(parameter1);
-        boolean isValid = player.move(direction);
-
-        reply = Marshaling.createValidReplyWithReturnValue("" + isValid);
-      }
-      // === DIG
-      else if (methodKey.equals(MarshalingKeys.DIG_ROOM_METHOD_KEY)) {
-        Direction direction = Direction.valueOf(parameter1);
-        String description = parameterList.get(0).toString();
-        boolean isValid = player.digRoom(direction, description);
-
-        reply = Marshaling.createValidReplyWithReturnValue("" + isValid);
-      }
-      // === EXECUTE
-      else if (methodKey.equals(MarshalingKeys.EXECUTE_METHOD_KEY)) {
-        String commandName = parameter1;
-        String[] parameters = new String[3];
-        int i = 0;
-        for (Object obj : parameterList) {
-          parameters[i] = obj.toString();
-          i++;
+        // === EXIT SET
+        case MarshalingKeys.GET_EXITSET_METHOD_KEY: {
+          List<Direction> exitSet = player.getExitSet();
+          String[] asArray = new String[exitSet.size()];
+          int i = 0;
+          // Convert each enum to string representation
+          for (Direction d : exitSet) {
+            asArray[i++] = d.toString();
+          }
+          // It is easier to not use the HEAD and just put the array in the TAIL
+          // of the answer
+          reply = Marshaling.createValidReplyWithReturnValue("notused", asArray);
+          break;
         }
+        // === MOVE
+        case MarshalingKeys.MOVE_METHOD_KEY: {
+          // move(direction)
+          Direction direction = Direction.valueOf(parameter1);
+          boolean isValid = player.move(direction);
 
-        reply = player.execute(commandName, parameters);
+          reply = Marshaling.createValidReplyWithReturnValue("" + isValid);
+          break;
+        }
+        // === DIG
+        case MarshalingKeys.DIG_ROOM_METHOD_KEY: {
+          Direction direction = Direction.valueOf(parameter1);
+          String description = parameterList.get(0).toString();
+          boolean isValid = player.digRoom(direction, description);
+
+          reply = Marshaling.createValidReplyWithReturnValue("" + isValid);
+          break;
+        }
+        // === EXECUTE
+        case MarshalingKeys.EXECUTE_METHOD_KEY: {
+          String commandName = parameter1;
+          String[] parameters = new String[3];
+          int i = 0;
+          for (Object obj : parameterList) {
+            parameters[i] = obj.toString();
+            i++;
+          }
+
+          reply = player.execute(commandName, parameters);
+          break;
+        }
+        // == WEATHER
+        case MarshalingKeys.GET_WEATHER_KEY: {
+          reply = Marshaling
+                  .createValidReplyWithReturnValue(player.getWeather());
+          break;
+        }
       }
     } catch (PlayerSessionExpiredException exc) {
       reply = Marshaling.createInvalidReplyWithExplantion(StatusCode.SERVER_PLAYER_SESSION_EXPIRED_FAILURE,
@@ -127,5 +138,4 @@ public class PlayerDispatcher implements Dispatcher {
     }
     return reply;
   }
-
 }
