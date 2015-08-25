@@ -1,3 +1,4 @@
+#!/bin/bash
 echo Setting everything for socket based connection on LocalHost with test doubles
 
 # === Configure for socket communication on client and app server side

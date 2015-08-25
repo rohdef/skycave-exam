@@ -156,7 +156,7 @@ public class PlayerProxy implements Player {
     JSONObject requestJson = createRequestObject(MarshalingKeys.GET_PLAYERS_HERE_METHOD_KEY, "");
     JSONObject replyJson = requestAndAwaitReply(requestJson);
     // The HEAD is not used, the list of player names are stored in the TAIL
-    List<String> playersHere = new ArrayList<String>();
+    List<String> playersHere = new ArrayList<>();
     JSONArray array = (JSONArray) replyJson.get(MarshalingKeys.RETURNVALUE_TAIL_KEY);
     // Convert it into a string list
     for ( Object item : array ) {
@@ -173,15 +173,19 @@ public class PlayerProxy implements Player {
   @Override
   public List<String> getMessageList() {
     // TODO Empty stub, to be implemented by students
-    List<String> contents = new ArrayList<String>();
+    List<String> contents = new ArrayList<>();
     contents.add("NOT IMPLEMENTED YET");
     return contents;
   }
 
   @Override
   public String getWeather() {
-    // TODO Empty stub, to be implemented by students
-    return "NOT IMPLEMENTED YET";
+    JSONObject requestJson = Marshaling.createRequestObject(playerID, sessionID, MarshalingKeys.GET_WEATHER_KEY, null);
+    JSONObject replyJson = requestAndAwaitReply(requestJson);
+
+    String weather = replyJson.get(MarshalingKeys.RETURNVALUE_HEAD_KEY).toString();
+
+    return weather;
   }
 
   @Override

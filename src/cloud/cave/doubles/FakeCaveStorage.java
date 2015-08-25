@@ -27,8 +27,8 @@ public class FakeCaveStorage implements CaveStorage {
   @Override
   public void initialize(ServerConfiguration config) {
     this.serverConfiguration = config;
-    roomMap = new HashMap<String, RoomRecord>();
-    playerId2PlayerSpecs = new HashMap<String, PlayerRecord>(5);
+    roomMap = new HashMap<>();
+    playerId2PlayerSpecs = new HashMap<>(5);
 
     RoomRecord entryRoom = new RoomRecord(
         "You are standing at the end of a road before a small brick building.");
@@ -63,7 +63,7 @@ public class FakeCaveStorage implements CaveStorage {
 
   @Override
   public List<Direction> getSetOfExitsFromRoom(String positionString) {
-    List<Direction> listOfExits = new ArrayList<Direction>();
+    List<Direction> listOfExits = new ArrayList<>();
     Point3 pZero = Point3.parseString(positionString);
     Point3 p;
     for ( Direction d : Direction.values()) {
@@ -97,7 +97,7 @@ public class FakeCaveStorage implements CaveStorage {
 
   @Override
   public List<PlayerRecord> computeListOfPlayersAt(String positionString) {
-    List<PlayerRecord> theList = new ArrayList<PlayerRecord>();
+    List<PlayerRecord> theList = new ArrayList<>();
     for ( String id : playerId2PlayerSpecs.keySet() ) {
       PlayerRecord ps = playerId2PlayerSpecs.get(id);
       if (ps.isInCave() && ps.getPositionAsString().equals(positionString)) {
@@ -117,8 +117,8 @@ public class FakeCaveStorage implements CaveStorage {
    * @return list of all players in the cave.
    */
   private List<PlayerRecord> getPlayerList() {
-    List<PlayerRecord> theList = 
-        new ArrayList<PlayerRecord>();
+    List<PlayerRecord> theList =
+            new ArrayList<>();
     for ( String id : playerId2PlayerSpecs.keySet() ) {
       PlayerRecord ps = playerId2PlayerSpecs.get(id);
       if (ps.isInCave()) {
