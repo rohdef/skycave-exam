@@ -27,7 +27,7 @@ public class TestStubSubscriptionService implements SubscriptionService {
   
   public TestStubSubscriptionService() {
     super();
-    subscriptionMap = new HashMap<String,SubscriptionPair>();
+    subscriptionMap = new HashMap<>();
     // populate with the three users known by all test cases
     subscriptionMap.put("mikkel_aarskort", 
         new SubscriptionPair("123",
