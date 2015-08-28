@@ -3,6 +3,7 @@ package cloud.cave.server;
 import static org.junit.Assert.*;
 import static org.hamcrest.CoreMatchers.*;
 
+import cloud.cave.server.common.RoomRecord;
 import org.junit.*;
 
 import java.util.List;
@@ -16,6 +17,8 @@ import cloud.cave.domain.*;
  * @author Henrik Baerbak Christensen, Aarhus University
  */
 public class TestWall {
+
+    private RoomRecord roomRecord;
 
     private Cave cave;
 

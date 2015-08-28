@@ -2,12 +2,13 @@ package cloud.cave.domain;
 
 import java.util.*;
 
+import cloud.cave.server.common.RoomRecord;
 import org.json.simple.JSONObject;
 
 /**
  * The Player role is a the avatar that does the interaction on behalf of the
  * user in the cave.
- * <p>
+ * <p/>
  * A player is characterized by his/her
  * <ul>
  * <li>
@@ -22,207 +23,203 @@ import org.json.simple.JSONObject;
  * used throughout the code to identify a player but rarely used in the user
  * interface (similar to battle-tags in the Blizzard systems.)</li>
  * </ul>
- * 
+ * <p/>
  * A player is always associated with specific room in the cave through his/her
  * 'position'.
- * <p>
+ * <p/>
  * Accessors include methods to view the room that the player is in, see the
  * list of other players in the same room, etc.
- * <p>
+ * <p/>
  * Some accessors are volatile, that is, two consecutive executions may return
  * different results, as other players may modify the state of the room the
  * player is in.
- * <p>
+ * <p/>
  * Mutators include methods to move a player in the cave, 'dig' new rooms, and
  * an 'execute' method that may execute command objects installed on the server.
  * The latter allows new behavior to be added at run-time.
- * <p>
+ * <p/>
  * Class invariants:
- * <p>
+ * <p/>
  * A player object shall never be instantiated directly but only returned as the
  * result of a successful cave.login().
- * <p>
+ * <p/>
  * A player object's method shall never be called after the cave.logout()
- * <p>
+ * <p/>
  * Note: The domain objects of the cave system are Player = the avatar with a
  * specific position in the cave, Cave = the matrix of rooms, and Room = the
  * location with a description, a set of exits, and a list of players currently
  * in this room.
- * <p>
+ * <p/>
  * However, from the perspective of the player, there is a one-to-one relation
  * to the room which the player is currently in. Therefore the present interface
  * acts as a facade to the room related behavior, i.e.
  * player.getShortRoomDescription() in order to avoid
  * player.getRoom().getShortDescription(). (Which also obeys Law of Demeter / Do
  * not talk to strangers).
- * 
+ *
  * @author Henrik Baerbak Christensen, Aarhus University
- * 
  */
 
 public interface Player {
 
-  /**
-   * Return the in-game player name, a synonym under which the player is known
-   * in the cave.
-   * 
-   * @return in-game player name
-   */
-  String getName();
-  
-  /**
-   * Return the unique ID of this player
-   * 
-   * @return unique system generated ID of player, assigned by the server side
-   *         at registration time.
-   */
-  String getID();
+    /**
+     * Return the in-game player name, a synonym under which the player is known
+     * in the cave.
+     *
+     * @return in-game player name
+     */
+    String getName();
 
-  /**
-   * Get the position of the player in the grid, as a string in format (x,y,z).
-   * The entry room is (0,0,0).
-   * 
-   * @return the coordinates of the player's position as a string (x,y,z)
-   */
-  public String getPosition();
+    /**
+     * Return the unique ID of this player
+     *
+     * @return unique system generated ID of player, assigned by the server side
+     * at registration time.
+     */
+    String getID();
 
-  /**
-   * Get a short description of the room this player is currently in.
-   * 
-   * @return the description of the room the player is in.
-   */
-  String getShortRoomDescription();
+    /**
+     * Gives the current room of the player
+     */
+    public RoomRecord getCurrentRoom();
 
-  /**
-   * Get the region (real physical region, not virtual in the cave) that this
-   * player is subscribed in.
-   * 
-   * @return the region of the player
-   */
-  Region getRegion();
+    /**
+     * Get the position of the player in the grid, as a string in format (x,y,z).
+     * The entry room is (0,0,0).
+     *
+     * @return the coordinates of the player's position as a string (x,y,z)
+     */
+    public String getPosition();
 
-  /**
-   * Get the ID of the current session this player is involved in. A session
-   * lasts from when a login of the player is made until he/she logs out again.
-   * Every session is assigned a unique id for that particular session. If a
-   * player object is 'dead' i.e. not logged in, the session ID is null.
-   * 
-   * <br>
-   * 
-   * The session id is not that interesting for the end user, but used
-   * internally to handle multiple sessions on the same loginName.
-   * 
-   * @return unique id of this session or null in case no session
-   */
-  String getSessionID();
+    /**
+     * Get a short description of the room this player is currently in.
+     *
+     * @return the description of the room the player is in.
+     */
+    String getShortRoomDescription();
 
-  // === Volatile accessors
+    /**
+     * Get the region (real physical region, not virtual in the cave) that this
+     * player is subscribed in.
+     *
+     * @return the region of the player
+     */
+    Region getRegion();
 
-  /**
-   * Get a list of in-game player names of all players in the same room as this
-   * player is in.
-   * 
-   * @return list of player data transfer objects
-   */
-  List<String> getPlayersHere();
+    /**
+     * Get the ID of the current session this player is involved in. A session
+     * lasts from when a login of the player is made until he/she logs out again.
+     * Every session is assigned a unique id for that particular session. If a
+     * player object is 'dead' i.e. not logged in, the session ID is null.
+     * <p/>
+     * <br>
+     * <p/>
+     * The session id is not that interesting for the end user, but used
+     * internally to handle multiple sessions on the same loginName.
+     *
+     * @return unique id of this session or null in case no session
+     */
+    String getSessionID();
 
-  /**
-   * Get a long description of the current room, which includes a textual list
-   * of exits, and textual list of players in this room.
-   * 
-   * @return long description of the room the player is in
-   */
-  String getLongRoomDescription();
+    // === Volatile accessors
 
-  /**
-   * Get the set of exits that lead to new rooms from the players current
-   * position.
-   * 
-   * @return set of exits from the room the player is located in
-   */
-  List<Direction> getExitSet();
+    /**
+     * Get a list of in-game player names of all players in the same room as this
+     * player is in.
+     *
+     * @return list of player data transfer objects
+     */
+    List<String> getPlayersHere();
 
-  /**
-   * Get the list of messages currently on the wall of the room that this player
-   * is located in. Messages should be sorted such that last entered
-   * message appears at index 0.<br>
-   * 
-   * Each entry in the list is on the form <br>
-   * 
-   * <code>[playerName] message</code> <br>
-   * 
-   * For example: <br>
-   * 
-   * <code>[Mathilde] I like the description of this room.</code>
-   * 
-   * @return list of messages on the 'wall', sorted with latest
-   * messages appearing at lower indices
-   * 
-   */
-  List<String> getMessageList();
+    /**
+     * Get a long description of the current room, which includes a textual list
+     * of exits, and textual list of players in this room.
+     *
+     * @return long description of the room the player is in
+     */
+    String getLongRoomDescription();
 
-  /**
-   * Return the physical weather situation right now in the location that this
-   * player is registered in (one of the REGION values). <br>
-   * Example output: <br>
-   * <code>
-   * The weather in AARHUS is Clear, temperature 27,4C (feelslike -2,7C). Wind: 1,2 m/s, direction West.
-   * This report is dated: Thu, 05 Mar 2015 09:38:37 +0100.   
-   * </code>
-   * 
-   * @return the weather outside in a specific format
-   * 
-   */
-  String getWeather();
+    /**
+     * Get the set of exits that lead to new rooms from the players current
+     * position.
+     *
+     * @return set of exits from the room the player is located in
+     */
+    List<Direction> getExitSet();
 
-  // === Mutators
-  /**
-   * Move this player in the given direction.
-   * 
-   * @param direction
-   *          the direction to move
-   * @return true in case there is a room in the given direction, false
-   *         otherwise
-   */
-  boolean move(Direction direction);
+    /**
+     * Get the list of messages currently on the wall of the room that this player
+     * is located in. Messages should be sorted such that last entered
+     * message appears at index 0.<br>
+     * <p/>
+     * Each entry in the list is on the form <br>
+     * <p/>
+     * <code>[playerName] message</code> <br>
+     * <p/>
+     * For example: <br>
+     * <p/>
+     * <code>[Mathilde] I like the description of this room.</code>
+     *
+     * @return list of messages on the 'wall', sorted with latest
+     * messages appearing at lower indices
+     */
+    List<String> getMessageList();
 
-  /**
-   * Create a new room with the given description in the given direction. The
-   * player is NOT moved into the room created.
-   * 
-   * @param direction
-   *          geographical direction to 'dig' the room in
-   * @param description
-   *          the description of the room
-   * 
-   * @return true in case the room was created; false if a room already exists
-   *         in the given direction.
-   */
-  boolean digRoom(Direction direction, String description);
+    /**
+     * Return the physical weather situation right now in the location that this
+     * player is registered in (one of the REGION values). <br>
+     * Example output: <br>
+     * <code>
+     * The weather in AARHUS is Clear, temperature 27,4C (feelslike -2,7C). Wind: 1,2 m/s, direction West.
+     * This report is dated: Thu, 05 Mar 2015 09:38:37 +0100.
+     * </code>
+     *
+     * @return the weather outside in a specific format
+     */
+    String getWeather();
 
-  /**
-   * Add a message to this room's wall. Each message is added to the list of
-   * messages on the wall.
-   * 
-   * @param message
-   *          the message that this player adds to the wall to this room.
-   */
-  void addMessage(String message);
+    // === Mutators
 
-  /**
-   * Execute a command object with the given name.
-   * 
-   * @param commandName
-   *          the name of a Java class implementing the Command interface and
-   *          located in the classpath defined by Constants.EXTENSION_CLASSPATH.
-   *          (This is an application of the Command Pattern, see e.g.
-   *          "Flexible, Reliable Software" p. 308, CRC Press 2010.)
-   * @param parameters
-   *          the (variable number of) parameters for the command; all must be
-   *          strings
-   * @return A JSONObject that contains the result of executing the command, or
-   *         error codes and messages in case the command execution failed.
-   */
-  JSONObject execute(String commandName, String... parameters);
+    /**
+     * Move this player in the given direction.
+     *
+     * @param direction the direction to move
+     * @return true in case there is a room in the given direction, false
+     * otherwise
+     */
+    boolean move(Direction direction);
+
+    /**
+     * Create a new room with the given description in the given direction. The
+     * player is NOT moved into the room created.
+     *
+     * @param direction   geographical direction to 'dig' the room in
+     * @param description the description of the room
+     * @return true in case the room was created; false if a room already exists
+     * in the given direction.
+     */
+    boolean digRoom(Direction direction, String description);
+
+    /**
+     * Add a message to this room's wall. Each message is added to the list of
+     * messages on the wall.
+     *
+     * @param message the message that this player adds to the wall to this room.
+     */
+    void addMessage(String message);
+
+    /**
+     * Execute a command object with the given name.
+     *
+     * @param commandName the name of a Java class implementing the Command interface and
+     *                    located in the classpath defined by Constants.EXTENSION_CLASSPATH.
+     *                    (This is an application of the Command Pattern, see e.g.
+     *                    "Flexible, Reliable Software" p. 308, CRC Press 2010.)
+     * @param parameters  the (variable number of) parameters for the command; all must be
+     *                    strings
+     * @return A JSONObject that contains the result of executing the command, or
+     * error codes and messages in case the command execution failed.
+     */
+    JSONObject execute(String commandName, String... parameters);
 
 }
