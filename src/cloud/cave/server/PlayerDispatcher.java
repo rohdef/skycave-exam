@@ -126,7 +126,7 @@ public class PlayerDispatcher implements Dispatcher {
           break;
         }
         // == WEATHER
-        case MarshalingKeys.GET_WEATHER_KEY: {
+        case MarshalingKeys.GET_WEATHER_METHOD_KEY: {
           reply = Marshaling
                   .createValidReplyWithReturnValue(player.getWeather());
           break;

@@ -180,7 +180,7 @@ public class PlayerProxy implements Player {
 
   @Override
   public String getWeather() {
-    JSONObject requestJson = Marshaling.createRequestObject(playerID, sessionID, MarshalingKeys.GET_WEATHER_KEY, null);
+    JSONObject requestJson = Marshaling.createRequestObject(playerID, sessionID, MarshalingKeys.GET_WEATHER_METHOD_KEY, null);
     JSONObject replyJson = requestAndAwaitReply(requestJson);
 
     String weather = replyJson.get(MarshalingKeys.RETURNVALUE_HEAD_KEY).toString();
