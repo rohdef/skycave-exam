@@ -57,14 +57,16 @@ public class TestStorage {
     assertThat( room.description, containsString("You have walked up a hill, still"));
     
     // validate that rooms can be made
-    boolean canAdd = storage.addRoom(p273.getPositionString(), new RoomRecord("You are in a dark lecturing hall."));
+    boolean canAdd = storage.addRoom(p273.getPositionString(),
+            new RoomRecord("You are in a dark lecturing hall.", new ArrayList<String>()));
     assertThat(canAdd, is(true));
     
     room = storage.getRoom(p273.getPositionString());
     assertThat( room.description, is("You are in a dark lecturing hall."));
 
     // validate that existing rooms cannot be overridden
-    canAdd = storage.addRoom(p273.getPositionString(), new RoomRecord("This room must never be made"));
+    canAdd = storage.addRoom(p273.getPositionString(),
+            new RoomRecord("This room must never be made", new ArrayList<String>()));
     
     assertThat(canAdd, is(false));
   }

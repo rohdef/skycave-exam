@@ -125,20 +125,13 @@ public class StandardServerPlayer implements Player {
 
     @Override
     public void addMessage(String message) {
-       // List<> messageList =
-
-        // TODO Empty stub, to be implemented by students
+        String formattedMessage = String.format("[%s] %s", this.name, message);
+        currentRoom.addMessage(formattedMessage);
     }
 
     @Override
     public List<String> getMessageList() {
-
-        // TODO Empty stub, to be implemented by students
-        List<String> contents = new ArrayList<String>();
-        contents.add("[Mark] First Like");
-        contents.add("[Rohde] OMG det sagde du bare ikk");
-        contents.add("[Mark] Jo, jeg fik First Like");
-        return contents;
+        return currentRoom.getMessageList();
     }
 
     @Override
@@ -217,7 +210,7 @@ public class StandardServerPlayer implements Player {
         // Calculate the offsets in the given direction
         Point3 p = Point3.parseString(position);
         p.translate(direction);
-        RoomRecord room = new RoomRecord(description);
+        RoomRecord room = new RoomRecord(description, new ArrayList<String>());
         return storage.addRoom(p.getPositionString(), room);
     }
 
