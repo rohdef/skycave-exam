@@ -1,9 +1,10 @@
 package cloud.cave.client;
 
 import static org.junit.Assert.*;
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.Matchers.*;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.json.simple.JSONObject;
 import org.junit.*;
@@ -47,6 +48,56 @@ public class TestPlayerProxy {
         Login loginResult = caveProxy.login("mikkel_aarskort", "123");
 
         playerProxy = (PlayerProxy) loginResult.getPlayer();
+    }
+
+    @Test
+    public void shouldReadMessagesInRoom() {
+        List<String> messageList = playerProxy.getMessageList();
+
+        // If size, the first and last message matches, assume that it's working and ordered
+        assertThat(messageList.size(), is(3));
+        assertThat(messageList.get(0), containsString("First Like"));
+        assertThat(messageList.get(2), containsString("Jo, jeg fik First Like"));
+
+        // Move and repeat
+        playerProxy.move(Direction.NORTH);
+        messageList = playerProxy.getMessageList();
+
+        assertThat(messageList.size(), is(6));
+        assertThat(messageList.get(0), containsString("Why are you drinking?"));
+        assertThat(messageList.get(5), containsString("Ashamed of drinking!"));
+    }
+
+    @Test
+    public void shouldAddMessagesInRoom() {
+        List<String> messageList = playerProxy.getMessageList();
+
+        assertThat(messageList.size(), is(3));
+
+        playerProxy.addMessage("Du ka da se du ik var nummer 1");
+        messageList = playerProxy.getMessageList();
+
+        assertThat(messageList.size(), is(4));
+        assertThat(messageList.get(3), containsString("Du ka da se du ik var nummer 1"));
+
+        playerProxy.addMessage("Christopher, synes du ik bare det irriterende, at andre siger du er bøsse og klam " +
+                "og et svin for du er overhovedet ingen af delene");
+        messageList = playerProxy.getMessageList();
+
+        assertThat(messageList.size(), is(5));
+        assertThat(messageList.get(4), containsString("Christopher, synes du ik bare det irriterende, at andre " +
+                "siger du er bøsse og klam og et svin for du er overhovedet ingen af delene"));
+
+        playerProxy.move(Direction.EAST);
+        messageList = playerProxy.getMessageList();
+
+        assertThat(messageList.size(), is(0));
+
+        playerProxy.addMessage("Two things are infinite: the universe and human stupidity; and I'm not sure about the universe.");
+        messageList = playerProxy.getMessageList();
+
+        assertThat(messageList.size(), is(1));
+        assertThat(messageList.get(0), containsString("Two things are infinite: the universe and human stupidity; and I'm not sure about the universe."));
     }
 
     @Test
