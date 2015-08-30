@@ -131,6 +131,21 @@ public class PlayerDispatcher implements Dispatcher {
                             .createValidReplyWithReturnValue(player.getWeather());
                     break;
                 }
+                // == MESSAGES
+                case MarshalingKeys.GET_MESSAGE_LIST_METHOD_KEY: {
+                    List<String> messageList = player.getMessageList();
+                    String[] messageArray = new String[messageList.size()];
+                    messageArray = messageList.toArray(messageArray);
+                    reply = Marshaling.createValidReplyWithReturnValue("notused", messageArray);
+                    break;
+                }
+                case MarshalingKeys.ADD_MESSAGE_METHOD_KEY: {
+                    String message = parameter1;
+                    player.addMessage(message);
+
+                    reply = Marshaling.createValidReplyWithReturnValue("OK");
+                    break;
+                }
             }
         } catch (PlayerSessionExpiredException exc) {
             reply = Marshaling.createInvalidReplyWithExplantion(StatusCode.SERVER_PLAYER_SESSION_EXPIRED_FAILURE,
