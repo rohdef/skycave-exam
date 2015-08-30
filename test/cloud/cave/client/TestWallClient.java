@@ -49,13 +49,13 @@ public class TestWallClient {
     player = (PlayerProxy) loginResult.getPlayer();
 
   }
-//
-//  @Test
-//  public void shouldWriteToAndReadWall() {
+
+  @Test
+  public void shouldWriteToAndReadWall() {
 //    player.addMessage("This is message no. 1");
-//    List<String> wallContents = player.getMessageList();
-//    assertThat(wallContents.size(), is(1));
+    List<String> wallContents = player.getMessageList();
+    assertThat(wallContents.size(), is(3));
 //    assertThat(wallContents.get(0), containsString("NOT IMPLEMENTED YET"));
-//  }
+  }
 
 }
