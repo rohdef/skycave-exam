@@ -109,7 +109,8 @@ SkyCave starter kit for the "Cloud Computing and Architecture" course.
 	   destdir="${build.dir}"
 	   debug="on"
 	   classpathref="lib.path.id"
-	   includeAntRuntime="false">
+	   includeAntRuntime="false"
+       encoding="UTF8">
     </javac>
   </target>
 
@@ -119,7 +120,8 @@ SkyCave starter kit for the "Cloud Computing and Architecture" course.
 	   destdir="${build.dir}"
 	   debug="on"
 	   classpathref="lib.path.id"
-	   includeAntRuntime="false">
+	   includeAntRuntime="false"
+       encoding="UTF8">
     </javac>
   </target>
 
