@@ -19,4 +19,3 @@ export SKYCAVE_DBSERVER=localhost:27017
 # = Weather service
 export SKYCAVE_WEATHER_IMPLEMENTATION=cloud.cave.doubles.TestStubWeatherService
 export SKYCAVE_WEATHERSERVER=localhost:8182
-

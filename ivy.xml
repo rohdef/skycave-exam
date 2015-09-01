@@ -39,5 +39,12 @@
         <dependency org="org.mindrot"
                     name="jbcrypt"
                     rev="0.3m"/>
+
+        <dependency org="javax.mail"
+                    name="javax.mail-api"
+                    rev="1.5.4"/>
+        <dependency org="com.sun.mail"
+                    name="javax.mail"
+                    rev="1.5.4"/>
     </dependencies>
 </ivy-module>

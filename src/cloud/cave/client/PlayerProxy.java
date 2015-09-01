@@ -7,6 +7,8 @@ import org.json.simple.*;
 import cloud.cave.common.PlayerSessionExpiredException;
 import cloud.cave.domain.*;
 import cloud.cave.ipc.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A Proxy (Flexible, Reliable Software, p. 317) or more specifically a
@@ -37,6 +39,8 @@ public class PlayerProxy implements Player {
     private String sessionID;
 
     private JSONObject requestJson;
+
+    private static Logger logger = LoggerFactory.getLogger(PlayerProxy.class);
 
     /**
      * DO NOT USE THIS CONSTRUCTOR DIRECTLY (except in unit tests perhaps). Create
@@ -69,16 +73,14 @@ public class PlayerProxy implements Player {
         // send the request over the connector and retrieve the reply object
         JSONObject replyJson = requestAndAwaitReply(requestJson);
         // and finally, demarshal the returned value
-        String asString = replyJson.get(MarshalingKeys.RETURNVALUE_HEAD_KEY).toString();
-        return asString;
+        return replyJson.get(MarshalingKeys.RETURNVALUE_HEAD_KEY).toString();
     }
 
     @Override
     public String getLongRoomDescription() {
         requestJson = createRequestObject(MarshalingKeys.GET_LONG_ROOM_DESCRIPTION_METHOD_KEY, "");
         JSONObject replyJson = requestAndAwaitReply(requestJson);
-        String asString = replyJson.get(MarshalingKeys.RETURNVALUE_HEAD_KEY).toString();
-        return asString;
+        return replyJson.get(MarshalingKeys.RETURNVALUE_HEAD_KEY).toString();
     }
 
     @Override
@@ -97,8 +99,7 @@ public class PlayerProxy implements Player {
                 "");
         JSONObject replyJson = requestAndAwaitReply(requestJson);
         String asString = replyJson.get(MarshalingKeys.RETURNVALUE_HEAD_KEY).toString();
-        Region unboxed = Region.valueOf(asString);
-        return unboxed;
+        return Region.valueOf(asString);
     }
 
     @Override
@@ -107,8 +108,7 @@ public class PlayerProxy implements Player {
                 direction.toString());
         JSONObject replyJson = requestAndAwaitReply(requestJson);
         String asString = replyJson.get(MarshalingKeys.RETURNVALUE_HEAD_KEY).toString();
-        boolean unboxed = Boolean.parseBoolean(asString);
-        return unboxed;
+        return Boolean.parseBoolean(asString);
     }
 
     @Override
@@ -119,17 +119,15 @@ public class PlayerProxy implements Player {
                         "" + direction.toString(), description);
         JSONObject replyJson = requestAndAwaitReply(requestJson);
         String asString = replyJson.get(MarshalingKeys.RETURNVALUE_HEAD_KEY).toString();
-        boolean unboxed = Boolean.parseBoolean(asString);
-        return unboxed;
+        return Boolean.parseBoolean(asString);
     }
 
     @Override
     public String getPosition() {
         requestJson = createRequestObject(MarshalingKeys.GET_POSITION_METHOD_KEY, null);
         JSONObject replyJson = requestAndAwaitReply(requestJson);
-        String positionString = replyJson.get(MarshalingKeys.RETURNVALUE_HEAD_KEY).toString();
 
-        return positionString;
+        return replyJson.get(MarshalingKeys.RETURNVALUE_HEAD_KEY).toString();
     }
 
     @Override
@@ -137,7 +135,7 @@ public class PlayerProxy implements Player {
         requestJson = createRequestObject(MarshalingKeys.GET_EXITSET_METHOD_KEY, null);
         JSONObject replyJson = requestAndAwaitReply(requestJson);
         // The HEAD is not used, the list of player names are stored in the TAIL
-        List<Direction> exitsHere = new ArrayList<Direction>();
+        List<Direction> exitsHere = new ArrayList<>();
         JSONArray array = (JSONArray) replyJson.get(MarshalingKeys.RETURNVALUE_TAIL_KEY);
         // Convert the string values back into enums
         for (Object item : array) {
@@ -168,7 +166,10 @@ public class PlayerProxy implements Player {
                 message);
         JSONObject replyJson = requestAndAwaitReply(requestJson);
         String asString = replyJson.get(MarshalingKeys.RETURNVALUE_HEAD_KEY).toString();
-        // TODO possible error handling, return OK expected
+        if (!asString.equals(StatusCode.OK)) {
+            // TODO possible error handling, return OK expected
+            logger.error("Adding a message to the wall failed, the server response was: " + asString);
+        }
     }
 
     @Override
@@ -181,7 +182,6 @@ public class PlayerProxy implements Player {
                 null);
         JSONObject replyJson = requestAndAwaitReply(requestJson);
 
-        replyJson.get(MarshalingKeys.RETURNVALUE_HEAD_KEY).toString();
         JSONArray array = (JSONArray) replyJson.get(MarshalingKeys.RETURNVALUE_TAIL_KEY);
 
         for (Object item : array) {
@@ -196,17 +196,14 @@ public class PlayerProxy implements Player {
         JSONObject requestJson = Marshaling.createRequestObject(playerID, sessionID, MarshalingKeys.GET_WEATHER_METHOD_KEY, null);
         JSONObject replyJson = requestAndAwaitReply(requestJson);
 
-        String weather = replyJson.get(MarshalingKeys.RETURNVALUE_HEAD_KEY).toString();
-
-        return weather;
+        return replyJson.get(MarshalingKeys.RETURNVALUE_HEAD_KEY).toString();
     }
 
     @Override
     public JSONObject execute(String commandName, String... parameters) {
         JSONObject requestJson =
                 Marshaling.createRequestObject(playerID, sessionID, MarshalingKeys.EXECUTE_METHOD_KEY, commandName, parameters);
-        JSONObject replyJson = requestAndAwaitReply(requestJson);
-        return replyJson;
+        return requestAndAwaitReply(requestJson);
     }
 
     @Override
@@ -220,9 +217,7 @@ public class PlayerProxy implements Player {
 
     private JSONObject createRequestObject(String methodKey,
                                            String parameter) {
-        JSONObject requestJson =
-                Marshaling.createRequestObject(playerID, sessionID, methodKey, parameter);
-        return requestJson;
+        return Marshaling.createRequestObject(playerID, sessionID, methodKey, parameter);
     }
 
     private JSONObject requestAndAwaitReply(JSONObject requestJson) {

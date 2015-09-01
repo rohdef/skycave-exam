@@ -1,11 +1,13 @@
 package cloud.cave.main;
 
+import org.apache.log4j.*;
 import org.slf4j.*;
 
 import cloud.cave.config.*;
 import cloud.cave.domain.Cave;
 import cloud.cave.ipc.*;
 import cloud.cave.server.*;
+import org.slf4j.Logger;
 
 /**
  * The 'main' daemon to run on the server side. It uses a ServerFactory that
@@ -20,7 +22,6 @@ public class CaveDaemon {
     private static Thread daemon;
 
     public static void main(String[] args) throws InterruptedException {
-
         // Create the logging
         Logger logger = LoggerFactory.getLogger(CaveDaemon.class);
 

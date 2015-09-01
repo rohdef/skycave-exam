@@ -143,7 +143,7 @@ public class PlayerDispatcher implements Dispatcher {
                     String message = parameter1;
                     player.addMessage(message);
 
-                    reply = Marshaling.createValidReplyWithReturnValue("OK");
+                    reply = Marshaling.createValidReplyWithReturnValue(StatusCode.OK);
                     break;
                 }
             }

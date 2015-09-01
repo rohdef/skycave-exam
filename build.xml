@@ -128,6 +128,7 @@
     <!-- Resources to be put into their proper place -->
     <target name="copy.resource">
         <copy file="${resource.dir}/log4j.properties" todir="${build.dir}"/>
+        <copy file="${resource.dir}/log4j-prod.properties" todir="${build.dir}"/>
     </target>
 
     <!-- Build everything -->
@@ -256,6 +257,17 @@
             description="--> * Execute the server daemon">
         <java classpathref="run.path.id"
               classname="cloud.cave.main.CaveDaemon">
+        </java>
+    </target>
+
+    <!-- Server daemon -->
+    <target name="ocean-daemon"
+            depends="build.all"
+            description="--> * Execute the server daemon">
+        <java classpathref="run.path.id"
+              classname="cloud.cave.main.CaveDaemon"
+              fork="true">
+            <jvmarg value="-Dlog4j.configuration=log4j-prod.properties"/>
         </java>
     </target>
 
