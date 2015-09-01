@@ -1,18 +1,18 @@
 package cloud.cave.domain;
 
-/** A login operation results in an instance of this
+/**
+ * A login operation results in an instance of this
  * interface which represents the result of the login.
- * 
+ * <p/>
  * If successful then getPlayer() will return the player
  * object.
- * 
- * @author Henrik Baerbak Christensen, Aarhus University
  *
+ * @author Henrik Baerbak Christensen, Aarhus University
  */
 public interface Login {
 
-  Player getPlayer();
+    Player getPlayer();
 
-  LoginResult getResultCode();
+    LoginResult getResultCode();
 
 }

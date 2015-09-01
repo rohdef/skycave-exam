@@ -6,35 +6,35 @@ import org.junit.Test;
 import cloud.cave.common.CommonCaveTests;
 import cloud.cave.domain.*;
 
-/** TDD the Command pattern.
- * 
- * @author Henrik Baerbak Christensen, Aarhus University
+/**
+ * TDD the Command pattern.
  *
+ * @author Henrik Baerbak Christensen, Aarhus University
  */
 public class TestNewCommand {
 
-  private Player player;
-  
-  @Before
-  public void setup() {
-    Cave cave = CommonCaveTests.createTestDoubledConfiguredCave();
+    private Player player;
 
-    Login loginResult = cave.login( "mikkel_aarskort", "123");
-    player = loginResult.getPlayer();
-  }
+    @Before
+    public void setup() {
+        Cave cave = CommonCaveTests.createTestDoubledConfiguredCave();
 
-  @Test
-  public void shouldExecuteHomeCommand() {
-    Common.shouldExecuteHomeCommand(player);
-  }
+        Login loginResult = cave.login("mikkel_aarskort", "123");
+        player = loginResult.getPlayer();
+    }
 
-  @Test
-  public void shouldExecuteJumpCommand() {
-    Common.shouldExecuteJumpCommand(player);
-  }
+    @Test
+    public void shouldExecuteHomeCommand() {
+        Common.shouldExecuteHomeCommand(player);
+    }
 
-  @Test
-  public void shouldNotExecuteUnknownCommand() {
-    Common.shouldExecuteUnknownCommand(player);
-  }
+    @Test
+    public void shouldExecuteJumpCommand() {
+        Common.shouldExecuteJumpCommand(player);
+    }
+
+    @Test
+    public void shouldNotExecuteUnknownCommand() {
+        Common.shouldExecuteUnknownCommand(player);
+    }
 }

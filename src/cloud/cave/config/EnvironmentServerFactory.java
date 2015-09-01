@@ -14,81 +14,79 @@ import cloud.cave.service.*;
  * is configured through their 'initialize' method with their service end point
  * configuration, again based upon reading their respective environment
  * variable.
- * 
- * @see Config
- * 
+ *
  * @author Henrik Baerbak Christensen, University of Aarhus
- * 
+ * @see Config
  */
 public class EnvironmentServerFactory implements CaveServerFactory {
 
-  private Logger logger;
-  private EnvironmentReaderStrategy environmentReader;
+    private Logger logger;
+    private EnvironmentReaderStrategy environmentReader;
 
-  public EnvironmentServerFactory(EnvironmentReaderStrategy envReader) {
-    logger = LoggerFactory.getLogger(EnvironmentServerFactory.class);
-    this.environmentReader = envReader;
-  }
+    public EnvironmentServerFactory(EnvironmentReaderStrategy envReader) {
+        logger = LoggerFactory.getLogger(EnvironmentServerFactory.class);
+        this.environmentReader = envReader;
+    }
 
-  @Override
-  public CaveStorage createCaveStorage() {
-    CaveStorage caveStorage = null; 
-    caveStorage = Config.loadAndInstantiate(environmentReader, 
-        Config.SKYCAVE_CAVESTORAGE_IMPLEMENTATION, caveStorage);
+    @Override
+    public CaveStorage createCaveStorage() {
+        CaveStorage caveStorage = null;
+        caveStorage = Config.loadAndInstantiate(environmentReader,
+                Config.SKYCAVE_CAVESTORAGE_IMPLEMENTATION, caveStorage);
 
-    // Read in the server configuration
-    ServerConfiguration config = 
-        new ServerConfiguration(environmentReader, Config.SKYCAVE_DBSERVER);
-    caveStorage.initialize(config);
-    
-    logger.info("Creating cave storage with cfg: "+ config);
-    
-    return caveStorage;
-  }
+        // Read in the server configuration
+        ServerConfiguration config =
+                new ServerConfiguration(environmentReader, Config.SKYCAVE_DBSERVER);
+        caveStorage.initialize(config);
 
-  @Override
-  public SubscriptionService createSubscriptionServiceConnector() {
-    SubscriptionService subscriptionService = null; 
-    subscriptionService = Config.loadAndInstantiate(environmentReader, 
-        Config.SKYCAVE_SUBSCRIPTION_IMPLEMENTATION, subscriptionService);
-    
-    // Read in the server configuration
-    ServerConfiguration config = 
-        new ServerConfiguration(environmentReader, Config.SKYCAVE_SUBSCRIPTIONSERVER);
-    subscriptionService.initialize(config);
+        logger.info("Creating cave storage with cfg: " + config);
 
-    logger.info("Creating subscription service with cfg: "+ config);
+        return caveStorage;
+    }
 
-    return subscriptionService;
-  }
+    @Override
+    public SubscriptionService createSubscriptionServiceConnector() {
+        SubscriptionService subscriptionService = null;
+        subscriptionService = Config.loadAndInstantiate(environmentReader,
+                Config.SKYCAVE_SUBSCRIPTION_IMPLEMENTATION, subscriptionService);
 
-  @Override
-  public WeatherService createWeatherServiceConnector() {
-    WeatherService weatherService = null; 
-    weatherService = Config.loadAndInstantiate(environmentReader, 
-        Config.SKYCAVE_WEATHER_IMPLEMENATION, weatherService);
-    
-    // Read in the server configuration
-    ServerConfiguration config = 
-        new ServerConfiguration(environmentReader, Config.SKYCAVE_WEATHERSERVER);
-    weatherService.initialize(config);
+        // Read in the server configuration
+        ServerConfiguration config =
+                new ServerConfiguration(environmentReader, Config.SKYCAVE_SUBSCRIPTIONSERVER);
+        subscriptionService.initialize(config);
 
-    logger.info("Creating weather service with cfg: "+ config);
+        logger.info("Creating subscription service with cfg: " + config);
 
-    return weatherService;
-  }
+        return subscriptionService;
+    }
 
-  @Override
-  public Reactor createReactor(Invoker invoker) {
-    Reactor reactor = null; 
-    reactor = Config.loadAndInstantiate(environmentReader, Config.SKYCAVE_REACTOR_IMPLEMENTATION, reactor);
+    @Override
+    public WeatherService createWeatherServiceConnector() {
+        WeatherService weatherService = null;
+        weatherService = Config.loadAndInstantiate(environmentReader,
+                Config.SKYCAVE_WEATHER_IMPLEMENATION, weatherService);
 
-    // Read in the server configuration
-    ServerConfiguration config = 
-        new ServerConfiguration(environmentReader, Config.SKYCAVE_APPSERVER);
-    reactor.initialize(invoker, config);
+        // Read in the server configuration
+        ServerConfiguration config =
+                new ServerConfiguration(environmentReader, Config.SKYCAVE_WEATHERSERVER);
+        weatherService.initialize(config);
 
-    return reactor;
-  }
+        logger.info("Creating weather service with cfg: " + config);
+
+        return weatherService;
+    }
+
+    @Override
+    public Reactor createReactor(Invoker invoker) {
+        Reactor reactor = null;
+        reactor = Config.loadAndInstantiate(environmentReader, Config.SKYCAVE_REACTOR_IMPLEMENTATION, reactor);
+
+        // Read in the server configuration
+        ServerConfiguration config =
+                new ServerConfiguration(environmentReader, Config.SKYCAVE_APPSERVER);
+        reactor.initialize(invoker, config);
+
+        return reactor;
+    }
 
 }

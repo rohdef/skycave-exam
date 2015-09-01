@@ -58,8 +58,9 @@ public class TestWall {
         assertThat(playerMikkel.getMessageList().get(0), is("[Mark] First Like"));
 
     }
+
     @Test
-    public void shouldReadFirstThreeMessages(){
+    public void shouldReadFirstThreeMessages() {
         List<String> wallContents = playerMikkel.getMessageList();
 
         assertThat(wallContents.size(), is(3));
@@ -68,8 +69,9 @@ public class TestWall {
         assertThat(wallContents.get(2), is("[Mark] Jo, jeg fik First Like"));
 
     }
+
     @Test
-    public void shouldReturnMikkelAndMathildeAtSameRoom(){
+    public void shouldReturnMikkelAndMathildeAtSameRoom() {
         String mikkelPosition = playerMikkel.getPosition();
         String mathildePosition = playerMathilde.getPosition();
 
@@ -77,14 +79,15 @@ public class TestWall {
         assertThat(playerMikkel.getMessageList(), equalTo(playerMathilde.getMessageList()));
 
     }
+
     @Test
-    public void shouldReturnMikkelAndMathildeAtDifferentRoomsWithDifferentMessageLists(){
+    public void shouldReturnMikkelAndMathildeAtDifferentRoomsWithDifferentMessageLists() {
         playerMathilde.move(Direction.NORTH);
         assertThat(playerMikkel.getMessageList(), not(equalTo(playerMathilde.getMessageList())));
     }
 
     @Test
-    public void shouldReturnMikkelAndMathildeAtSameRoomWithSameMessageListsAfterMovement(){
+    public void shouldReturnMikkelAndMathildeAtSameRoomWithSameMessageListsAfterMovement() {
         playerMathilde.move(Direction.NORTH);
         assertThat(playerMikkel.getMessageList(), not(equalTo(playerMathilde.getMessageList())));
 
@@ -93,7 +96,7 @@ public class TestWall {
     }
 
     @Test
-    public void shouldReturnTipplerDialogAfterMovingNorth(){
+    public void shouldReturnTipplerDialogAfterMovingNorth() {
 
         playerMathilde.move(Direction.NORTH);
         List<String> messageList = new ArrayList<>();

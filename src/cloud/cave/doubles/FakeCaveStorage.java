@@ -58,7 +58,7 @@ public class FakeCaveStorage implements CaveStorage {
                 new RoomRecord("You have walked up a hill, still in the forest.", new ArrayList<String>()));
         //Up
         this.addRoom(new Point3(0, 0, 1).getPositionString(),
-                new RoomRecord("You are in the top of a tall tree, at the end of a road.",new ArrayList<String>()));
+                new RoomRecord("You are in the top of a tall tree, at the end of a road.", new ArrayList<String>()));
     }
 
     @Override

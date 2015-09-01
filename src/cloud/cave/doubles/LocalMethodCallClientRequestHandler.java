@@ -9,40 +9,38 @@ import cloud.cave.server.common.ServerConfiguration;
  * A test double for the client request handler that forwards all client
  * requests directly to an associated server invoker. Must
  * be configured for the actual server invoker to use.
- * <p>
+ * <p/>
  * This way all network related issues are abstracted away for ease of testing
  * the implementation of client proxies and server invoker command
  * switching logic.
- * <p>
- * 
+ * <p/>
+ *
  * @author Henrik Baerbak Christensen, Aarhus University
- * 
  */
 public class LocalMethodCallClientRequestHandler implements
-    ClientRequestHandler {
+        ClientRequestHandler {
 
-  private Invoker invoker;
+    private Invoker invoker;
 
-  public LocalMethodCallClientRequestHandler(Invoker srh) {
-    invoker = srh;
-  }
+    public LocalMethodCallClientRequestHandler(Invoker srh) {
+        invoker = srh;
+    }
 
-  @Override
-  public void initialize(ServerConfiguration config) {
-    // Not relevant, as this request handler is only used in
-    // testing and under programmatic control
-  }
-  
-  @Override
-  public JSONObject sendRequestAndBlockUntilReply(JSONObject requestJson) {
-    // System.out.println("--> CRH: "+ requestJson);
-    JSONObject reply = invoker.handleRequest(requestJson);
-    // System.out.println("<-- CRH: "+ reply);
-    return reply;
-  }
+    @Override
+    public void initialize(ServerConfiguration config) {
+        // Not relevant, as this request handler is only used in
+        // testing and under programmatic control
+    }
 
-  @Override
-  public String toString() {
-    return "LocalMethodCallClientRequestHandler";
-  }
+    @Override
+    public JSONObject sendRequestAndBlockUntilReply(JSONObject requestJson) {
+        // System.out.println("--> CRH: "+ requestJson);
+        // System.out.println("<-- CRH: "+ reply);
+        return invoker.handleRequest(requestJson);
+    }
+
+    @Override
+    public String toString() {
+        return "LocalMethodCallClientRequestHandler";
+    }
 }
