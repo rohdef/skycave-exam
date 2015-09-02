@@ -2,6 +2,7 @@ package cloud.cave.client;
 
 import java.io.*;
 
+import cloud.cave.ipc.CaveIPCException;
 import org.json.simple.JSONObject;
 
 import cloud.cave.common.PlayerSessionExpiredException;
@@ -103,6 +104,8 @@ public class CmdInterpreter {
             System.exit(0);
         } catch (IOException e) {
             systemOut.println("Exception caught: " + e);
+        } catch (CaveIPCException e) {
+
         }
         systemOut.println("Leaving SkyCave - Goodbye.");
     }
