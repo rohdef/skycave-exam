@@ -7,5 +7,7 @@ lib
 out
 build
 TEST-RESULT
+*.log.*
 *.log
 DigitalOcean
+*-old

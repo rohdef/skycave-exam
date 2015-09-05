@@ -1,6 +1,7 @@
 package cloud.cave.client;
 
 import java.io.*;
+import java.net.SocketException;
 
 import cloud.cave.ipc.CaveIPCException;
 import org.json.simple.JSONObject;
@@ -63,17 +64,22 @@ public class CmdInterpreter {
      * command, and see the result in the shell.
      */
     public void readEvalLoop() {
+        String line = "q"; // In case the buffered reader fails
+        BufferedReader bf = new BufferedReader(new InputStreamReader(systemIn));
+
+        systemOut.println("== Welcome to SkyCave, player " + player.getName() + " ==");
         try {
-            String line;
-            BufferedReader bf = new BufferedReader(new InputStreamReader(systemIn));
-
-            systemOut.println("== Welcome to SkyCave, player " + player.getName() + " ==");
             systemOut.println(cave.describeConfiguration());
-            systemOut.println("Type 'h' for help!");
-            systemOut.println("Entering command loop, type \"q\" to quit, \"h\" for help.");
+        } catch (Exception e) {
+            systemOut.println("No cave description available");
+        }
 
-            // and enter the command processing loop
-            do {
+        systemOut.println("Type 'h' for help!");
+        systemOut.println("Entering command loop, type \"q\" to quit, \"h\" for help.");
+
+        // and enter the command processing loop
+        do {
+            try {
                 line = bf.readLine();
                 if (line.length() > 0) {
                     // split into into tokes on whitespace
@@ -84,24 +90,25 @@ public class CmdInterpreter {
                         char primaryCommand = line.charAt(0);
 
                         handleSingleCharCommand(primaryCommand);
-
                     } else {
                         handleMultipleCharCommand(tokens[0], tokens);
                     }
                     systemOut.println();
                 }
-            } while (!line.equals("q"));
-        } catch (PlayerSessionExpiredException exc) {
-            systemOut
-                    .println("**** Sorry! Another session has started with the same loginID. ***");
-            systemOut
-                    .println("**** You have been logged out.                                 ***");
-            System.exit(0);
-        } catch (IOException e) {
-            systemOut.println("Exception caught: " + e);
-        } catch (CaveIPCException e) {
-
-        }
+            } catch (PlayerSessionExpiredException exc) {
+                systemOut
+                        .println("**** Sorry! Another session has started with the same loginID. ***");
+                systemOut
+                        .println("**** You have been logged out.                                 ***");
+                System.exit(0);
+            } catch (IOException e) {
+                systemOut.println("Exception caught: " + e);
+            } catch (CaveIPCException e) {
+                if (e.getCause() instanceof SocketException) {
+                    systemOut.println("*** Sorry - I cannot do that as I am disconnected from the cave, please quit ***");
+                }
+            }
+        } while (!line.equals("q"));
         systemOut.println("Leaving SkyCave - Goodbye.");
     }
 

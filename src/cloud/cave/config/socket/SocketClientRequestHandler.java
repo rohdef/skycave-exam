@@ -47,6 +47,8 @@ public class SocketClientRequestHandler implements ClientRequestHandler {
                     clientSocket.getInputStream()));
         } catch (UnknownHostException e) {
             e.printStackTrace();
+        } catch (SocketException e) {
+            throw new CaveIPCException("Disconnected", e);
         } catch (IOException e) {
             e.printStackTrace();
         }
