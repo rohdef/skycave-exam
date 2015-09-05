@@ -22,14 +22,12 @@ public class TestWall {
 
     private RoomRecord roomRecord;
 
-    private Cave cave;
-
     private Player playerMikkel;
     private Player playerMathilde;
 
     @Before
     public void setUp() throws Exception {
-        cave = CommonCaveTests.createTestDoubledConfiguredCave();
+        Cave cave = CommonCaveTests.createTestDoubledConfiguredCave();
 
         Login loginResult = cave.login("mikkel_aarskort", "123");
         playerMikkel = loginResult.getPlayer();

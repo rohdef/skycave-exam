@@ -19,13 +19,12 @@ import cloud.cave.service.WeatherService;
 public class TestWeather {
 
     private Cave cave;
-    private String loginName;
     private Player player;
 
     @Before
     public void setUp() throws Exception {
         cave = CommonCaveTests.createTestDoubledConfiguredCave();
-        loginName = "mikkel_aarskort";
+        String loginName = "mikkel_aarskort";
         Login loginResult = cave.login(loginName, "123");
         player = loginResult.getPlayer();
     }

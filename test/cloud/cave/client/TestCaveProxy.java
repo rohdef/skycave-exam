@@ -24,8 +24,6 @@ public class TestCaveProxy {
 
     private Player p1, p2;
 
-    private ClientRequestHandler crh;
-
     @Before
     public void setup() {
         // Create the server tier
@@ -35,7 +33,7 @@ public class TestCaveProxy {
         Invoker srh = new StandardInvoker(caveRemote);
 
         // ... and the client side
-        crh = new LocalMethodCallClientRequestHandler(srh);
+        ClientRequestHandler crh = new LocalMethodCallClientRequestHandler(srh);
 
         // finally the cave proxies using the client request handler...
         cave = new CaveProxy(crh);

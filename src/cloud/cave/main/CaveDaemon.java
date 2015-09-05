@@ -1,13 +1,13 @@
 package cloud.cave.main;
 
-import org.apache.log4j.*;
-import org.slf4j.*;
-
 import cloud.cave.config.*;
 import cloud.cave.domain.Cave;
-import cloud.cave.ipc.*;
-import cloud.cave.server.*;
+import cloud.cave.ipc.Invoker;
+import cloud.cave.ipc.Reactor;
+import cloud.cave.server.StandardInvoker;
+import cloud.cave.server.StandardServerCave;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The 'main' daemon to run on the server side. It uses a ServerFactory that
@@ -19,6 +19,7 @@ import org.slf4j.Logger;
  * @see Config
  */
 public class CaveDaemon {
+    @SuppressWarnings("FieldCanBeLocal")
     private static Thread daemon;
 
     public static void main(String[] args) throws InterruptedException {

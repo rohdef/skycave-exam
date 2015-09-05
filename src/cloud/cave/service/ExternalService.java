@@ -36,7 +36,7 @@ public interface ExternalService {
      * @param config the configuration of the underlying database system.
      * @throws CaveIPCException in case of connection or initialization failures
      */
-    public void initialize(ServerConfiguration config);
+    void initialize(ServerConfiguration config);
 
     /**
      * For a connection oriented service, disconnect the connection to it. For a
@@ -44,7 +44,7 @@ public interface ExternalService {
      *
      * @throws CaveIPCException in case of disconnection failures
      */
-    public void disconnect();
+    void disconnect();
 
     /**
      * Get the configuration of this service, i.e. the
@@ -52,5 +52,5 @@ public interface ExternalService {
      *
      * @return the server configuration
      */
-    public ServerConfiguration getConfiguration();
+    ServerConfiguration getConfiguration();
 }

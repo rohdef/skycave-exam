@@ -5,9 +5,6 @@ import static org.hamcrest.CoreMatchers.*;
 
 import cloud.cave.common.CommonCaveTests;
 import cloud.cave.domain.Cave;
-import cloud.cave.domain.Direction;
-import cloud.cave.domain.Login;
-import cloud.cave.domain.Player;
 import cloud.cave.doubles.LocalMethodCallClientRequestHandler;
 import cloud.cave.doubles.SaboteurCRHDecorator;
 import cloud.cave.ipc.ClientRequestHandler;
@@ -20,9 +17,6 @@ import org.apache.commons.io.IOUtils;
 
 import java.io.InputStream;
 
-/**
- * Created by mark on 9/1/15.
- */
 public class TestAppserverDisconnect {
     private Cave cave;
     private SaboteurCRHDecorator saboteur;

@@ -1,7 +1,6 @@
 package cloud.cave.client;
 
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
 import java.util.List;
@@ -26,8 +25,6 @@ import cloud.cave.server.StandardInvoker;
 public class TestWallClient {
 
     private Player player;
-    private LocalMethodCallClientRequestHandler crh;
-    private CaveProxy caveProxy;
 
     @Before
     public void setup() {
@@ -39,13 +36,13 @@ public class TestWallClient {
 
         // create the client request handler as a test double that
         // simply uses method calls to call the 'server side'
-        crh = new LocalMethodCallClientRequestHandler(srh);
+        LocalMethodCallClientRequestHandler crh = new LocalMethodCallClientRequestHandler(srh);
 
         // Create the cave proxy, and login mikkel
-        caveProxy = new CaveProxy(crh);
+        CaveProxy caveProxy = new CaveProxy(crh);
         Login loginResult = caveProxy.login("mikkel_aarskort", "123");
 
-        player = (PlayerProxy) loginResult.getPlayer();
+        player = loginResult.getPlayer();
 
     }
 

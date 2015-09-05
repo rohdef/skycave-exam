@@ -83,7 +83,7 @@ public interface Player {
      *
      * @return the coordinates of the player's position as a string (x,y,z)
      */
-    public String getPosition();
+    String getPosition();
 
     /**
      * Get a short description of the room this player is currently in.

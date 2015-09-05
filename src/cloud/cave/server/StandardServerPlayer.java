@@ -111,7 +111,7 @@ public class StandardServerPlayer implements Player {
     @Override
     public List<String> getPlayersHere() {
         List<PlayerRecord> playerList = storage.computeListOfPlayersAt(getPosition());
-        List<String> playerNameList = new ArrayList<String>();
+        List<String> playerNameList = new ArrayList<>();
         for (PlayerRecord record : playerList) {
             playerNameList.add(record.getPlayerName());
         }
@@ -138,8 +138,7 @@ public class StandardServerPlayer implements Player {
     public String getWeather() {
         JSONObject weatherAsJson =
                 weatherService.requestWeather(getGroupName(), getID(), getRegion());
-        String weather = convertToFormattedString(weatherAsJson);
-        return weather;
+        return convertToFormattedString(weatherAsJson);
     }
 
     /**
@@ -151,7 +150,7 @@ public class StandardServerPlayer implements Player {
      */
     private String convertToFormattedString(JSONObject currentObservation) {
 
-        String result = null;
+        String result;
         if (currentObservation.get("authenticated").equals("true")) {
             String temperature = currentObservation.get("temperature").toString();
             double tempDouble = Double.parseDouble(temperature);
@@ -220,7 +219,7 @@ public class StandardServerPlayer implements Player {
         String qualifiedClassName = EXTENSION_CLASSPATH + "." + commandName;
 
         // Load it
-        Class<?> theClass = null;
+        Class<?> theClass;
         try {
             theClass = Class.forName(qualifiedClassName);
         } catch (ClassNotFoundException e) {
@@ -229,7 +228,7 @@ public class StandardServerPlayer implements Player {
         }
 
         // Next, instantiate the command object
-        Command command = null;
+        Command command;
         try {
             command = (Command) theClass.newInstance();
         } catch (InstantiationException | IllegalAccessException e) {

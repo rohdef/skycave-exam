@@ -109,7 +109,7 @@ public class Config {
      * @return object of type T loaded from the fully qualified type name given by
      * the environment variable envVariabl
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "ParameterCanBeLocal"})
     public static <T> T loadAndInstantiate(EnvironmentReaderStrategy environmentReader,
                                            String envVariable,
                                            T theObject) {

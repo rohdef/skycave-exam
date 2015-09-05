@@ -27,7 +27,6 @@ public class TestLoadBalancing {
 
     private Player player;
     private LoadBalancedLocalMethodCallClientRequestHandler crh;
-    private CaveProxy caveProxy;
 
     @Before
     public void setup() {
@@ -51,7 +50,7 @@ public class TestLoadBalancing {
         // Create the cave proxy, and login mikkel; server communication
         // will be made with server 1 as this is the default for the
         // load balancing requester.
-        caveProxy = new CaveProxy(crh);
+        CaveProxy caveProxy = new CaveProxy(crh);
         Login loginResult = caveProxy.login("mikkel_aarskort", "123");
 
         player = loginResult.getPlayer();

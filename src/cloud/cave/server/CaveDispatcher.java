@@ -12,6 +12,7 @@ public class CaveDispatcher implements Dispatcher {
         this.cave = cave;
     }
 
+    @SuppressWarnings("UnnecessaryLocalVariable")
     @Override
     public JSONObject dispatch(String methodKey, String playerID,
                                String sessionID, String parameter1, JSONArray parameterList) {
