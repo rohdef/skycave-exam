@@ -63,21 +63,16 @@ public class CmdInterpreter {
      * command, and see the result in the shell.
      */
     public void readEvalLoop() {
-        systemOut.println("== Welcome to SkyCave, player " + player.getName()
-                + " ==");
-
-        systemOut.println(cave.describeConfiguration());
-
-        systemOut.println("Type 'h' for help!");
-
-        BufferedReader bf = new BufferedReader(new InputStreamReader(systemIn));
-
-        systemOut
-                .println("Entering command loop, type \"q\" to quit, \"h\" for help.");
-
-        // and enter the command processing loop
-        String line;
         try {
+            String line;
+            BufferedReader bf = new BufferedReader(new InputStreamReader(systemIn));
+
+            systemOut.println("== Welcome to SkyCave, player " + player.getName() + " ==");
+            systemOut.println(cave.describeConfiguration());
+            systemOut.println("Type 'h' for help!");
+            systemOut.println("Entering command loop, type \"q\" to quit, \"h\" for help.");
+
+            // and enter the command processing loop
             do {
                 line = bf.readLine();
                 if (line.length() > 0) {

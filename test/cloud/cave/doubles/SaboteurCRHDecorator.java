@@ -12,19 +12,19 @@ public class SaboteurCRHDecorator implements ClientRequestHandler {
 
     public SaboteurCRHDecorator(ClientRequestHandler decoratee) {
         this.decoratee = decoratee;
-        exceptionMsg = null;
+        this.exceptionMsg = null;
     }
 
-    public JSONObject sendRequestAndBlockUntilReply(JSONObject requestJson)
+    public synchronized JSONObject sendRequestAndBlockUntilReply(JSONObject requestJson)
             throws CaveIPCException {
-        if (exceptionMsg != null) {
+        if (this.exceptionMsg != null) {
             throw new CaveIPCException(exceptionMsg, null);
         }
         return decoratee.sendRequestAndBlockUntilReply(requestJson);
     }
 
     public void throwNextTime(String caveIPCException) {
-        exceptionMsg = caveIPCException;
+        this.exceptionMsg = caveIPCException;
     }
 
     @Override
@@ -32,5 +32,4 @@ public class SaboteurCRHDecorator implements ClientRequestHandler {
         // Not relevant, as this request handler is only used in
         // testing and under programmatic control
     }
-
 }

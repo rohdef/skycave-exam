@@ -1,7 +1,6 @@
 package cloud.cave.client;
 
 import static org.junit.Assert.*;
-import static org.hamcrest.CoreMatchers.*;
 
 import cloud.cave.common.CommonCaveTests;
 import cloud.cave.domain.Cave;
@@ -15,7 +14,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.apache.commons.io.IOUtils;
 
+import java.io.BufferedReader;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 
 public class TestAppserverDisconnect {
     private Cave cave;
@@ -37,8 +38,9 @@ public class TestAppserverDisconnect {
     }
     @Test
     public void shouldNotCrashWithException(){
-        InputStream inputStream = IOUtils.toInputStream("n\nq\n");
+        InputStream inputStream = IOUtils.toInputStream("n\ns\nq\n");
         CmdInterpreter commandInterpreter = new CmdInterpreter(cave, "mikkel_aarskort", "123", System.out, inputStream);
+
         saboteur.throwNextTime("Disconnect from server, please restart");
         try {
             commandInterpreter.readEvalLoop();
@@ -49,7 +51,7 @@ public class TestAppserverDisconnect {
     }
 
     @Test
-    public void shouldAksUserToDisconnectWhenServerUnresponsive(){
+    public void shouldAskUserToDisconnectWhenServerUnresponsive(){
         InputStream inputStream = IOUtils.toInputStream("n\nq\n");
         CmdInterpreter commandInterpreter = new CmdInterpreter(cave, "mikkel_aarskort", "123", System.out, inputStream);
         saboteur.throwNextTime("Disconnect from server, please restart");
