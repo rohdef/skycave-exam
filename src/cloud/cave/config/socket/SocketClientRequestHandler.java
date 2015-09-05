@@ -37,7 +37,7 @@ public class SocketClientRequestHandler implements ClientRequestHandler {
     @Override
     public JSONObject sendRequestAndBlockUntilReply(JSONObject requestJson)
             throws CaveIPCException {
-
+        JSONObject replyJson = null;
         Socket clientSocket = null;
         // Create the socket to the host
         try {
@@ -45,38 +45,35 @@ public class SocketClientRequestHandler implements ClientRequestHandler {
             out = new PrintWriter(clientSocket.getOutputStream(), true);
             in = new BufferedReader(new InputStreamReader(
                     clientSocket.getInputStream()));
+
+            // Send the JSON request as a string to the app server
+            out.println(requestJson.toString());
+
+            // Block until a reply is received, and parse it into JSON
+            String reply;
+
+
+            reply = in.readLine();
+            // System.out.println("--< reply: "+ reply.toString());
+
+            JSONParser parser = new JSONParser();
+            replyJson = (JSONObject) parser.parse(reply);
         } catch (UnknownHostException e) {
             e.printStackTrace();
         } catch (SocketException e) {
             throw new CaveIPCException("Disconnected", e);
         } catch (IOException e) {
             e.printStackTrace();
-        }
-
-        // Send the JSON request as a string to the app server
-        out.println(requestJson.toString());
-
-        // Block until a reply is received, and parse it into JSON
-        String reply;
-        JSONObject replyJson = null;
-        try {
-            reply = in.readLine();
-            // System.out.println("--< reply: "+ reply.toString());
-
-            JSONParser parser = new JSONParser();
-            replyJson = (JSONObject) parser.parse(reply);
-        } catch (IOException e) {
-            e.printStackTrace();
         } catch (ParseException e) {
             e.printStackTrace();
+        } finally {
+            try {
+                clientSocket.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
 
-        // ... and close the connection
-        try {
-            clientSocket.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
         return replyJson;
     }
 
