@@ -4,6 +4,7 @@ import java.io.*;
 import java.net.SocketException;
 
 import cloud.cave.ipc.CaveIPCException;
+import com.google.common.base.Joiner;
 import org.json.simple.JSONObject;
 
 import cloud.cave.common.PlayerSessionExpiredException;
@@ -137,11 +138,13 @@ public class CmdInterpreter {
             systemOut.println(weather);
 
         } else if (command.equals("post") && tokens.length > 1) {
-            systemOut.println("POST awaits implementation");
-
+            String message = Joiner.on(' ').join(tokens);
+            player.addMessage(message);
+            systemOut.println("*** Message stored ***");
         } else if (command.equals("read")) {
-            systemOut.println("READ awaits implementation");
-
+            String wall = Joiner.on('\n').join(player.getMessageList());
+            systemOut.println("*** WALL CONTENTS ***");
+            systemOut.println(wall);
         } else if (command.equals("sys")) {
             systemOut.println("System information:");
             systemOut.println(cave.describeConfiguration());
