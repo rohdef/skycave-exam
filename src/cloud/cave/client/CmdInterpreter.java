@@ -1,14 +1,14 @@
 package cloud.cave.client;
 
-import java.io.*;
-import java.net.SocketException;
-
+import cloud.cave.common.PlayerSessionExpiredException;
+import cloud.cave.domain.*;
 import cloud.cave.ipc.CaveIPCException;
 import com.google.common.base.Joiner;
 import org.json.simple.JSONObject;
 
-import cloud.cave.common.PlayerSessionExpiredException;
-import cloud.cave.domain.*;
+import java.io.*;
+import java.net.SocketException;
+import java.util.Arrays;
 
 /**
  * The client interpreter, implementing a classic shell based read-eval-loop
@@ -136,9 +136,8 @@ public class CmdInterpreter {
             String weather = player.getWeather();
             systemOut.println("The weather at: " + player.getRegion());
             systemOut.println(weather);
-
         } else if (command.equals("post") && tokens.length > 1) {
-            String message = Joiner.on(' ').join(tokens);
+            String message = Joiner.on(' ').join(Arrays.copyOfRange(tokens, 1, tokens.length));
             player.addMessage(message);
             systemOut.println("*** Message stored ***");
         } else if (command.equals("read")) {
@@ -149,7 +148,6 @@ public class CmdInterpreter {
             systemOut.println("System information:");
             systemOut.println(cave.describeConfiguration());
             systemOut.println(player.toString());
-
         } else if (command.equals("exec")) {
             if (tokens.length > 2) {
                 // Create the parameter array

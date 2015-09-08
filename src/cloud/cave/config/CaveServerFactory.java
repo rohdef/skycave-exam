@@ -31,6 +31,12 @@ public interface CaveServerFactory {
     SubscriptionService createSubscriptionServiceConnector();
 
     /**
+     * Create and return an initialized rest request service
+     * @return a rest request service
+     */
+    IRestRequest createRestRequester();
+
+    /**
      * Create and return an initialized connector to the weather service.
      *
      * @return a connector to the weather service

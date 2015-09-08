@@ -74,6 +74,7 @@ public class Config {
      * the classpath and will be loaded at runtime by the ClientFactory.
      */
     public static final String SKYCAVE_CLIENTREQUESTHANDLER_IMPLEMENTATION = "SKYCAVE_CLIENTREQUESTHANDLER_IMPLEMENTATION";
+    public static final String REST_REQUEST_IMPLEMENTATION = "REST_REQUEST_IMPLEMENTATION";
 
     /**
      * Read an environment variable using the given reader strategy. Fail

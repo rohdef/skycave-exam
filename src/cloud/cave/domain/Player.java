@@ -165,7 +165,7 @@ public interface Player {
      * player is registered in (one of the REGION values). <br>
      * Example output: <br>
      * <code>
-     * The weather in AARHUS is Clear, temperature 27,4C (feelslike -2,7C). Wind: 1,2 m/s, direction West.
+     * The weather in ARHUS is Clear, temperature 27,4C (feelslike -2,7C). Wind: 1,2 m/s, direction West.
      * This report is dated: Thu, 05 Mar 2015 09:38:37 +0100.
      * </code>
      *

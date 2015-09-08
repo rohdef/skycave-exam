@@ -23,14 +23,13 @@ import cloud.cave.service.*;
  * @author Henrik Baerbak Christensen, Aarhus University.
  */
 public class TestStubSubscriptionService implements SubscriptionService {
-
     public TestStubSubscriptionService() {
         super();
         subscriptionMap = new HashMap<>();
         // populate with the three users known by all test cases
         subscriptionMap.put("mikkel_aarskort",
                 new SubscriptionPair("123",
-                        new SubscriptionRecord("user-001", "Mikkel", "grp01", Region.AARHUS)));
+                        new SubscriptionRecord("user-001", "Mikkel", "grp01", Region.ARHUS)));
         subscriptionMap.put("magnus_aarskort",
                 new SubscriptionPair("312",
                         new SubscriptionRecord("user-002", "Magnus", "grp01", Region.COPENHAGEN)));
@@ -45,7 +44,7 @@ public class TestStubSubscriptionService implements SubscriptionService {
         // cases.
         subscriptionMap.put("reserved_aarskort",
                 new SubscriptionPair("cloudarch",
-                        new SubscriptionRecord("user-reserved", "ReservedCrunchUser", "zzz0", Region.AARHUS)));
+                        new SubscriptionRecord("user-reserved", "ReservedCrunchUser", "zzz0", Region.ARHUS)));
 
     }
 

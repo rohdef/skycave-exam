@@ -51,6 +51,14 @@
                     name="commons-io"
                     rev="2.4"/>
 
+        <dependency org="org.apache.httpcomponents"
+                    name="httpclient"
+                    rev="4.5"/>
+        <dependency org="org.apache.httpcomponents"
+                    name="fluent-hc"
+                    rev="4.5"/>
+
+
         <dependency org="com.google.guava"
                     name="guava"
                     rev="18.0"/>

@@ -201,6 +201,6 @@ public class TestServerPlayer {
     @Test
     public void shouldReturnReasonableToString() {
         assertThat(player.toString(), containsString("StandardServerPlayer [storage=FakeCaveStorage"));
-        assertThat(player.toString(), containsString("name=Mikkel, ID=user-001, region=AARHUS"));
+        assertThat(player.toString(), containsString("name=Mikkel, ID=user-001, region=ARHUS"));
     }
 }

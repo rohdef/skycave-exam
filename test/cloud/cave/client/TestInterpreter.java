@@ -102,8 +102,9 @@ public class TestInterpreter {
         assertThat(output, not(containsString("NotPossible")));
 
         // post and read
-        assertThat(output, containsString("POST awaits implementation"));
-        assertThat(output, containsString("READ awaits implementation"));
+        assertThat(output, containsString("*** Message stored ***"));
+        assertThat(output, containsString("*** WALL CONTENTS ***"));
+        assertThat(output, containsString("A message"));
 
         // exec
         assertThat(output, containsString("You executed command:HomeCommand"));

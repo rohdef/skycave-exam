@@ -26,9 +26,15 @@ public class AllTestDoubleFactory implements CaveServerFactory {
     }
 
     @Override
+    public IRestRequest createRestRequester() {
+        return null;
+    }
+
+    @Override
     public WeatherService createWeatherServiceConnector() {
         WeatherService service = new TestStubWeatherService();
         service.initialize(null); // no config object required
+        service.setRestRequester(createRestRequester());
         return service;
     }
 

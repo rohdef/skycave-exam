@@ -42,6 +42,7 @@ public class SocketClientRequestHandler implements ClientRequestHandler {
             throws CaveIPCException {
         JSONObject replyJson = null;
         Socket clientSocket = null;
+
         // Create the socket to the host
         try {
             clientSocket = new Socket(hostName, portNumber);
@@ -54,7 +55,6 @@ public class SocketClientRequestHandler implements ClientRequestHandler {
 
             // Block until a reply is received, and parse it into JSON
             String reply;
-
 
             reply = in.readLine();
             // System.out.println("--< reply: "+ reply.toString());
