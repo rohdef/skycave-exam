@@ -7,5 +7,5 @@ package cloud.cave.domain;
  * @author Henrik Baerbak Christensen, Aarhus University
  */
 public enum Region {
-    AARHUS, COPENHAGEN, ODENSE, AALBORG
+    ARHUS, COPENHAGEN, ODENSE, AALBORG
 }

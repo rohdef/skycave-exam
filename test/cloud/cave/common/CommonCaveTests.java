@@ -53,7 +53,7 @@ public class CommonCaveTests {
     public static void shouldWarnIfMathildeLogsInASecondTime(Cave cave) {
         // Try to login mathilde a second time
         Login loginResult = cave.login("mathilde_aarskort", "321");
-        // The login should be successfull but a warning should be issued of potentially
+        // The login should be successful but a warning should be issued of potentially
         // more than one client operating the player
         assertEquals(LoginResult.LOGIN_SUCCESS_PLAYER_ALREADY_LOGGED_IN, loginResult.getResultCode());
         Player p = loginResult.getPlayer();

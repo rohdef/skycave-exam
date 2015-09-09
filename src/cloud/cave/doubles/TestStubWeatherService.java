@@ -1,5 +1,6 @@
 package cloud.cave.doubles;
 
+import cloud.cave.service.IRestRequest;
 import org.json.simple.JSONObject;
 
 import cloud.cave.domain.Region;
@@ -14,7 +15,6 @@ import cloud.cave.service.WeatherService;
  * @author Henrik Baerbak Christensen, Aarhus University.
  */
 public class TestStubWeatherService implements WeatherService {
-
     private ServerConfiguration configuration;
 
     @SuppressWarnings("unchecked")
@@ -43,6 +43,11 @@ public class TestStubWeatherService implements WeatherService {
                     + playerID + " is not authenticated");
         }
         return weather;
+    }
+
+    @Override
+    public void setRestRequester(IRestRequest restRequest) {
+        // Do nothing, the stub doesn't need it
     }
 
     @Override

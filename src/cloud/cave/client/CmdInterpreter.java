@@ -1,11 +1,14 @@
 package cloud.cave.client;
 
-import java.io.*;
-
-import org.json.simple.JSONObject;
-
 import cloud.cave.common.PlayerSessionExpiredException;
 import cloud.cave.domain.*;
+import cloud.cave.ipc.CaveIPCException;
+import com.google.common.base.Joiner;
+import org.json.simple.JSONObject;
+
+import java.io.*;
+import java.net.SocketException;
+import java.util.Arrays;
 
 /**
  * The client interpreter, implementing a classic shell based read-eval-loop
@@ -62,22 +65,22 @@ public class CmdInterpreter {
      * command, and see the result in the shell.
      */
     public void readEvalLoop() {
-        systemOut.println("== Welcome to SkyCave, player " + player.getName()
-                + " ==");
-
-        systemOut.println(cave.describeConfiguration());
-
-        systemOut.println("Type 'h' for help!");
-
+        String line = "q"; // In case the buffered reader fails
         BufferedReader bf = new BufferedReader(new InputStreamReader(systemIn));
 
-        systemOut
-                .println("Entering command loop, type \"q\" to quit, \"h\" for help.");
+        systemOut.println("== Welcome to SkyCave, player " + player.getName() + " ==");
+        try {
+            systemOut.println(cave.describeConfiguration());
+        } catch (Exception e) {
+            systemOut.println("No cave description available");
+        }
+
+        systemOut.println("Type 'h' for help!");
+        systemOut.println("Entering command loop, type \"q\" to quit, \"h\" for help.");
 
         // and enter the command processing loop
-        String line;
-        try {
-            do {
+        do {
+            try {
                 line = bf.readLine();
                 if (line.length() > 0) {
                     // split into into tokes on whitespace
@@ -88,22 +91,25 @@ public class CmdInterpreter {
                         char primaryCommand = line.charAt(0);
 
                         handleSingleCharCommand(primaryCommand);
-
                     } else {
                         handleMultipleCharCommand(tokens[0], tokens);
                     }
                     systemOut.println();
                 }
-            } while (!line.equals("q"));
-        } catch (PlayerSessionExpiredException exc) {
-            systemOut
-                    .println("**** Sorry! Another session has started with the same loginID. ***");
-            systemOut
-                    .println("**** You have been logged out.                                 ***");
-            System.exit(0);
-        } catch (IOException e) {
-            systemOut.println("Exception caught: " + e);
-        }
+            } catch (PlayerSessionExpiredException exc) {
+                systemOut
+                        .println("**** Sorry! Another session has started with the same loginID. ***");
+                systemOut
+                        .println("**** You have been logged out.                                 ***");
+                System.exit(0);
+            } catch (IOException e) {
+                systemOut.println("Exception caught: " + e);
+            } catch (CaveIPCException e) {
+                if (e.getCause() instanceof SocketException) {
+                    systemOut.println("*** Sorry - I cannot do that as I am disconnected from the cave, please quit ***");
+                }
+            }
+        } while (!line.equals("q"));
         systemOut.println("Leaving SkyCave - Goodbye.");
     }
 
@@ -130,18 +136,18 @@ public class CmdInterpreter {
             String weather = player.getWeather();
             systemOut.println("The weather at: " + player.getRegion());
             systemOut.println(weather);
-
         } else if (command.equals("post") && tokens.length > 1) {
-            systemOut.println("POST awaits implementation");
-
+            String message = Joiner.on(' ').join(Arrays.copyOfRange(tokens, 1, tokens.length));
+            player.addMessage(message);
+            systemOut.println("*** Message stored ***");
         } else if (command.equals("read")) {
-            systemOut.println("READ awaits implementation");
-
+            String wall = Joiner.on('\n').join(player.getMessageList());
+            systemOut.println("*** WALL CONTENTS ***");
+            systemOut.println(wall);
         } else if (command.equals("sys")) {
             systemOut.println("System information:");
             systemOut.println(cave.describeConfiguration());
             systemOut.println(player.toString());
-
         } else if (command.equals("exec")) {
             if (tokens.length > 2) {
                 // Create the parameter array

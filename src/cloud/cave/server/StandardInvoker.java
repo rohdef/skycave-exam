@@ -15,7 +15,6 @@ import cloud.cave.ipc.*;
  */
 public class StandardInvoker implements Invoker {
     private Logger logger;
-    private Dispatcher dispatcher;
 
     private Map<String, Dispatcher> mapKey2Dispatch;
 
@@ -72,7 +71,7 @@ public class StandardInvoker implements Invoker {
                 (JSONArray) request.get(MarshalingKeys.PARAMETER_TAIL_KEY);
 
         // Dispatch the event (POSA vol 4 Reactor code)
-        dispatcher = identifyDispatcher(methodKey);
+        Dispatcher dispatcher = identifyDispatcher(methodKey);
 
         // We may get a null object back if the method key is ill formed
         // thus guard the dispatch call
@@ -110,7 +109,6 @@ public class StandardInvoker implements Invoker {
     private Dispatcher identifyDispatcher(String methodKey) {
         int firstDash = methodKey.indexOf("-");
         String key = methodKey.substring(0, firstDash + 1);
-        Dispatcher dsp = mapKey2Dispatch.get(key);
-        return dsp;
+        return mapKey2Dispatch.get(key);
     }
 }

@@ -1,5 +1,6 @@
 package cloud.cave.config;
 
+import cloud.cave.config.socket.RestRequester;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,6 +62,15 @@ public class EnvironmentServerFactory implements CaveServerFactory {
     }
 
     @Override
+    public IRestRequest createRestRequester() {
+        IRestRequest restRequest = null;
+        restRequest = Config.loadAndInstantiate(environmentReader,
+                Config.REST_REQUEST_IMPLEMENTATION, restRequest);
+
+        return restRequest;
+    }
+
+    @Override
     public WeatherService createWeatherServiceConnector() {
         WeatherService weatherService = null;
         weatherService = Config.loadAndInstantiate(environmentReader,
@@ -70,6 +80,7 @@ public class EnvironmentServerFactory implements CaveServerFactory {
         ServerConfiguration config =
                 new ServerConfiguration(environmentReader, Config.SKYCAVE_WEATHERSERVER);
         weatherService.initialize(config);
+        weatherService.setRestRequester(this.createRestRequester());
 
         logger.info("Creating weather service with cfg: " + config);
 

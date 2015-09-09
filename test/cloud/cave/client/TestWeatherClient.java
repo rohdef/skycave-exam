@@ -20,8 +20,6 @@ import cloud.cave.server.StandardInvoker;
  * @author Henrik Baerbak Christensen, Aarhus University
  */
 public class TestWeatherClient {
-    private LocalMethodCallClientRequestHandler crh;
-    private CaveProxy caveProxy;
     private PlayerProxy player;
 
     @Before
@@ -34,10 +32,10 @@ public class TestWeatherClient {
 
         // create the client request handler as a test double that
         // simply uses method calls to call the 'server side'
-        crh = new LocalMethodCallClientRequestHandler(srh);
+        LocalMethodCallClientRequestHandler crh = new LocalMethodCallClientRequestHandler(srh);
 
         // Create the cave proxy, and login mikkel
-        caveProxy = new CaveProxy(crh);
+        CaveProxy caveProxy = new CaveProxy(crh);
         Login loginResult = caveProxy.login("mikkel_aarskort", "123");
 
         player = (PlayerProxy) loginResult.getPlayer();
@@ -47,7 +45,7 @@ public class TestWeatherClient {
     public void shouldGetWeatherClientSide() {
         String weather = player.getWeather();
 
-        assertThat(weather, containsString("The weather in AARHUS is Clear, temperature 27.4C (feelslike -2.7C). Wind: 1.2 m/s, direction West."));
+        assertThat(weather, containsString("The weather in ARHUS is Clear, temperature 27.4C (feelslike -2.7C). Wind: 1.2 m/s, direction West."));
         assertThat(weather, containsString("This report is dated: Thu, 05 Mar 2015 09:38:37 +0100"));
     }
 }

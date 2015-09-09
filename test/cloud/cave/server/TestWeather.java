@@ -19,13 +19,12 @@ import cloud.cave.service.WeatherService;
 public class TestWeather {
 
     private Cave cave;
-    private String loginName;
     private Player player;
 
     @Before
     public void setUp() throws Exception {
         cave = CommonCaveTests.createTestDoubledConfiguredCave();
-        loginName = "mikkel_aarskort";
+        String loginName = "mikkel_aarskort";
         Login loginResult = cave.login(loginName, "123");
         player = loginResult.getPlayer();
     }
@@ -33,7 +32,7 @@ public class TestWeather {
     @Test
     public void shouldGetWeatherServerSide() {
         String weather = player.getWeather();
-        assertThat(weather, containsString("The weather in AARHUS is Clear, temperature 27.4C (feelslike -2.7C). Wind: 1.2 m/s, direction West."));
+        assertThat(weather, containsString("The weather in ARHUS is Clear, temperature 27.4C (feelslike -2.7C). Wind: 1.2 m/s, direction West."));
         assertThat(weather, containsString("This report is dated: Thu, 05 Mar 2015 09:38:37 +0100"));
     }
 

@@ -173,7 +173,7 @@ public class TestPlayerProxy {
      * and ensure that the server invoker makes an
      * appropriate reply.
      *
-     * @throws IOException
+     * @throws CaveIPCException
      */
     @Test
     public void shouldReplyWithErrorInCaseRequestIsMalformed() throws CaveIPCException {

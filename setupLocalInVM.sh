@@ -16,6 +16,9 @@ export SKYCAVE_SUBSCRIPTIONSERVER=localhost:42042
 export SKYCAVE_CAVESTORAGE_IMPLEMENTATION=cloud.cave.doubles.FakeCaveStorage
 export SKYCAVE_DBSERVER=localhost:27017
 
+# = Rest Requester
+export REST_REQUEST_IMPLEMENTATION=cloud.cave.config.socket.RestRequester
+
 # = Weather service
 export SKYCAVE_WEATHER_IMPLEMENTATION=cloud.cave.doubles.TestStubWeatherService
-export SKYCAVE_WEATHERSERVER=localhost:8182
+export SKYCAVE_WEATHERSERVER=caveweather.baerbak.com:8182

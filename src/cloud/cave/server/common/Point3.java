@@ -39,6 +39,7 @@ public class Point3 {
         return z;
     }
 
+    @SuppressWarnings("CloneDoesntCallSuperClone")
     public Object clone() {
         return new Point3(x, y, z);
     }

@@ -100,6 +100,8 @@ public class TestFactoryDynamicCreation {
                 "cloud.cave.doubles.TestStubWeatherService");
         envReader.setNextExpectation(Config.SKYCAVE_WEATHERSERVER,
                 "weather.baerbak.com:8182");
+        envReader.setNextExpectation(Config.REST_REQUEST_IMPLEMENTATION,
+                "cloud.cave.config.socket.RestRequester");
         WeatherService service = factory.createWeatherServiceConnector();
         assertThat(service.toString(), containsString("TestStubWeatherService"));
         ServerConfiguration config = service.getConfiguration();

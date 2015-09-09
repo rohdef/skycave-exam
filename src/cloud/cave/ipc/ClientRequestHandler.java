@@ -29,7 +29,7 @@ public interface ClientRequestHandler {
      *
      * @param requestJson the request encoded in JSON
      * @return the reply object from the server
-     * @throws CaveIPCException thrown in case some unexpected network or server failure occured
+     * @throws CaveIPCException thrown in case some unexpected network or server failure occurred
      */
     JSONObject sendRequestAndBlockUntilReply(JSONObject requestJson)
             throws CaveIPCException;

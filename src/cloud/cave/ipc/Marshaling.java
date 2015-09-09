@@ -2,6 +2,8 @@ package cloud.cave.ipc;
 
 import org.json.simple.*;
 
+import java.util.Collections;
+
 /**
  * A very simple marshaling technique: a small collection of static functions
  * provides the ability to create JSON request- and reply objects.
@@ -74,9 +76,7 @@ public class Marshaling {
         JSONObject request = createRequestObject(playerID, sessionID, methodKey, parameter1);
         // and add the rest of the parameters
         JSONArray array = new JSONArray();
-        for (String parameter : parameterArray) {
-            array.add(parameter.toString());
-        }
+        Collections.addAll(array, parameterArray);
         request.put(MarshalingKeys.PARAMETER_TAIL_KEY, array);
         return request;
     }
@@ -114,9 +114,7 @@ public class Marshaling {
         JSONObject reply = createValidReplyWithReturnValue(returnValue);
         // and add the rest of the return values
         JSONArray array = new JSONArray();
-        for (String returnvalue : returnValueArray) {
-            array.add(returnvalue);
-        }
+        Collections.addAll(array, returnValueArray);
         reply.put(MarshalingKeys.RETURNVALUE_TAIL_KEY, array);
         return reply;
     }

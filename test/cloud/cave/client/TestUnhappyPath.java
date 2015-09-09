@@ -40,7 +40,7 @@ public class TestUnhappyPath {
         cave = new CaveProxy(saboteur);
     }
 
-    @Test
+    @Test(expected=CaveIPCException.class)
     public void shouldThrowIPCExceptionForTimeOut() {
         // Tell the saboteur to throw exception
         saboteur.throwNextTime("Could Not Connect to server");
