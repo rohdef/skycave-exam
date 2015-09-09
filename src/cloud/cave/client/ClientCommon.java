@@ -12,7 +12,6 @@ import cloud.cave.ipc.*;
  */
 
 public class ClientCommon {
-
     private static Logger logger = LoggerFactory.getLogger(ClientCommon.class);
 
     /**

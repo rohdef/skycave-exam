@@ -17,7 +17,6 @@ import cloud.cave.server.common.ServerConfiguration;
  */
 public class AllTestDoubleClientRequestHandler implements
         ClientRequestHandler {
-
     private Invoker invoker;
 
     public AllTestDoubleClientRequestHandler() {
@@ -42,5 +41,4 @@ public class AllTestDoubleClientRequestHandler implements
     public String toString() {
         return "TestDoubleClientRequestHandler: Configured with pure test doubles for all server side abstractions.";
     }
-
 }

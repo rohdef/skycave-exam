@@ -60,7 +60,7 @@ public class CaveProxy implements Cave {
             result = new LoginRecord(LoginResult.LOGIN_FAILED_SERVER_ERROR);
             // log the incident
             String errorMsg = replyJson.get(MarshalingKeys.ERROR_MSG_KEY).toString();
-            logger.error("Login of " + loginName + " failed due to " + LoginResult.LOGIN_FAILED_SERVER_ERROR + ". "
+            logger.debug("Login of " + loginName + " failed due to " + LoginResult.LOGIN_FAILED_SERVER_ERROR + ". "
                     + "Error msg from server: '" + errorMsg + "'.");
         } else {
             // extract the reply and convert into client side objects; note
