@@ -82,17 +82,27 @@ public class SocketReactor implements Reactor {
         inputLine = in.readLine();
         System.out.println("--> Received " + inputLine);
 
-        JSONObject requestJson = null, reply = null;
+        JSONObject requestJson, reply;
         try {
             requestJson = (JSONObject) parser.parse(inputLine);
             reply = invoker.handleRequest(requestJson);
             System.out.println("--< replied: " + reply);
         } catch (ParseException e) {
-            String errorMsg = "JSON Parse error on input = " + inputLine;
+            String errorMsg = "JSON Parse error on input: " + inputLine;
             logger.error(errorMsg, e);
             reply = Marshaling.createInvalidReplyWithExplantion(
                     StatusCode.SERVER_FAILURE, errorMsg);
             System.out.println("--< !!! replied: " + reply);
+        } catch (NullPointerException e) {
+            String errorMsg = "NullPointeException when trying to JSON parse error the input: " + inputLine;
+            logger.error(errorMsg, e);
+            reply = Marshaling.createInvalidReplyWithExplantion(
+                    StatusCode.SERVER_FAILURE, errorMsg);
+        } catch (Exception e) {
+            String errorMsg = "Error when JSON parsing the input: " + inputLine;
+            logger.error(errorMsg, e);
+            reply = Marshaling.createInvalidReplyWithExplantion(
+                    StatusCode.SERVER_FAILURE, errorMsg);
         }
         out.println(reply.toString());
 
