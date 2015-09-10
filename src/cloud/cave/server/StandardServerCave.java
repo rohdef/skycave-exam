@@ -53,16 +53,16 @@ public class StandardServerCave implements Cave {
      */
     @Override
     public Login login(String loginName, String password) {
-        Login result = null;
+        Login result;
 
         // Fetch the subscription for the given loginName
         SubscriptionRecord subscription = null;
-        String errorMsg = null;
+
         try {
             subscription = subscriptionService.lookup(loginName, password);
         } catch (CaveIPCException e) {
-            errorMsg = "Lookup failed on subscription service due to IPC exception:" + e.getMessage();
-            logger.error(errorMsg);
+            String errorMsg = "Lookup failed on subscription service due to IPC exception:" + e.getMessage();
+            logger.error(errorMsg, e);
         }
 
         if (subscription == null) {

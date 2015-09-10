@@ -8,6 +8,8 @@ import cloud.cave.server.StandardInvoker;
 import cloud.cave.server.StandardServerCave;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.Marker;
+import org.slf4j.MarkerFactory;
 
 /**
  * The 'main' daemon to run on the server side. It uses a ServerFactory that
@@ -47,10 +49,8 @@ public class CaveDaemon {
         logger.info("=== SkyCave Reactor starting...");
         logger.info("Cave Configuration =" + caveServer.describeConfiguration());
 
-        // Welcome
-        System.out.println("=== SkyCave Reactor ===");
-        System.out.println("  All logging going to log file...");
-        System.out.println(" Use ctrl-c to terminate!");
+        // Kept just in case the logger fails
+        System.out.println("Use ctrl-c to terminate!");
 
         // and start the daemon...
         daemon = new Thread(reactor);

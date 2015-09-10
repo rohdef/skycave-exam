@@ -44,33 +44,37 @@ public class SocketReactor implements Reactor {
     public void run() {
         openServerSocket();
 
-        System.out.println("*** Server socket established ***");
+        logger.info(String.format("*** Server socket established on port %1$d ***", this.portNumber));
 
         boolean isStopped = false;
         while (!isStopped) {
+            logger.debug("--> Accepting...");
 
-            System.out.println("--> Accepting...");
-            Socket clientSocket = null;
+            Socket clientSocket;
             try {
                 clientSocket = serverSocket.accept();
             } catch (IOException e) {
                 if (isStopped) {
-                    System.out.println("Server Stopped.");
-                    return;
+                    break;
                 }
-                throw new RuntimeException(
-                        "Error accepting client connection", e);
+                throw new RuntimeException("Error accepting client connection", e);
+            } catch (Exception e) {
+                logger.error("Unexpected exception while accepting client socket. Continueing loop.", e);
+                continue;
             }
-            System.out.println("--> AcceptED!");
+
+            logger.debug("--> AcceptED!");
 
             try {
                 readMessageAndDispatch(clientSocket);
             } catch (IOException e) {
                 logger.error("IOException during readMessageAndDispatch", e);
-                System.out.println("ERROR: IOException encountered, review log");
+            } catch (Exception e) {
+                logger.error("Unexpected exception while reading and writing to client. Continueing loop.", e);
             }
         }
-        System.out.println("Server Stopped.");
+
+        logger.info("Server Stopped.");
     }
 
     private void readMessageAndDispatch(Socket clientSocket) throws IOException {
@@ -80,33 +84,32 @@ public class SocketReactor implements Reactor {
 
         String inputLine;
         inputLine = in.readLine();
-        System.out.println("--> Received " + inputLine);
+        logger.debug("--> Received " + inputLine);
 
         JSONObject requestJson, reply;
         try {
             requestJson = (JSONObject) parser.parse(inputLine);
             reply = invoker.handleRequest(requestJson);
-            System.out.println("--< replied: " + reply);
         } catch (ParseException e) {
             String errorMsg = "JSON Parse error on input: " + inputLine;
-            logger.error(errorMsg, e);
+            logger.warn(errorMsg, e);
             reply = Marshaling.createInvalidReplyWithExplantion(
                     StatusCode.SERVER_FAILURE, errorMsg);
-            System.out.println("--< !!! replied: " + reply);
         } catch (NullPointerException e) {
             String errorMsg = "NullPointeException when trying to JSON parse error the input: " + inputLine;
-            logger.error(errorMsg, e);
+            logger.warn(errorMsg, e);
             reply = Marshaling.createInvalidReplyWithExplantion(
                     StatusCode.SERVER_FAILURE, errorMsg);
         } catch (Exception e) {
             String errorMsg = "Error when JSON parsing the input: " + inputLine;
-            logger.error(errorMsg, e);
+            logger.warn(errorMsg, e);
             reply = Marshaling.createInvalidReplyWithExplantion(
                     StatusCode.SERVER_FAILURE, errorMsg);
         }
         out.println(reply.toString());
+        logger.debug("--< !!! replied: " + reply);
 
-        System.out.println("Closing socket...");
+        logger.info("Closing socket...");
         in.close();
         out.close();
     }
@@ -114,10 +117,8 @@ public class SocketReactor implements Reactor {
     private void openServerSocket() {
         try {
             this.serverSocket = new ServerSocket(this.portNumber);
-            System.out.println("Socket accepting on port: " + portNumber);
         } catch (IOException e) {
             logger.error("Cannot open port " + portNumber, e);
-            System.out.println("Failed to open server socket at port " + portNumber);
             System.exit(-1);
         }
     }

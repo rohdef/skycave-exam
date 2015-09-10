@@ -43,13 +43,12 @@ public class CaveProxy implements Cave {
     @Override
     public Login login(String loginName, String password) {
         // Build the json request object
-        requestJson =
-                Marshaling.createRequestObject("ignore-player-id", // No player id
+        requestJson = Marshaling.createRequestObject("ignore-player-id", // No player id
                         "ignore-session-id",
                         MarshalingKeys.LOGIN_METHOD_KEY,
                         loginName, password);
 
-        Login result = null;
+        Login result;
 
         // send the request over the connector and retrieve the reply object
         JSONObject replyJson = requestAndAwaitReply(requestJson);
@@ -93,7 +92,7 @@ public class CaveProxy implements Cave {
         requestJson = Marshaling.createRequestObject(playerID,
                 "ignore-session-id", // No session id
                 MarshalingKeys.LOGOUT_METHOD_KEY, "");
-        LogoutResult result = LogoutResult.PLAYER_NOT_IN_CAVE;
+        LogoutResult result;
 
         // send the request over the connector and retrieve the reply object
         JSONObject replyJson;
