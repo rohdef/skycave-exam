@@ -24,7 +24,6 @@ import cloud.cave.domain.*;
  * @author Henrik Baerbak Christensen, Aarhus University.
  */
 public class TestServerPlayer {
-
     private Cave cave;
     private Player player;
 

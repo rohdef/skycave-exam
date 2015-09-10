@@ -2,6 +2,7 @@ package cloud.cave.server;
 
 import java.util.*;
 
+import cloud.cave.server.service.ServerWeatherService;
 import org.json.simple.JSONObject;
 
 import cloud.cave.domain.*;
@@ -136,9 +137,17 @@ public class StandardServerPlayer implements Player {
 
     @Override
     public String getWeather() {
-        JSONObject weatherAsJson =
-                weatherService.requestWeather(getGroupName(), getID(), getRegion());
-        return convertToFormattedString(weatherAsJson);
+        JSONObject weatherAsJson = weatherService.requestWeather(getGroupName(), getID(), getRegion());
+
+        String errorMessage = (String) weatherAsJson.get("errorMessage");
+        if (errorMessage.equals(ServerWeatherService.ERROR_MESSAGE_OK))
+            return convertToFormattedString(weatherAsJson);
+        else if (errorMessage.equals(ServerWeatherService.ERROR_MESSAGE_UNAVAILABLE_CLOSED))
+            return "*** Sorry - weather information is not available ***";
+        else if (errorMessage.equals(ServerWeatherService.ERROR_MESSAGE_UNAVAILABLE_OPEN))
+            return "*** Sorry - no weather (open circuit) ***";
+        else
+            return "Unrecognized error message recieved";
     }
 
     /**
@@ -149,7 +158,6 @@ public class StandardServerPlayer implements Player {
      * @return formatted string describing the weather
      */
     private String convertToFormattedString(JSONObject currentObservation) {
-
         String result;
         if (currentObservation.get("authenticated").equals("true")) {
             String temperature = currentObservation.get("temperature").toString();

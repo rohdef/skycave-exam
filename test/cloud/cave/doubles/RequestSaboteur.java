@@ -75,4 +75,10 @@ public class RequestSaboteur implements IRestRequest {
         this.throwNextRuntime = throwNext;
         this.throwNext = null;
     }
+
+    public void reset() {
+        this.throwNext = null;
+        this.throwNextRuntime = null;
+        this.garbage = null;
+    }
 }

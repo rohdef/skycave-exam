@@ -16,8 +16,8 @@ public class RestRequester implements IRestRequest {
     private int socketTimeout, connectionTimeout;
 
     public RestRequester() {
-        this.socketTimeout = 1000;
-        this.connectionTimeout = 1000;
+        this.socketTimeout = 1200;
+        this.connectionTimeout = 1200;
     }
 
     public void setSocketTimeout(int socketTimeout) {

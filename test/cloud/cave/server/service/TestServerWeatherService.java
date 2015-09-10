@@ -76,12 +76,9 @@ public class TestServerWeatherService {
         weatherService.disconnect();
         weatherService = new ServerWeatherService(new RequestFake());
 
-        try {
-            weatherService.requestWeather(group, user, Region.ARHUS);
-            assertTrue("Exception is expected since this results in an invalid url", false);
-        } catch (Exception e) {
-            assertTrue(true);
-        }
+        JSONObject jsonObject = weatherService.requestWeather(group, user, Region.ARHUS);
+        assertThat(jsonObject.containsKey("errorMessage"), is(true));
+        assertThat(jsonObject.get("errorMessage").toString(), equalTo("UNAVAILABLE-CLOSED"));
 
         weatherService.disconnect();
         weatherService = new ServerWeatherService(new RequestFake());
@@ -92,6 +89,15 @@ public class TestServerWeatherService {
         } catch (Exception e) {
             assertThat(e, instanceOf(NullPointerException.class));
             assertThat(e.getMessage(), containsString("The ServerConfiguration must be set"));
+        }
+
+        try {
+            weatherService.disconnect();
+            weatherService = new ServerWeatherService(null);
+            assertTrue("Exception is expected since the requester is null", false);
+        } catch (Exception e) {
+            assertThat(e, instanceOf(NullPointerException.class));
+            assertThat(e.getMessage(), containsString("The rest request must be set"));
         }
     }
 
@@ -158,55 +164,44 @@ public class TestServerWeatherService {
     }
 
     @Test
-    public void shouldProduceErrorWhenTheCallDataIsInvalid() {
-        try {
-            weatherService.requestWeather(null, user, Region.ODENSE);
-            assertTrue("Expected an error with wrong parameter specifications", false);
-        } catch (Exception e) {
-            assertThat(e, instanceOf(IllegalArgumentException.class));
-            assertThat(e.getMessage(), containsString("group"));
-        }
+    public void shouldProduceErrorWhenTheGroupIsNull() {
+        JSONObject jsonObject = weatherService.requestWeather(null, user, Region.ODENSE);
+        assertThat(jsonObject.containsKey("errorMessage"), is(true));
+        assertThat(jsonObject.get("errorMessage").toString(), equalTo("UNAVAILABLE-CLOSED"));
+    }
 
-        try {
-            weatherService.requestWeather("", user, Region.ODENSE);
-            assertTrue("Expected an error with wrong parameter specifications", false);
-        } catch (Exception e) {
-            assertThat(e, instanceOf(IllegalArgumentException.class));
-            assertThat(e.getMessage(), containsString("group"));
-        }
+    @Test
+    public void shouldProduceErrorWhenTheGroupIsEmpty() {
+        JSONObject jsonObject = weatherService.requestWeather("", user, Region.ODENSE);
+        assertThat(jsonObject.containsKey("errorMessage"), is(true));
+        assertThat(jsonObject.get("errorMessage").toString(), equalTo("UNAVAILABLE-CLOSED"));
+    }
 
-        try {
-            weatherService.requestWeather(group, null, Region.ODENSE);
-            assertTrue("Expected an error with wrong parameter specifications", false);
-        } catch (Exception e) {
-            assertThat(e, instanceOf(IllegalArgumentException.class));
-            assertThat(e.getMessage(), containsString("user"));
-        }
+    @Test
+    public void shouldProduceErrorWhenUserIsNull() {
+        JSONObject jsonObject = weatherService.requestWeather(group, null, Region.ODENSE);
+        assertThat(jsonObject.containsKey("errorMessage"), is(true));
+        assertThat(jsonObject.get("errorMessage").toString(), equalTo("UNAVAILABLE-CLOSED"));
+    }
 
-        try {
-            weatherService.requestWeather(group, "", Region.ODENSE);
-            assertTrue("Expected an error with wrong parameter specifications", false);
-        } catch (Exception e) {
-            assertThat(e, instanceOf(IllegalArgumentException.class));
-            assertThat(e.getMessage(), containsString("user"));
-        }
+    @Test
+    public void shouldProduceErrorWhenUserIsBlank() {
+        JSONObject jsonObject = weatherService.requestWeather(group, "", Region.ODENSE);
+        assertThat(jsonObject.containsKey("errorMessage"), is(true));
+        assertThat(jsonObject.get("errorMessage").toString(), equalTo("UNAVAILABLE-CLOSED"));}
 
-        try {
-            weatherService.requestWeather(group, user, null);
-            assertTrue("Expected an error with wrong parameter specifications", false);
-        } catch (Exception e) {
-            assertThat(e, instanceOf(NullPointerException.class));
-            assertThat(e.getMessage(), containsString("region"));
-        }
+    @Test
+    public void shouldProduceErrorWhenRegionIsNull() {
+        JSONObject jsonObject = weatherService.requestWeather(group, user, null);
+        assertThat(jsonObject.containsKey("errorMessage"), is(true));
+        assertThat(jsonObject.get("errorMessage").toString(), equalTo("UNAVAILABLE-CLOSED"));
+    }
 
-        try {
-            weatherService.requestWeather(null, null, null);
-            assertTrue("Expected an error with wrong parameter specifications", false);
-        } catch (Exception e) {
-            assertThat(e, instanceOf(IllegalArgumentException.class));
-            // group is the first parameter
-            assertThat(e.getMessage(), containsString("group"));
-        }
+    @Test
+    public void shouldProduceErrorWhenCalledWithAllNulls() {
+        JSONObject jsonObject = weatherService.requestWeather(null, null, null);
+        assertThat(jsonObject.containsKey("errorMessage"), is(true));
+        assertThat(jsonObject.get("errorMessage").toString(), equalTo("UNAVAILABLE-CLOSED"));
     }
 
     @Test
@@ -238,85 +233,87 @@ public class TestServerWeatherService {
     }
 
     @Test
-    public void shouldNotCrashOnGarbageResult() {
+    public void shouldNotCrashOnEmptyGarbageResult() {
         RequestSaboteur requestSaboteur = new RequestSaboteur(fakeRequest);
         weatherService = new ServerWeatherService(requestSaboteur);
         weatherService.initialize(serverConfiguration);
 
-        try {
-            requestSaboteur.setGarbage("");
-            weatherService.requestWeather(group, user, Region.ODENSE);
-            assertTrue("Expected an error on garbage input", false);
-        } catch (Exception e) {
-            assertThat(e, instanceOf(RuntimeException.class));
-            assertThat(e.getCause(), instanceOf(ParseException.class));
-            assertThat(e.getMessage(), containsString("JSON"));
-        }
-
-        try {
-            requestSaboteur.setGarbage("{\"errorMessage\":\"OK\"," +
-                    "\"windspeed\":\"4\"," +
-                    "\"time\":\"Tue, 08 Sep 2015 13:24:22 +0200\"," +
-                    "\"authenticated\":\"true\"," +
-                    "\"weather\":\"Partly Cloudy\"," +
-                    "\"winddirection\":\"NNE\"," +
-                    "\"feelslike\":\"24.0\"," +
-                    "\"temperature\":\"42.0\"}HAHA");
-            weatherService.requestWeather(group, user, Region.ODENSE);
-            assertTrue("Expected an error on garbage input", false);
-        } catch (Exception e) {
-            assertThat(e, instanceOf(RuntimeException.class));
-            assertThat(e.getCause(), instanceOf(ParseException.class));
-            assertThat(e.getMessage(), containsString("JSON"));
-        }
-
-        try {
-            requestSaboteur.setGarbage("hejsa");
-            weatherService.requestWeather(group, user, Region.ODENSE);
-            assertTrue("Expected an error on garbage input", false);
-        } catch (Exception e) {
-            assertThat(e, instanceOf(RuntimeException.class));
-            assertThat(e.getCause(), instanceOf(ParseException.class));
-            assertThat(e.getMessage(), containsString("JSON"));
-        }
+        requestSaboteur.setGarbage("");
+        JSONObject jsonObject = weatherService.requestWeather(group, user, Region.ODENSE);
+        assertThat(jsonObject.containsKey("errorMessage"), is(true));
+        assertThat(jsonObject.get("errorMessage").toString(), equalTo("UNAVAILABLE-CLOSED"));
     }
 
     @Test
-    public void shouldHandleRequestExceptions() {
+    public void shouldNotCrashOnMalformedJsonGarbageResult() {
         RequestSaboteur requestSaboteur = new RequestSaboteur(fakeRequest);
         weatherService = new ServerWeatherService(requestSaboteur);
         weatherService.initialize(serverConfiguration);
 
-        try {
-            requestSaboteur.setThrowNext(new ClientProtocolException("HTTP does not stand for Hot Topless Teen Porn ><"));
-            weatherService.requestWeather(group, user, Region.AALBORG);
-            assertTrue("Expected an error", false);
-        } catch (Exception e) {
-            assertThat(e, instanceOf(RuntimeException.class));
-            assertThat(e.getCause(), instanceOf(ClientProtocolException.class));
-            assertThat(e.getMessage().toLowerCase(), containsString("connection"));
-            assertThat(e.getMessage().toLowerCase(), containsString("rest"));
-            assertThat(e.getMessage().toLowerCase(), containsString("service"));
-        }
+        requestSaboteur.setGarbage("{\"errorMessage\":\"OK\"," +
+                "\"windspeed\":\"4\"," +
+                "\"time\":\"Tue, 08 Sep 2015 13:24:22 +0200\"," +
+                "\"authenticated\":\"true\"," +
+                "\"weather\":\"Partly Cloudy\"," +
+                "\"winddirection\":\"NNE\"," +
+                "\"feelslike\":\"24.0\"," +
+                "\"temperature\":\"42.0\"}HAHA");
+        JSONObject jsonObject = weatherService.requestWeather(group, user, Region.ODENSE);
+        assertThat(jsonObject.containsKey("errorMessage"), is(true));
+        assertThat(jsonObject.get("errorMessage").toString(), equalTo("UNAVAILABLE-CLOSED"));
+    }
 
-        try {
-            requestSaboteur.setThrowNext(new IOException("IO is a moon you fool"));
-            weatherService.requestWeather(group, user, Region.ODENSE);
-            assertTrue("Expected an error", false);
-        } catch (Exception e) {
-            assertThat(e, instanceOf(RuntimeException.class));
-            assertThat(e.getCause(), instanceOf(IOException.class));
-            assertThat(e.getMessage().toLowerCase(), containsString("connection"));
-            assertThat(e.getMessage().toLowerCase(), containsString("rest"));
-            assertThat(e.getMessage().toLowerCase(), containsString("service"));
-        }
+    @Test
+    public void shouldNotCrashOnNotJsonAtAllGarbageResult() {
+        RequestSaboteur requestSaboteur = new RequestSaboteur(fakeRequest);
+        weatherService = new ServerWeatherService(requestSaboteur);
+        weatherService.initialize(serverConfiguration);
 
-        try {
-            requestSaboteur.setThrowNext(new IllegalArgumentException("I'd like to have an argument, please!"));
-            weatherService.requestWeather(group, user, Region.AALBORG);
-            assertTrue("Expected an error", false);
-        } catch (Exception e) {
-            assertThat(e, instanceOf(IllegalArgumentException.class));
-        }
+        requestSaboteur.setGarbage("hejsa");
+        JSONObject jsonObject = weatherService.requestWeather(group, user, Region.ODENSE);
+        assertThat(jsonObject.containsKey("errorMessage"), is(true));
+        assertThat(jsonObject.get("errorMessage").toString(), equalTo("UNAVAILABLE-CLOSED"));
+    }
+
+    @Test
+    public void shouldHandleClientProtocolException() {
+        RequestSaboteur requestSaboteur = new RequestSaboteur(fakeRequest);
+        weatherService = new ServerWeatherService(requestSaboteur);
+        weatherService.initialize(serverConfiguration);
+
+        requestSaboteur.setThrowNext(new ClientProtocolException("HTTP does not stand for Hot Topless Teen Porn ><"));
+        JSONObject jsonObject = weatherService.requestWeather(group, user, Region.AALBORG);
+        assertThat(jsonObject.containsKey("errorMessage"), is(true));
+        assertThat(jsonObject.get("errorMessage").toString(), equalTo("UNAVAILABLE-CLOSED"));
+    }
+
+    @Test
+    public void shouldHandleRequestIOException() {
+        RequestSaboteur requestSaboteur = new RequestSaboteur(fakeRequest);
+        weatherService = new ServerWeatherService(requestSaboteur);
+        weatherService.initialize(serverConfiguration);
+
+        requestSaboteur.setThrowNext(new IOException("IO is a moon you fool"));
+        JSONObject jsonObject = weatherService.requestWeather(group, user, Region.ODENSE);
+        assertThat(jsonObject.containsKey("errorMessage"), is(true));
+        assertThat(jsonObject.get("errorMessage").toString(), equalTo("UNAVAILABLE-CLOSED"));
+    }
+
+    @Test
+    public void souldHandleUnexpectedError() {
+        RequestSaboteur requestSaboteur = new RequestSaboteur(fakeRequest);
+        weatherService = new ServerWeatherService(requestSaboteur);
+        weatherService.initialize(serverConfiguration);
+
+        requestSaboteur.setThrowNext(new IllegalArgumentException("I'd like to have an argument, please!"));
+        JSONObject jsonObject = weatherService.requestWeather(group, user, Region.AALBORG);
+        assertThat(jsonObject.containsKey("errorMessage"), is(true));
+        assertThat(jsonObject.get("errorMessage").toString(), equalTo("UNAVAILABLE-CLOSED"));
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void shouldGiveErrorWhenSettingTheRestRequesterToNull() {
+        WeatherService weatherService = new ServerWeatherService();
+        weatherService.setRestRequester(null);
     }
 }
