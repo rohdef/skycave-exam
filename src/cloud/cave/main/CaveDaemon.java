@@ -43,14 +43,12 @@ public class CaveDaemon {
         // Create the server side reactor...
         Reactor reactor = factory.createReactor(serverInvoker);
 
+        // Keep to ensure a fallback message
+        System.out.println("Use ctrl-c to terminate!");
+
         // Make a section in the log file, marking the new session
         logger.info("=== SkyCave Reactor starting...");
         logger.info("Cave Configuration =" + caveServer.describeConfiguration());
-
-        // Welcome
-        System.out.println("=== SkyCave Reactor ===");
-        System.out.println("  All logging going to log file...");
-        System.out.println(" Use ctrl-c to terminate!");
 
         // and start the daemon...
         daemon = new Thread(reactor);
