@@ -32,10 +32,9 @@ public class ServerWeatherService implements WeatherService {
     public static final String ERROR_MESSAGE_UNAVAILABLE_OPEN = "UNAVAILABLE-OPEN";
 
     public ServerWeatherService() {
-        this.restRequest = restRequest;
         this.retryCount = 0;
         this.threshold = 3;
-        this.secondsDelay = 10;
+        this.secondsDelay = 30;
     }
 
     public ServerWeatherService(IRestRequest restRequest) {
@@ -43,6 +42,8 @@ public class ServerWeatherService implements WeatherService {
         if (restRequest == null) {
             throw new NullPointerException("The rest request must be set");
         }
+
+        this.restRequest = restRequest;
     }
 
     @Override
@@ -128,6 +129,8 @@ public class ServerWeatherService implements WeatherService {
             logger.error("Fatal error in the weather service while parsin the JSON", e);
             throw new RuntimeException("Invalid JSON returned from the service", e);
         }
+
+        retryCount = 0;
 
         return weatherJson;
     }

@@ -9,12 +9,15 @@ import cloud.cave.doubles.AllTestDoubleFactory;
 import cloud.cave.server.*;
 
 public class CommonCaveTests {
+    private static AllTestDoubleFactory factory = new AllTestDoubleFactory();
 
     public static Cave createTestDoubledConfiguredCave() {
-        Cave cave;
-        CaveServerFactory factory = new AllTestDoubleFactory();
-        cave = new StandardServerCave(factory);
+        Cave cave = new StandardServerCave(factory);
         return cave;
+    }
+
+    public static AllTestDoubleFactory getFactory() {
+        return factory;
     }
 
     public static void shouldAllowAddingPlayers(Cave cave) {

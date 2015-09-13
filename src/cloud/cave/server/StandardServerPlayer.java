@@ -186,8 +186,8 @@ public class StandardServerPlayer implements Player {
         String time = currentObservation.get("time").toString();
 
         return String.format(Locale.US,
-                "The weather in %s is %s, temperature %.1fC (feelslike %.1fC). " +
-                        "Wind: %.1f m/s, direction %s. This report is dated: %s.",
+                "The weather in %s is %s, temperature %.1fC (feelslike %.1fC). Wind: %.1f m/s, direction %s. " +
+                        "This report is dated: %s.",
                 getRegion().toString(), weather, tempDouble, feelDouble, windSpDouble, winddir, time);
     }
 

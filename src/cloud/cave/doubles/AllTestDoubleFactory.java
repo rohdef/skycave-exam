@@ -12,6 +12,8 @@ import cloud.cave.service.*;
  * @author Henrik Baerbak Christensen, Aarhus University
  */
 public class AllTestDoubleFactory implements CaveServerFactory {
+    private WeatherService weatherService;
+
     @Override
     public CaveStorage createCaveStorage() {
         CaveStorage storage = new FakeCaveStorage();
@@ -40,7 +42,14 @@ public class AllTestDoubleFactory implements CaveServerFactory {
         WeatherService service = new ServerWeatherService();
         service.initialize(serverConfiguration); // no config object required
         service.setRestRequester(createRestRequester());
+        service.setSecondsDelay(1);
+
+        weatherService = service;
         return service;
+    }
+
+    public WeatherService getLastWeatherService() {
+        return this.weatherService;
     }
 
     @Override
@@ -48,6 +57,4 @@ public class AllTestDoubleFactory implements CaveServerFactory {
         // The reactor is not presently used in the test cases...
         return null;
     }
-
-
 }
