@@ -2,6 +2,8 @@ package cloud.cave.doubles;
 
 import cloud.cave.config.CaveServerFactory;
 import cloud.cave.ipc.*;
+import cloud.cave.server.common.ServerConfiguration;
+import cloud.cave.server.service.ServerWeatherService;
 import cloud.cave.service.*;
 
 /**
@@ -10,7 +12,6 @@ import cloud.cave.service.*;
  * @author Henrik Baerbak Christensen, Aarhus University
  */
 public class AllTestDoubleFactory implements CaveServerFactory {
-
     @Override
     public CaveStorage createCaveStorage() {
         CaveStorage storage = new FakeCaveStorage();
@@ -27,13 +28,17 @@ public class AllTestDoubleFactory implements CaveServerFactory {
 
     @Override
     public IRestRequest createRestRequester() {
-        return null;
+        return new RequestFake();
     }
 
     @Override
     public WeatherService createWeatherServiceConnector() {
-        WeatherService service = new TestStubWeatherService();
-        service.initialize(null); // no config object required
+        String host = "is-there-anybody-out-there";
+        int port = 57005;
+        ServerConfiguration serverConfiguration = new ServerConfiguration(host, port);
+
+        WeatherService service = new ServerWeatherService();
+        service.initialize(serverConfiguration); // no config object required
         service.setRestRequester(createRestRequester());
         return service;
     }

@@ -1,6 +1,8 @@
 package cloud.cave.server.service;
 
+import cloud.cave.config.CaveServerFactory;
 import cloud.cave.domain.Region;
+import cloud.cave.doubles.AllTestDoubleFactory;
 import cloud.cave.doubles.RequestFake;
 import cloud.cave.doubles.RequestSaboteur;
 import cloud.cave.server.common.ServerConfiguration;
@@ -32,12 +34,13 @@ public class TestServerWeatherService {
     public void setup() {
         host = "is-there-anybody-out-there";
         port = 57005;
-        group = "TheFooBars";
+        group = "grp01";
         user = "WhiskyMonster";
+
+        CaveServerFactory factory = new AllTestDoubleFactory();
+        weatherService = factory.createWeatherServiceConnector();
         fakeRequest = new RequestFake();
-        serverConfiguration = new ServerConfiguration(host, port);
-        weatherService = new ServerWeatherService(fakeRequest);
-        weatherService.initialize(serverConfiguration);
+        weatherService.setRestRequester(fakeRequest);
     }
 
     @Test
@@ -234,9 +237,8 @@ public class TestServerWeatherService {
 
     @Test
     public void shouldNotCrashOnEmptyGarbageResult() {
-        RequestSaboteur requestSaboteur = new RequestSaboteur(fakeRequest);
-        weatherService = new ServerWeatherService(requestSaboteur);
-        weatherService.initialize(serverConfiguration);
+        RequestSaboteur requestSaboteur = new RequestSaboteur(weatherService.getRestRequester());
+        weatherService.setRestRequester(requestSaboteur);
 
         requestSaboteur.setGarbage("");
         JSONObject jsonObject = weatherService.requestWeather(group, user, Region.ODENSE);
@@ -246,9 +248,8 @@ public class TestServerWeatherService {
 
     @Test
     public void shouldNotCrashOnMalformedJsonGarbageResult() {
-        RequestSaboteur requestSaboteur = new RequestSaboteur(fakeRequest);
-        weatherService = new ServerWeatherService(requestSaboteur);
-        weatherService.initialize(serverConfiguration);
+        RequestSaboteur requestSaboteur = new RequestSaboteur(weatherService.getRestRequester());
+        weatherService.setRestRequester(requestSaboteur);
 
         requestSaboteur.setGarbage("{\"errorMessage\":\"OK\"," +
                 "\"windspeed\":\"4\"," +
@@ -265,9 +266,8 @@ public class TestServerWeatherService {
 
     @Test
     public void shouldNotCrashOnNotJsonAtAllGarbageResult() {
-        RequestSaboteur requestSaboteur = new RequestSaboteur(fakeRequest);
-        weatherService = new ServerWeatherService(requestSaboteur);
-        weatherService.initialize(serverConfiguration);
+        RequestSaboteur requestSaboteur = new RequestSaboteur(weatherService.getRestRequester());
+        weatherService.setRestRequester(requestSaboteur);
 
         requestSaboteur.setGarbage("hejsa");
         JSONObject jsonObject = weatherService.requestWeather(group, user, Region.ODENSE);
@@ -277,9 +277,8 @@ public class TestServerWeatherService {
 
     @Test
     public void shouldHandleClientProtocolException() {
-        RequestSaboteur requestSaboteur = new RequestSaboteur(fakeRequest);
-        weatherService = new ServerWeatherService(requestSaboteur);
-        weatherService.initialize(serverConfiguration);
+        RequestSaboteur requestSaboteur = new RequestSaboteur(weatherService.getRestRequester());
+        weatherService.setRestRequester(requestSaboteur);
 
         requestSaboteur.setThrowNext(new ClientProtocolException("HTTP does not stand for Hot Topless Teen Porn ><"));
         JSONObject jsonObject = weatherService.requestWeather(group, user, Region.AALBORG);
@@ -289,9 +288,8 @@ public class TestServerWeatherService {
 
     @Test
     public void shouldHandleRequestIOException() {
-        RequestSaboteur requestSaboteur = new RequestSaboteur(fakeRequest);
-        weatherService = new ServerWeatherService(requestSaboteur);
-        weatherService.initialize(serverConfiguration);
+        RequestSaboteur requestSaboteur = new RequestSaboteur(weatherService.getRestRequester());
+        weatherService.setRestRequester(requestSaboteur);
 
         requestSaboteur.setThrowNext(new IOException("IO is a moon you fool"));
         JSONObject jsonObject = weatherService.requestWeather(group, user, Region.ODENSE);
@@ -302,8 +300,7 @@ public class TestServerWeatherService {
     @Test
     public void souldHandleUnexpectedError() {
         RequestSaboteur requestSaboteur = new RequestSaboteur(fakeRequest);
-        weatherService = new ServerWeatherService(requestSaboteur);
-        weatherService.initialize(serverConfiguration);
+        weatherService.setRestRequester(requestSaboteur);
 
         requestSaboteur.setThrowNext(new IllegalArgumentException("I'd like to have an argument, please!"));
         JSONObject jsonObject = weatherService.requestWeather(group, user, Region.AALBORG);
@@ -315,5 +312,13 @@ public class TestServerWeatherService {
     public void shouldGiveErrorWhenSettingTheRestRequesterToNull() {
         WeatherService weatherService = new ServerWeatherService();
         weatherService.setRestRequester(null);
+    }
+
+    @Test
+    public void shouldGiveTheCurrentConfig() {
+        assertThat(weatherService.getConfiguration(), is(not(nullValue())));
+
+        weatherService = new ServerWeatherService();
+        assertThat(weatherService.getConfiguration(), is(nullValue()));
     }
 }
