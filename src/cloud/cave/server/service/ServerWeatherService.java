@@ -31,17 +31,18 @@ public class ServerWeatherService implements WeatherService {
     public static final String ERROR_MESSAGE_UNAVAILABLE_CLOSED = "UNAVAILABLE-CLOSED";
     public static final String ERROR_MESSAGE_UNAVAILABLE_OPEN = "UNAVAILABLE-OPEN";
 
-    public ServerWeatherService() {}
-
-    public ServerWeatherService(IRestRequest restRequest) {
-        if (restRequest == null) {
-            throw new NullPointerException("The rest request must be set");
-        }
-
+    public ServerWeatherService() {
         this.restRequest = restRequest;
         this.retryCount = 0;
         this.threshold = 3;
         this.secondsDelay = 10;
+    }
+
+    public ServerWeatherService(IRestRequest restRequest) {
+        this();
+        if (restRequest == null) {
+            throw new NullPointerException("The rest request must be set");
+        }
     }
 
     @Override
@@ -141,6 +142,11 @@ public class ServerWeatherService implements WeatherService {
     }
 
     @Override
+    public IRestRequest getRestRequester() {
+        return this.restRequest;
+    }
+
+    @Override
     public void initialize(ServerConfiguration config) {
         if (config == null)
             throw new NullPointerException("The ServerConfiguration must be set");
@@ -158,6 +164,7 @@ public class ServerWeatherService implements WeatherService {
         config = null;
     }
 
+    @Override
     public void setSecondsDelay(int secondsDelay) {
         if (secondsDelay <= 0)
             throw new IllegalArgumentException("The delay must be a positve integer");

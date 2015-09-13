@@ -1,6 +1,8 @@
 package cloud.cave.server.service;
 
+import cloud.cave.config.CaveServerFactory;
 import cloud.cave.domain.Region;
+import cloud.cave.doubles.AllTestDoubleFactory;
 import cloud.cave.doubles.RequestFake;
 import cloud.cave.doubles.RequestSaboteur;
 import cloud.cave.server.common.ServerConfiguration;
@@ -22,7 +24,7 @@ import static org.hamcrest.Matchers.*;
  * @author Rohde Fischer
  */
 public class TestServerWeatherServiceCircuitBreaker {
-    private ServerWeatherService weatherService;
+    private WeatherService weatherService;
     private String group, user, host;
     private int port;
     private RequestSaboteur fakeRequest;
@@ -30,14 +32,13 @@ public class TestServerWeatherServiceCircuitBreaker {
 
     @Before
     public void setup() {
-        host = "is-there-anybody-out-there";
-        port = 57005;
-        group = "TheFooBars";
+        CaveServerFactory factory = new AllTestDoubleFactory();
+        weatherService = factory.createWeatherServiceConnector();
+        fakeRequest = new RequestSaboteur(weatherService.getRestRequester());
+        weatherService.setRestRequester(fakeRequest);
+
+        group = "grp01";
         user = "WhiskyMonster";
-        fakeRequest = new RequestSaboteur(new RequestFake());
-        serverConfiguration = new ServerConfiguration(host, port);
-        weatherService = new ServerWeatherService(fakeRequest);
-        weatherService.initialize(serverConfiguration);
     }
 
     @Test

@@ -45,7 +45,7 @@ public class TestWeatherClient {
     public void shouldGetWeatherClientSide() {
         String weather = player.getWeather();
 
-        assertThat(weather, containsString("The weather in ARHUS is Clear, temperature 27.4C (feelslike -2.7C). Wind: 1.2 m/s, direction West."));
-        assertThat(weather, containsString("This report is dated: Thu, 05 Mar 2015 09:38:37 +0100"));
+        assertThat(weather, containsString("The weather in ARHUS is Partly Cloudy, temperature 42.0C (feelslike 24.0C). Wind: 4.0 m/s, direction NNE."));
+        assertThat(weather, containsString("This report is dated: Tue, 08 Sep 2015 13:24:22 +0200"));
     }
 }

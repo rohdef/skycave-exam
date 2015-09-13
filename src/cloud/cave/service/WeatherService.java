@@ -31,4 +31,8 @@ public interface WeatherService extends ExternalService {
     JSONObject requestWeather(String groupName, String playerID, Region region);
 
     void setRestRequester(IRestRequest restRequest);
+
+    IRestRequest getRestRequester();
+
+    void setSecondsDelay(int secondsDelay);
 }
