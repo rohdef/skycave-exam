@@ -22,7 +22,7 @@ import static org.hamcrest.Matchers.*;
  * @author Rohde Fischer
  */
 public class TestServerWeatherServiceCircuitBreaker {
-    private WeatherService weatherService;
+    private ServerWeatherService weatherService;
     private String group, user, host;
     private int port;
     private RequestSaboteur fakeRequest;
@@ -38,14 +38,6 @@ public class TestServerWeatherServiceCircuitBreaker {
         serverConfiguration = new ServerConfiguration(host, port);
         weatherService = new ServerWeatherService(fakeRequest);
         weatherService.initialize(serverConfiguration);
-    }
-
-    @Test
-    public void shouldGiveDefaultResponseWhenOpen() {
-//        JSONObject jsonObject = weatherService.requestWeather(group, user, Region.AALBORG);
-//
-//        assertThat(jsonObject.containsKey("errorMessage"), is(true));
-//        assertThat(jsonObject.get("errorMessage").toString(), equalTo("UNAVAILABLE-OPEN"));
     }
 
     @Test
@@ -101,7 +93,8 @@ public class TestServerWeatherServiceCircuitBreaker {
     }
 
     @Test
-    public void shouldHalfOpenAfterThirtySeconds() throws InterruptedException {
+    public void shouldHalfOpenAfterOneSecond() throws InterruptedException {
+        weatherService.setSecondsDelay(1);
         fakeRequest.setThrowNext(new ClientProtocolException());
         JSONObject jsonObject = weatherService.requestWeather(group, user, Region.AALBORG);
         assertThat(jsonObject.containsKey("errorMessage"), is(true));
@@ -122,14 +115,14 @@ public class TestServerWeatherServiceCircuitBreaker {
         assertThat(jsonObject.containsKey("errorMessage"), is(true));
         assertThat(jsonObject.get("errorMessage").toString(), equalTo("UNAVAILABLE-OPEN"));
 
-        Thread.sleep(8000);
+        Thread.sleep(800);
 
         fakeRequest.setThrowNext(new RuntimeException());
         jsonObject = weatherService.requestWeather(group, user, Region.AALBORG);
         assertThat(jsonObject.containsKey("errorMessage"), is(true));
         assertThat(jsonObject.get("errorMessage").toString(), equalTo("UNAVAILABLE-OPEN"));
 
-        Thread.sleep(2000);
+        Thread.sleep(200);
         fakeRequest.reset();
         jsonObject = weatherService.requestWeather(group, user, Region.AALBORG);
         assertThat(jsonObject.containsKey("errorMessage"), is(true));
@@ -137,7 +130,8 @@ public class TestServerWeatherServiceCircuitBreaker {
     }
 
     @Test
-    public void shouldHalfOpenAfterThirtySecondsWithError() throws InterruptedException {
+    public void shouldHalfOpenAfterOneSecondWithError() throws InterruptedException {
+        weatherService.setSecondsDelay(1);
         fakeRequest.setThrowNext(new ClientProtocolException());
         JSONObject jsonObject = weatherService.requestWeather(group, user, Region.AALBORG);
         assertThat(jsonObject.containsKey("errorMessage"), is(true));
@@ -158,14 +152,14 @@ public class TestServerWeatherServiceCircuitBreaker {
         assertThat(jsonObject.containsKey("errorMessage"), is(true));
         assertThat(jsonObject.get("errorMessage").toString(), equalTo("UNAVAILABLE-OPEN"));
 
-        Thread.sleep(8000);
+        Thread.sleep(800);
 
         fakeRequest.setThrowNext(new RuntimeException());
         jsonObject = weatherService.requestWeather(group, user, Region.AALBORG);
         assertThat(jsonObject.containsKey("errorMessage"), is(true));
         assertThat(jsonObject.get("errorMessage").toString(), equalTo("UNAVAILABLE-OPEN"));
 
-        Thread.sleep(2000);
+        Thread.sleep(200);
         fakeRequest.setThrowNext(new IOException());
         jsonObject = weatherService.requestWeather(group, user, Region.AALBORG);
         assertThat(jsonObject.containsKey("errorMessage"), is(true));

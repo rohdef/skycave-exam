@@ -158,6 +158,13 @@ public class ServerWeatherService implements WeatherService {
         config = null;
     }
 
+    public void setSecondsDelay(int secondsDelay) {
+        if (secondsDelay <= 0)
+            throw new IllegalArgumentException("The delay must be a positve integer");
+
+        this.secondsDelay = secondsDelay;
+    }
+
     @Override
     public ServerConfiguration getConfiguration() {
         return this.config;

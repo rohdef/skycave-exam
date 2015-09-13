@@ -3,6 +3,9 @@ package cloud.cave.server;
 import static org.junit.Assert.*;
 import static org.hamcrest.CoreMatchers.*;
 
+import cloud.cave.doubles.RequestFake;
+import cloud.cave.doubles.RequestSaboteur;
+import cloud.cave.server.service.ServerWeatherService;
 import org.json.simple.JSONObject;
 import org.junit.*;
 
@@ -51,5 +54,26 @@ public class TestWeather {
 
         String weather = player.getWeather();
         assertThat(weather, containsString("The weather service failed with message: GroupName grp02 or playerID user-003 is not authenticated"));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldRejectZeroSecondsDelay() {
+        RequestSaboteur fakeRequest = new RequestSaboteur(new RequestFake());
+        ServerWeatherService ws = new ServerWeatherService(fakeRequest);
+        ws.setSecondsDelay(0);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldRejectMinusOneSecondsDelay() {
+        RequestSaboteur fakeRequest = new RequestSaboteur(new RequestFake());
+        ServerWeatherService ws = new ServerWeatherService(fakeRequest);
+        ws.setSecondsDelay(-1);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldRejectNegativeSecondsDelay() {
+        RequestSaboteur fakeRequest = new RequestSaboteur(new RequestFake());
+        ServerWeatherService ws = new ServerWeatherService(fakeRequest);
+        ws.setSecondsDelay(-18342);
     }
 }
