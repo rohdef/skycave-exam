@@ -145,6 +145,10 @@ public class TestServerSubscriptionServiceCircuitBreaker {
 
         Thread.sleep(800);
 
+
+        subscriptionRecord = subscriptionService.lookup(user, password+"jisdf");
+        assertThat(subscriptionRecord.getErrorCode(), is(SubscriptionResult.LOGIN_NAME_OR_PASSWORD_IS_UNKNOWN));
+
         subscriptionRecord = subscriptionService.lookup(user, password);
         assertThat(subscriptionRecord.getErrorCode(), is(SubscriptionResult.LOGIN_NAME_HAS_VALID_SUBSCRIPTION));
 

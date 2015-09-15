@@ -110,9 +110,8 @@ public class ServerSubscriptionService implements SubscriptionService {
 
         public SubscriptionPair(String password, SubscriptionRecord record) {
             String salt = BCrypt.gensalt(4); // Preferring faster over security
-            String hash = BCrypt.hashpw(password, salt);
 
-            this.bCryptHash = hash;
+            this.bCryptHash = BCrypt.hashpw(password, salt);
             this.subscriptionRecord = record;
             this.timeStamp = new Date();
         }
@@ -212,7 +211,7 @@ public class ServerSubscriptionService implements SubscriptionService {
             SubscriptionRecord subscriptionRecord;
             if (subscriptionJson.containsKey("success") && subscriptionJson.get("success").equals(true)) {
                 JSONObject subscriptionPart = (JSONObject) subscriptionJson.get("subscription");
-                String loginNameResult = (String) subscriptionPart.get("loginName");
+//                String loginNameResult = (String) subscriptionPart.get("loginName");
                 String playerName = (String) subscriptionPart.get("playerName");
                 String groupName = (String) subscriptionPart.get("groupName");
                 String region = (String) subscriptionPart.get("region");
@@ -259,7 +258,7 @@ public class ServerSubscriptionService implements SubscriptionService {
                 // Verify that loginName+pwd match a valid subscription
                 if (pair == null)
                     return new SubscriptionRecord(SubscriptionResult.LOGIN_SERVICE_UNAVAILABLE_OPEN);
-                if (!BCrypt.checkpw(password, pair.bCryptHash))
+                if (!BCrypt.checkpw(password, pair.getbCryptHash()))
                     return new SubscriptionRecord(SubscriptionResult.LOGIN_NAME_OR_PASSWORD_IS_UNKNOWN);
 
                 long lastLoginPlusTimeout = pair.getTimeStamp().getTime()+cacheTimeout;

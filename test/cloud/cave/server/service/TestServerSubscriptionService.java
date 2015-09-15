@@ -404,4 +404,19 @@ public class TestServerSubscriptionService {
         subscriptionService = new ServerSubscriptionService();
         assertThat(subscriptionService.getConfiguration(), is(nullValue()));
     }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldNotAcceptZeroSecondsDelay() {
+        subscriptionService.setSecondsDelay(0);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldNotAcceptMinusOneSecondsDelay() {
+        subscriptionService.setSecondsDelay(-1);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldNotAcceptRandomNegativeSecondsDelay() {
+        subscriptionService.setSecondsDelay(-56587);
+    }
 }
