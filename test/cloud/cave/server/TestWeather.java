@@ -5,7 +5,7 @@ import static org.hamcrest.CoreMatchers.*;
 
 import cloud.cave.config.CaveServerFactory;
 import cloud.cave.doubles.AllTestDoubleFactory;
-import cloud.cave.doubles.RequestFake;
+import cloud.cave.doubles.WeatherServiceRequestFake;
 import cloud.cave.doubles.RequestSaboteur;
 import cloud.cave.server.service.ServerWeatherService;
 import org.json.simple.JSONObject;
@@ -62,21 +62,21 @@ public class TestWeather {
 
     @Test(expected = IllegalArgumentException.class)
     public void shouldRejectZeroSecondsDelay() {
-        RequestSaboteur fakeRequest = new RequestSaboteur(new RequestFake());
+        RequestSaboteur fakeRequest = new RequestSaboteur(new WeatherServiceRequestFake());
         ServerWeatherService ws = new ServerWeatherService(fakeRequest);
         ws.setSecondsDelay(0);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void shouldRejectMinusOneSecondsDelay() {
-        RequestSaboteur fakeRequest = new RequestSaboteur(new RequestFake());
+        RequestSaboteur fakeRequest = new RequestSaboteur(new WeatherServiceRequestFake());
         ServerWeatherService ws = new ServerWeatherService(fakeRequest);
         ws.setSecondsDelay(-1);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void shouldRejectNegativeSecondsDelay() {
-        RequestSaboteur fakeRequest = new RequestSaboteur(new RequestFake());
+        RequestSaboteur fakeRequest = new RequestSaboteur(new WeatherServiceRequestFake());
         ServerWeatherService ws = new ServerWeatherService(fakeRequest);
         ws.setSecondsDelay(-18342);
     }

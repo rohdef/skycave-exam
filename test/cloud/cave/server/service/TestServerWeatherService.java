@@ -3,13 +3,12 @@ package cloud.cave.server.service;
 import cloud.cave.config.CaveServerFactory;
 import cloud.cave.domain.Region;
 import cloud.cave.doubles.AllTestDoubleFactory;
-import cloud.cave.doubles.RequestFake;
+import cloud.cave.doubles.WeatherServiceRequestFake;
 import cloud.cave.doubles.RequestSaboteur;
 import cloud.cave.server.common.ServerConfiguration;
 import cloud.cave.service.WeatherService;
 import org.apache.http.client.ClientProtocolException;
 import org.json.simple.JSONObject;
-import org.json.simple.parser.ParseException;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -25,21 +24,18 @@ import static org.hamcrest.Matchers.*;
  */
 public class TestServerWeatherService {
     private WeatherService weatherService;
-    private String group, user, host;
-    private int port;
-    private RequestFake fakeRequest;
+    private String group, user;
+    private WeatherServiceRequestFake fakeRequest;
     private ServerConfiguration serverConfiguration;
 
     @Before
     public void setup() {
-        host = "is-there-anybody-out-there";
-        port = 57005;
         group = "grp01";
         user = "WhiskyMonster";
 
         CaveServerFactory factory = new AllTestDoubleFactory();
         weatherService = factory.createWeatherServiceConnector();
-        fakeRequest = new RequestFake();
+        fakeRequest = new WeatherServiceRequestFake();
         weatherService.setRestRequester(fakeRequest);
     }
 
@@ -75,16 +71,16 @@ public class TestServerWeatherService {
 
     @Test
     public void shouldProduceErrorWhenNoConfigurationIsPresent() {
-        // Note this test relies on that RequestFake will cause errors on invalid urls
+        // Note this test relies on that WeatherServiceRequestFake will cause errors on invalid urls
         weatherService.disconnect();
-        weatherService = new ServerWeatherService(new RequestFake());
+        weatherService = new ServerWeatherService(new WeatherServiceRequestFake());
 
         JSONObject jsonObject = weatherService.requestWeather(group, user, Region.ARHUS);
         assertThat(jsonObject.containsKey("errorMessage"), is(true));
         assertThat(jsonObject.get("errorMessage").toString(), equalTo("UNAVAILABLE-CLOSED"));
 
         weatherService.disconnect();
-        weatherService = new ServerWeatherService(new RequestFake());
+        weatherService = new ServerWeatherService(new WeatherServiceRequestFake());
 
         try {
             weatherService.initialize(null);
@@ -108,7 +104,7 @@ public class TestServerWeatherService {
     public void shouldProduceErrorWhenInvalidConfigurationIsUsed() {
         // Null values are not valid
         weatherService.disconnect();
-        weatherService = new ServerWeatherService(new RequestFake());
+        weatherService = new ServerWeatherService(new WeatherServiceRequestFake());
 
         try {
             weatherService.initialize(new ServerConfiguration(null, null));
@@ -120,7 +116,7 @@ public class TestServerWeatherService {
         // Java does not accept new ServerConfiguration("", null), bummer would have been nice to break it here 3:-)
 
         weatherService.disconnect();
-        weatherService = new ServerWeatherService(new RequestFake());
+        weatherService = new ServerWeatherService(new WeatherServiceRequestFake());
 
         try {
             weatherService.initialize(new ServerConfiguration(null, 42));
@@ -132,7 +128,7 @@ public class TestServerWeatherService {
 
         // Empty string is not a valid server
         weatherService.disconnect();
-        weatherService = new ServerWeatherService(new RequestFake());
+        weatherService = new ServerWeatherService(new WeatherServiceRequestFake());
 
         try {
             weatherService.initialize(new ServerConfiguration("", 42));
@@ -144,7 +140,7 @@ public class TestServerWeatherService {
 
         // 0 or below is not a valid port
         weatherService.disconnect();
-        weatherService = new ServerWeatherService(new RequestFake());
+        weatherService = new ServerWeatherService(new WeatherServiceRequestFake());
 
         try {
             weatherService.initialize(new ServerConfiguration("abc", 0));
@@ -155,7 +151,7 @@ public class TestServerWeatherService {
         }
 
         weatherService.disconnect();
-        weatherService = new ServerWeatherService(new RequestFake());
+        weatherService = new ServerWeatherService(new WeatherServiceRequestFake());
 
         try {
             weatherService.initialize(new ServerConfiguration("goodbye", -42));
@@ -216,7 +212,7 @@ public class TestServerWeatherService {
 
         String[] urlParts = url.split("/");
         assertThat(urlParts.length, is(8));
-        assertThat(urlParts[0], containsString(host+":"+port));
+        assertThat(urlParts[0], containsString("is-there-anybody-out-there:57005"));
         assertThat(urlParts[1], containsString("cave"));
         assertThat(urlParts[2], containsString("weather"));
         assertThat(urlParts[3], containsString("api"));

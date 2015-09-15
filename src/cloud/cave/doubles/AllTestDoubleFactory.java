@@ -3,6 +3,7 @@ package cloud.cave.doubles;
 import cloud.cave.config.CaveServerFactory;
 import cloud.cave.ipc.*;
 import cloud.cave.server.common.ServerConfiguration;
+import cloud.cave.server.service.ServerSubscriptionService;
 import cloud.cave.server.service.ServerWeatherService;
 import cloud.cave.service.*;
 
@@ -23,14 +24,15 @@ public class AllTestDoubleFactory implements CaveServerFactory {
 
     @Override
     public SubscriptionService createSubscriptionServiceConnector() {
-        SubscriptionService service = new TestStubSubscriptionService();
+        SubscriptionService service = new ServerSubscriptionService();
         service.initialize(null); // no config object required for the stub
+        service.setRestRequester(new SubscriptionServiceRequestFake());
         return service;
     }
 
     @Override
     public IRestRequest createRestRequester() {
-        return new RequestFake();
+        return null;
     }
 
     @Override
@@ -41,7 +43,7 @@ public class AllTestDoubleFactory implements CaveServerFactory {
 
         WeatherService service = new ServerWeatherService();
         service.initialize(serverConfiguration); // no config object required
-        service.setRestRequester(createRestRequester());
+        service.setRestRequester(new WeatherServiceRequestFake());
         service.setSecondsDelay(1);
 
         weatherService = service;

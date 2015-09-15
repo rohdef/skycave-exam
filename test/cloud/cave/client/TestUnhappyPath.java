@@ -67,6 +67,21 @@ public class TestUnhappyPath {
                     }
 
                     @Override
+                    public void setRestRequester(IRestRequest restRequest) {
+
+                    }
+
+                    @Override
+                    public IRestRequest getRestRequester() {
+                        return null;
+                    }
+
+                    @Override
+                    public void setSecondsDelay(int secondsDelay) {
+
+                    }
+
+                    @Override
                     public void initialize(ServerConfiguration config) {
                     }
 

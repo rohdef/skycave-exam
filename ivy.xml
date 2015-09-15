@@ -62,5 +62,9 @@
         <dependency org="com.google.guava"
                     name="guava"
                     rev="18.0"/>
+
+        <dependency org="org.mongodb"
+                    name="mongo-java-driver"
+                    rev="3.0.4"/>
     </dependencies>
 </ivy-module>

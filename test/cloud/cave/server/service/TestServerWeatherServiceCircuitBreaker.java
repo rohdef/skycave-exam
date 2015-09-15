@@ -3,7 +3,6 @@ package cloud.cave.server.service;
 import cloud.cave.config.CaveServerFactory;
 import cloud.cave.domain.Region;
 import cloud.cave.doubles.AllTestDoubleFactory;
-import cloud.cave.doubles.RequestFake;
 import cloud.cave.doubles.RequestSaboteur;
 import cloud.cave.server.common.ServerConfiguration;
 import cloud.cave.service.WeatherService;

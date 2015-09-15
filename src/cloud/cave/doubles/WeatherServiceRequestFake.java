@@ -11,7 +11,7 @@ import java.util.List;
  *
  * @author Rohde Fischer
  */
-public class RequestFake implements IRestRequest {
+public class WeatherServiceRequestFake implements IRestRequest {
     private String lastUrl = "";
 
     @Override

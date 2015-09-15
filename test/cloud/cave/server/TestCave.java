@@ -66,7 +66,7 @@ public class TestCave {
         String configString = cave.describeConfiguration();
         assertNotNull(configString);
         assertThat(configString, containsString("CaveStorage: cloud.cave.doubles.FakeCaveStorage"));
-        assertThat(configString, containsString("SubscriptionService: cloud.cave.doubles.TestStubSubscriptionService"));
+        assertThat(configString, containsString("SubscriptionService: cloud.cave.server.service.ServerSubscriptionService"));
         assertThat(configString, containsString("WeatherService: cloud.cave.server.service.ServerWeatherService"));
     }
 }
