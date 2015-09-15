@@ -86,7 +86,6 @@ public class TestServerWeatherServiceCircuitBreaker {
         assertThat(jsonObject.containsKey("errorMessage"), is(true));
         assertThat(jsonObject.get("errorMessage").toString(), equalTo("UNAVAILABLE-CLOSED"));
 
-        fakeRequest.setThrowNext(new RuntimeException());
         jsonObject = weatherService.requestWeather(group, user, Region.AALBORG);
         assertThat(jsonObject.containsKey("errorMessage"), is(true));
         assertThat(jsonObject.get("errorMessage").toString(), equalTo("UNAVAILABLE-OPEN"));
@@ -110,20 +109,18 @@ public class TestServerWeatherServiceCircuitBreaker {
         assertThat(jsonObject.containsKey("errorMessage"), is(true));
         assertThat(jsonObject.get("errorMessage").toString(), equalTo("UNAVAILABLE-CLOSED"));
 
-        fakeRequest.setThrowNext(new RuntimeException());
         jsonObject = weatherService.requestWeather(group, user, Region.AALBORG);
         assertThat(jsonObject.containsKey("errorMessage"), is(true));
         assertThat(jsonObject.get("errorMessage").toString(), equalTo("UNAVAILABLE-OPEN"));
 
         Thread.sleep(800);
 
-        fakeRequest.setThrowNext(new RuntimeException());
         jsonObject = weatherService.requestWeather(group, user, Region.AALBORG);
         assertThat(jsonObject.containsKey("errorMessage"), is(true));
         assertThat(jsonObject.get("errorMessage").toString(), equalTo("UNAVAILABLE-OPEN"));
 
         Thread.sleep(200);
-        fakeRequest.reset();
+
         jsonObject = weatherService.requestWeather(group, user, Region.AALBORG);
         assertThat(jsonObject.containsKey("errorMessage"), is(true));
         assertThat(jsonObject.get("errorMessage").toString(), equalTo("OK"));

@@ -26,7 +26,6 @@ public class TestServerWeatherService {
     private WeatherService weatherService;
     private String group, user;
     private WeatherServiceRequestFake fakeRequest;
-    private ServerConfiguration serverConfiguration;
 
     @Before
     public void setup() {
@@ -243,6 +242,17 @@ public class TestServerWeatherService {
     }
 
     @Test
+    public void shouldNotCrashOnNullGarbageResult() {
+        RequestSaboteur requestSaboteur = new RequestSaboteur(weatherService.getRestRequester());
+        weatherService.setRestRequester(requestSaboteur);
+
+        requestSaboteur.activateNullGarbage();
+        JSONObject jsonObject = weatherService.requestWeather(group, user, Region.ODENSE);
+        assertThat(jsonObject.containsKey("errorMessage"), is(true));
+        assertThat(jsonObject.get("errorMessage").toString(), equalTo("UNAVAILABLE-CLOSED"));
+    }
+
+    @Test
     public void shouldNotCrashOnMalformedJsonGarbageResult() {
         RequestSaboteur requestSaboteur = new RequestSaboteur(weatherService.getRestRequester());
         weatherService.setRestRequester(requestSaboteur);
@@ -255,6 +265,25 @@ public class TestServerWeatherService {
                 "\"winddirection\":\"NNE\"," +
                 "\"feelslike\":\"24.0\"," +
                 "\"temperature\":\"42.0\"}HAHA");
+        JSONObject jsonObject = weatherService.requestWeather(group, user, Region.ODENSE);
+        assertThat(jsonObject.containsKey("errorMessage"), is(true));
+        assertThat(jsonObject.get("errorMessage").toString(), equalTo("UNAVAILABLE-CLOSED"));
+    }
+
+    @Test
+    public void shouldNotCrashOnRegistrationJsonGarbageResult() {
+        RequestSaboteur requestSaboteur = new RequestSaboteur(weatherService.getRestRequester());
+        weatherService.setRestRequester(requestSaboteur);
+
+        requestSaboteur.setGarbage("{\"success\":true," +
+                "\"subscription\":" +
+                "{\"groupName\":\"CSS 25\"," +
+                "\"dateCreated\":\"2015-08-31 13:06 PM UTC\"," +
+                "\"playerName\":\"rohdef\"," +
+                "\"loginName\":\"20052356\"," +
+                "\"region\":\"AARHUS\"," +
+                "\"playerID\":\"55e45169e4b067dd3c8fa56e\"}," +
+                "\"message\":\"loginName 20052356 was authenticated\"}");
         JSONObject jsonObject = weatherService.requestWeather(group, user, Region.ODENSE);
         assertThat(jsonObject.containsKey("errorMessage"), is(true));
         assertThat(jsonObject.get("errorMessage").toString(), equalTo("UNAVAILABLE-CLOSED"));

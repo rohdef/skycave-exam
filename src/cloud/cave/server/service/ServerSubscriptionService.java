@@ -51,6 +51,13 @@ public class ServerSubscriptionService implements SubscriptionService {
 
     @Override
     public void initialize(ServerConfiguration config) {
+        if (config == null)
+            throw new NullPointerException("The ServerConfiguration must be set");
+        if (config.get(0).getHostName() == null || config.get(0).getHostName().length() <= 0)
+            throw new IllegalArgumentException("The host must be set to a sensible value that is a string containing a host");
+        if (config.get(0).getPortNumber() <= 0)
+            throw new IllegalArgumentException("The port must be set to a sensible value that is a positive integer");
+
         this.config = config;
     }
 
@@ -149,6 +156,9 @@ public class ServerSubscriptionService implements SubscriptionService {
                 SubscriptionRecord subscriptionRecord = performLookup(loginName, password);
                 retryCount = 0;
                 return subscriptionRecord;
+            } catch (IllegalArgumentException e) {
+                logger.warn("Malformed login details detected", e);
+                return new SubscriptionRecord(SubscriptionResult.LOGIN_NAME_OR_PASSWORD_IS_UNKNOWN);
             } catch (Exception e) {
                 logger.warn("Could not contact the weather service [open]", e);
                 this.retryCount++;
@@ -156,27 +166,31 @@ public class ServerSubscriptionService implements SubscriptionService {
                 if (this.retryCount >= this.threshold)
                     serverSubscriptionService.setSubscriptionServiceState(new OpenSubscriptionServiceState(serverSubscriptionService));
 
-                return new SubscriptionRecord(SubscriptionResult.LOGIN_NAME_OR_PASSWORD_IS_UNKNOWN);
+                return new SubscriptionRecord(SubscriptionResult.LOGIN_SERVICE_UNAVAILABLE_CLOSED);
             }
         }
 
         private SubscriptionRecord performLookup(String loginName, String password) {
-//            if (serverWeatherService.config == null) {
-//                logger.error("The weather service was called without having been initialized with a config");
-//                throw new IllegalStateException("The weather service has not been initialized with a ServerConfiguration," +
-//                        " this value must be null.");
-//            }
-//            if (groupName == null || groupName.length() <= 0)
-//                throw new IllegalArgumentException("The group must be set to a valid group name");
-//            if (playerID == null || playerID.length() <= 0)
-//                throw new IllegalArgumentException("The user must be set to a valid playerId");
-//            if (region == null)
-//                throw new NullPointerException("The region must be set");
+            if (serverSubscriptionService.config == null) {
+                logger.error("The subscription service was called without having been initialized with a config");
+                throw new NullPointerException("The subscription service has not been initialized with a ServerConfiguration," +
+                        " this value must be null.");
+            }
+            if (loginName == null || loginName.length() <= 0)
+                throw new IllegalArgumentException("The user must be set to a valid String of length >= 1");
+            if (password == null || password.length() <= 0)
+                throw new IllegalArgumentException("The password must be set to a String of length >= 1");
 
-            String url = "cavereg.baerbak.com:4567/api/v1/auth?loginName=%1$s&password=%2$s";
+
+            String urlTemplate = "http://%1$s:%2$s/api/v1/auth?loginName=%3$s&password=%4$s";
+            String url = String.format(urlTemplate,
+                    serverSubscriptionService.getConfiguration().get(0).getHostName(),
+                    serverSubscriptionService.getConfiguration().get(0).getPortNumber(),
+                    loginName,
+                    password);
             String subscriptionString;
             try {
-                subscriptionString = restRequest.doRequest(loginName + "&" + password, null);
+                subscriptionString = restRequest.doRequest(url, null);
             } catch (IOException e) {
                 throw new RuntimeException("An error occured in the connection to the subscription REST service.", e);
             } catch (Exception e) {
@@ -243,14 +257,15 @@ public class ServerSubscriptionService implements SubscriptionService {
                 SubscriptionPair pair = serverSubscriptionService.subscriptionMap.get(loginName);
 
                 // Verify that loginName+pwd match a valid subscription
-                if (pair == null || !BCrypt.checkpw(password, pair.bCryptHash)) {
+                if (pair == null)
+                    return new SubscriptionRecord(SubscriptionResult.LOGIN_SERVICE_UNAVAILABLE_OPEN);
+                if (!BCrypt.checkpw(password, pair.bCryptHash))
                     return new SubscriptionRecord(SubscriptionResult.LOGIN_NAME_OR_PASSWORD_IS_UNKNOWN);
-                }
 
                 long lastLoginPlusTimeout = pair.getTimeStamp().getTime()+cacheTimeout;
                 if (lastLoginPlusTimeout <= currentTime) {
                     serverSubscriptionService.subscriptionMap.remove(loginName);
-                    return new SubscriptionRecord(SubscriptionResult.LOGIN_NAME_OR_PASSWORD_IS_UNKNOWN);
+                    return new SubscriptionRecord(SubscriptionResult.LOGIN_SERVICE_UNAVAILABLE_OPEN);
                 }
 
                 return pair.getSubscriptionRecord();
@@ -267,21 +282,19 @@ public class ServerSubscriptionService implements SubscriptionService {
 
         @Override
         public SubscriptionRecord lookup(String loginName, String password) {
-//            ClosedWeatherService closedWeatherService = new ClosedWeatherService(serverWeatherService);
-//            JSONObject jsonObject = closedWeatherService.requestWeather(groupName, playerID, region);
-//
-//            if (jsonObject.containsKey("errorMessage") && jsonObject.get("errorMessage").equals(ERROR_MESSAGE_OK)) {
-//                logger.info("Contact to the weather service re-established [half-open]");
-//                serverWeatherService.setWeatherServiceState(closedWeatherService);
-//                return jsonObject;
-//            } else {
-//                logger.warn("Could not contact the weather service [half-open]");
-//                OpenWeatherService openWeatherService = new OpenWeatherService(serverWeatherService);
-//                serverWeatherService.setWeatherServiceState(openWeatherService);
-//                return openWeatherService.requestWeather(groupName, playerID, region);
-//            }
-//        }
-            return null;
+            ClosedSubscriptionServiceState closedSubscriptionServiceState = new ClosedSubscriptionServiceState(serverSubscriptionService);
+            SubscriptionRecord subscriptionRecord = closedSubscriptionServiceState.lookup(loginName, password);
+
+            if (subscriptionRecord.getErrorCode() == SubscriptionResult.LOGIN_NAME_HAS_VALID_SUBSCRIPTION) {
+                logger.info("Contact to the subscription service re-established [half-open]");
+                serverSubscriptionService.setSubscriptionServiceState(closedSubscriptionServiceState);
+                return subscriptionRecord;
+            } else {
+                logger.warn("Could not contact the subscription service [half-open]");
+                OpenSubscriptionServiceState openSubscriptionServiceState = new OpenSubscriptionServiceState(serverSubscriptionService);
+                serverSubscriptionService.setSubscriptionServiceState(openSubscriptionServiceState);
+                return openSubscriptionServiceState.lookup(loginName, password);
+            }
         }
     }
 }

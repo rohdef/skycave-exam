@@ -17,7 +17,7 @@ public class WeatherServiceRequestFake implements IRestRequest {
     @Override
     public String doRequest(String url, List<NameValuePair> params) throws IOException{
         this.lastUrl = url;
-        //String[] urlParts = url.split('/');
+
         String weather;
 
         String[] urlParts = url.split("/");

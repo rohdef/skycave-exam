@@ -12,8 +12,12 @@ import java.util.List;
  * @author Rohde Fischer
  */
 public class SubscriptionServiceRequestFake implements IRestRequest {
+    private String lastUrl;
+
     @Override
     public String doRequest(String url, List<NameValuePair> params) throws IOException {
+        lastUrl = url;
+
         String template = "{\"success\":%1$s," +
                 "\"subscription\":" +
                 "{\"groupName\":\"%4$s\"," +
@@ -25,9 +29,9 @@ public class SubscriptionServiceRequestFake implements IRestRequest {
                 "\"message\":\"loginName %2$s was authenticated\"}";
         boolean success;
 
-        String[] urlsParts = url.split("&");
-        String loginName = urlsParts[0];
-        String password = urlsParts[1];
+        String[] urlsParts = url.split("[?]")[1].split("&");
+        String loginName = urlsParts[0].split("=")[1];
+        String password = urlsParts[1].split("=")[1];
         String playerName, groupName, region, playerId;
 
 
@@ -66,4 +70,8 @@ public class SubscriptionServiceRequestFake implements IRestRequest {
 
         return String.format(template, success, loginName, playerName, groupName, region, playerId);
 }
+
+    public String getLastUrl() {
+        return lastUrl;
+    }
 }

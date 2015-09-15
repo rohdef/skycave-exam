@@ -7,6 +7,7 @@ import cloud.cave.service.WeatherService;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import org.omg.SendingContext.RunTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -180,6 +181,9 @@ public class ServerWeatherService implements WeatherService {
                 logger.error("Fatal error in the weather service while parsin the JSON", e);
                 throw new RuntimeException("Invalid JSON returned from the service", e);
             }
+
+            if (!weatherJson.containsKey("errorMessage"))
+                throw new RuntimeException("Invalid json returned, expected errorMessage to be present, but got: " + weatherString);
 
             return weatherJson;
         }

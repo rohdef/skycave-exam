@@ -24,9 +24,13 @@ public class AllTestDoubleFactory implements CaveServerFactory {
 
     @Override
     public SubscriptionService createSubscriptionServiceConnector() {
+        String host = "is-there-anybody-out-there";
+        int port = 57005;
+        ServerConfiguration serverConfiguration = new ServerConfiguration(host, port);
+
         SubscriptionService service = new ServerSubscriptionService();
-        service.initialize(null); // no config object required for the stub
         service.setRestRequester(new SubscriptionServiceRequestFake());
+        service.initialize(serverConfiguration);
         return service;
     }
 
