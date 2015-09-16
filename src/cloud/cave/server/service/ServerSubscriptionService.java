@@ -169,7 +169,7 @@ public class ServerSubscriptionService implements SubscriptionService {
                 logger.warn("Malformed login details detected", e);
                 return new SubscriptionRecord(SubscriptionResult.LOGIN_NAME_OR_PASSWORD_IS_UNKNOWN);
             } catch (Exception e) {
-                logger.warn("Could not contact the weather service [open]", e);
+                logger.warn("Could not contact the subscription service [closed]", e);
                 this.retryCount++;
 
                 if (this.retryCount >= this.threshold)

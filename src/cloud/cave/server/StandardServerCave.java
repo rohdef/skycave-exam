@@ -69,8 +69,18 @@ public class StandardServerCave implements Cave {
             return new LoginRecord(LoginResult.LOGIN_FAILED_SERVER_ERROR);
         }
         // Check all the error conditions and 'fail fast' on them...
-        if (subscription.getErrorCode() == SubscriptionResult.LOGIN_NAME_OR_PASSWORD_IS_UNKNOWN) {
-            return new LoginRecord(LoginResult.LOGIN_FAILED_UNKNOWN_SUBSCRIPTION);
+        switch (subscription.getErrorCode()) {
+            case LOGIN_NAME_OR_PASSWORD_IS_UNKNOWN:
+                return new LoginRecord(LoginResult.LOGIN_FAILED_UNKNOWN_SUBSCRIPTION);
+            case LOGIN_SERVICE_UNAVAILABLE_CLOSED:
+            case LOGIN_SERVICE_UNAVAILABLE_OPEN:
+                return new LoginRecord(LoginResult.LOGIN_FAILED_SERVER_ERROR);
+            case LOGIN_NAME_HAS_VALID_SUBSCRIPTION:
+                break;
+            default:
+                logger.error("An unknown errorCode for login was recieved and thus rejected. The recieved code is: "
+                        + subscription.getErrorCode().name());
+                return new LoginRecord(LoginResult.LOGIN_FAILED_SERVER_ERROR);
         }
 
         // Now the subscription is assumed to be a valid player

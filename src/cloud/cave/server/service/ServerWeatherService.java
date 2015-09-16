@@ -128,7 +128,7 @@ public class ServerWeatherService implements WeatherService {
                 retryCount = 0;
                 return jsonObject;
             } catch (Exception e) {
-                logger.warn("Could not contact the weather service [open]", e);
+                logger.warn("Could not contact the weather service [closed]", e);
                 this.retryCount++;
 
                 if (this.retryCount >= this.threshold)
