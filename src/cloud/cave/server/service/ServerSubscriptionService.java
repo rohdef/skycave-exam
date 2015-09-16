@@ -201,6 +201,7 @@ public class ServerSubscriptionService implements SubscriptionService {
             try {
                 subscriptionString = restRequest.doRequest(url, null);
             } catch (IOException e) {
+                logger.warn("Exception when connecting to the subscription service", e);
                 throw new RuntimeException("An error occured in the connection to the subscription REST service.", e);
             } catch (Exception e) {
                 logger.error("Fatal error in the subscription service while requesting the service", e);
