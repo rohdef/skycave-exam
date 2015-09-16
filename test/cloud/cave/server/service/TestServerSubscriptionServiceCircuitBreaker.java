@@ -7,6 +7,7 @@ import cloud.cave.server.common.ServerConfiguration;
 import cloud.cave.server.common.SubscriptionRecord;
 import cloud.cave.server.common.SubscriptionResult;
 import cloud.cave.service.SubscriptionService;
+import org.apache.http.NoHttpResponseException;
 import org.apache.http.client.ClientProtocolException;
 import org.junit.Before;
 import org.junit.Test;
@@ -161,6 +162,53 @@ public class TestServerSubscriptionServiceCircuitBreaker {
 
         subscriptionRecord = subscriptionService.lookup(user2, password2);
         assertThat(subscriptionRecord.getErrorCode(), is(SubscriptionResult.LOGIN_NAME_HAS_VALID_SUBSCRIPTION));
+    }
+
+    @Test
+    public void shouldTimeoutUsersCache() throws InterruptedException {
+        subscriptionService.setSecondsDelay(1);
+        ((ServerSubscriptionService) subscriptionService).setCacheTimeout(1);
+
+        SubscriptionRecord subscriptionRecord = subscriptionService.lookup(user, password);
+        assertThat(subscriptionRecord.getErrorCode(), is(SubscriptionResult.LOGIN_NAME_HAS_VALID_SUBSCRIPTION));
+
+        fakeRequest.setGarbage("Hulubulu - Lotte, hvor er du henne?");
+        subscriptionRecord = subscriptionService.lookup(user, password);
+        assertThat(subscriptionRecord.getErrorCode(), is(SubscriptionResult.LOGIN_SERVICE_UNAVAILABLE_CLOSED));
+
+        fakeRequest.setThrowNext(new IOException());
+        subscriptionRecord = subscriptionService.lookup(user, password);
+        assertThat(subscriptionRecord.getErrorCode(), is(SubscriptionResult.LOGIN_SERVICE_UNAVAILABLE_CLOSED));
+
+        fakeRequest.setThrowNext(new IOException());
+        subscriptionRecord = subscriptionService.lookup(user, password);
+        assertThat(subscriptionRecord.getErrorCode(), is(SubscriptionResult.LOGIN_SERVICE_UNAVAILABLE_CLOSED));
+
+        String user2 = "mathilde_aarskort";
+        String password2 = "321";
+
+        subscriptionRecord = subscriptionService.lookup(user, password);
+        assertThat(subscriptionRecord.getErrorCode(), is(SubscriptionResult.LOGIN_NAME_HAS_VALID_SUBSCRIPTION));
+
+        subscriptionRecord = subscriptionService.lookup(user2, password2);
+        assertThat(subscriptionRecord.getErrorCode(), is(SubscriptionResult.LOGIN_SERVICE_UNAVAILABLE_OPEN));
+
+        Thread.sleep(800);
+
+        subscriptionRecord = subscriptionService.lookup(user, password);
+        assertThat(subscriptionRecord.getErrorCode(), is(SubscriptionResult.LOGIN_NAME_HAS_VALID_SUBSCRIPTION));
+
+        subscriptionRecord = subscriptionService.lookup(user2, password2);
+        assertThat(subscriptionRecord.getErrorCode(), is(SubscriptionResult.LOGIN_SERVICE_UNAVAILABLE_OPEN));
+
+        Thread.sleep(200);
+        fakeRequest.setThrowNext(new NoHttpResponseException("With my back against the wall"));
+
+        subscriptionRecord = subscriptionService.lookup(user, password);
+        assertThat(subscriptionRecord.getErrorCode(), is(SubscriptionResult.LOGIN_SERVICE_UNAVAILABLE_OPEN));
+
+        subscriptionRecord = subscriptionService.lookup(user2, password2);
+        assertThat(subscriptionRecord.getErrorCode(), is(SubscriptionResult.LOGIN_SERVICE_UNAVAILABLE_OPEN));
     }
 
     @Test

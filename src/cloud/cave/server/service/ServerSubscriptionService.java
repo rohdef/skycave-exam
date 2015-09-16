@@ -36,12 +36,14 @@ public class ServerSubscriptionService implements SubscriptionService {
     private ServerConfiguration config;
 
     private IRestRequest restRequest;
+    private int cacheTimeout;
 
     public ServerSubscriptionService() {
         super();
         subscriptionMap = new HashMap<>();
         subscriptionServiceState = new ClosedSubscriptionServiceState(this);
         this.secondsDelay = 10;
+        this.cacheTimeout = 60*60*1000;
     }
 
     @Override
@@ -98,6 +100,14 @@ public class ServerSubscriptionService implements SubscriptionService {
 
     public void setSubscriptionServiceState(ISubscriptionServiceState subscriptionServiceState) {
         this.subscriptionServiceState = subscriptionServiceState;
+    }
+
+    /**
+     * Sets the timeout of the user cache
+     * @param cacheTimeout seconds before the timeout
+     */
+    public void setCacheTimeout(int cacheTimeout) {
+        this.cacheTimeout = cacheTimeout*1000;
     }
 
     /**
@@ -233,8 +243,6 @@ public class ServerSubscriptionService implements SubscriptionService {
         private final long timeToHalfOpen;
         private ServerSubscriptionService serverSubscriptionService;
         private Date closingTime;
-        // 60 minutes * 60 seconds * 1000 milliseconds = 1 hour
-        private final long cacheTimeout = 60*60*1000;
 
         public OpenSubscriptionServiceState(ServerSubscriptionService serverSubscriptionService) {
             this.serverSubscriptionService = serverSubscriptionService;
@@ -261,7 +269,7 @@ public class ServerSubscriptionService implements SubscriptionService {
                 if (!BCrypt.checkpw(password, pair.getbCryptHash()))
                     return new SubscriptionRecord(SubscriptionResult.LOGIN_NAME_OR_PASSWORD_IS_UNKNOWN);
 
-                long lastLoginPlusTimeout = pair.getTimeStamp().getTime()+cacheTimeout;
+                long lastLoginPlusTimeout = pair.getTimeStamp().getTime()+serverSubscriptionService.cacheTimeout;
                 if (lastLoginPlusTimeout <= currentTime) {
                     serverSubscriptionService.subscriptionMap.remove(loginName);
                     return new SubscriptionRecord(SubscriptionResult.LOGIN_SERVICE_UNAVAILABLE_OPEN);

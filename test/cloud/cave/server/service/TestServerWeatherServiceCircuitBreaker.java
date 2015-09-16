@@ -162,4 +162,47 @@ public class TestServerWeatherServiceCircuitBreaker {
         assertThat(jsonObject.containsKey("errorMessage"), is(true));
         assertThat(jsonObject.get("errorMessage").toString(), equalTo("UNAVAILABLE-OPEN"));
     }
+
+    @Test
+    public void shouldHalfOpenAfterOneSecondWithGarbageResult() throws InterruptedException {
+        weatherService.setSecondsDelay(1);
+        fakeRequest.setThrowNext(new ClientProtocolException());
+        JSONObject jsonObject = weatherService.requestWeather(group, user, Region.AALBORG);
+        assertThat(jsonObject.containsKey("errorMessage"), is(true));
+        assertThat(jsonObject.get("errorMessage").toString(), equalTo("UNAVAILABLE-CLOSED"));
+
+        fakeRequest.setGarbage("Hulubulu - Lotte, hvor er du henne?");
+        jsonObject = weatherService.requestWeather(group, user, Region.AALBORG);
+        assertThat(jsonObject.containsKey("errorMessage"), is(true));
+        assertThat(jsonObject.get("errorMessage").toString(), equalTo("UNAVAILABLE-CLOSED"));
+
+        fakeRequest.setThrowNext(new IOException());
+        jsonObject = weatherService.requestWeather(group, user, Region.AALBORG);
+        assertThat(jsonObject.containsKey("errorMessage"), is(true));
+        assertThat(jsonObject.get("errorMessage").toString(), equalTo("UNAVAILABLE-CLOSED"));
+
+        jsonObject = weatherService.requestWeather(group, user, Region.AALBORG);
+        assertThat(jsonObject.containsKey("errorMessage"), is(true));
+        assertThat(jsonObject.get("errorMessage").toString(), equalTo("UNAVAILABLE-OPEN"));
+
+        Thread.sleep(800);
+
+        jsonObject = weatherService.requestWeather(group, user, Region.AALBORG);
+        assertThat(jsonObject.containsKey("errorMessage"), is(true));
+        assertThat(jsonObject.get("errorMessage").toString(), equalTo("UNAVAILABLE-OPEN"));
+
+        Thread.sleep(200);
+        fakeRequest.setGarbage("{\"success\":true," +
+                "\"subscription\":" +
+                "{\"groupName\":\"CSS 25\"," +
+                "\"dateCreated\":\"2015-08-31 13:06 PM UTC\"," +
+                "\"playerName\":\"rohdef\"," +
+                "\"loginName\":\"20052356\"," +
+                "\"region\":\"AARHUS\"," +
+                "\"playerID\":\"55e45169e4b067dd3c8fa56e\"}," +
+                "\"message\":\"loginName 20052356 was authenticated\"}");
+        jsonObject = weatherService.requestWeather(group, user, Region.AALBORG);
+        assertThat(jsonObject.containsKey("errorMessage"), is(true));
+        assertThat(jsonObject.get("errorMessage").toString(), equalTo("UNAVAILABLE-OPEN"));
+    }
 }

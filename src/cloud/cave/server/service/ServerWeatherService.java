@@ -231,7 +231,7 @@ public class ServerWeatherService implements WeatherService {
             ClosedWeatherService closedWeatherService = new ClosedWeatherService(serverWeatherService);
             JSONObject jsonObject = closedWeatherService.requestWeather(groupName, playerID, region);
 
-            if (jsonObject.containsKey("errorMessage") && jsonObject.get("errorMessage").equals(ERROR_MESSAGE_OK)) {
+            if (jsonObject.get("errorMessage").equals(ERROR_MESSAGE_OK)) {
                 logger.info("Contact to the weather service re-established [half-open]");
                 serverWeatherService.setWeatherServiceState(closedWeatherService);
                 return jsonObject;
