@@ -57,6 +57,7 @@ public class EnvironmentServerFactory implements CaveServerFactory {
         ServerConfiguration config =
                 new ServerConfiguration(environmentReader, Config.SKYCAVE_SUBSCRIPTIONSERVER);
         subscriptionService.initialize(config);
+        subscriptionService.setRestRequester(createRestRequester());
 
         logger.info("Creating subscription service with cfg: " + config);
 
