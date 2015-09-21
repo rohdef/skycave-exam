@@ -13,7 +13,7 @@ export SKYCAVE_SUBSCRIPTION_IMPLEMENTATION=cloud.cave.server.service.ServerSubsc
 export SKYCAVE_SUBSCRIPTIONSERVER=cavereg.baerbak.com:4567
 
 # = Cave storage
-export SKYCAVE_CAVESTORAGE_IMPLEMENTATION=cloud.cave.doubles.FakeCaveStorage
+export SKYCAVE_CAVESTORAGE_IMPLEMENTATION=cloud.cave.server.service.ServerCaveStorage
 export SKYCAVE_DBSERVER=localhost:27017
 
 # = Rest Requester
