@@ -256,7 +256,8 @@
             depends="build.all"
             description="--> * Execute the server daemon">
         <java classpathref="run.path.id"
-              classname="cloud.cave.main.CaveDaemon">
+              classname="cloud.cave.main.CaveDaemon"
+              fork="yes">
         </java>
     </target>
 

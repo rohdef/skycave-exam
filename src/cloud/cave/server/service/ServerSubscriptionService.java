@@ -225,7 +225,7 @@ public class ServerSubscriptionService implements SubscriptionService {
 //                String loginNameResult = (String) subscriptionPart.get("loginName");
                 String playerName = (String) subscriptionPart.get("playerName");
                 String groupName = (String) subscriptionPart.get("groupName");
-                String region = (String) subscriptionPart.get("region");
+                String region = ((String) subscriptionPart.get("region")).replace("Aarhus", "Arhus");
                 String playerId = (String) subscriptionPart.get("playerID");
 
                 subscriptionRecord = new SubscriptionRecord(playerId, playerName,

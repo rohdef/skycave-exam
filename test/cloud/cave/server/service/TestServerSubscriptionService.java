@@ -1,6 +1,7 @@
 package cloud.cave.server.service;
 
 import cloud.cave.config.CaveServerFactory;
+import cloud.cave.config.socket.RestRequester;
 import cloud.cave.domain.Region;
 import cloud.cave.doubles.AllTestDoubleFactory;
 import cloud.cave.doubles.RequestSaboteur;
@@ -34,6 +35,14 @@ public class TestServerSubscriptionService {
         subscriptionService = factory.createSubscriptionServiceConnector();
         fakeRequest = new SubscriptionServiceRequestFake();
         subscriptionService.setRestRequester(fakeRequest);
+    }
+
+    @Test
+    public void foo() {
+        subscriptionService.setRestRequester(new RestRequester());
+        subscriptionService.initialize(new ServerConfiguration("cavereg.baerbak.com", 4567));
+
+        subscriptionService.lookup("asdf", "dvgfjkipdgf");
     }
 
     @Test

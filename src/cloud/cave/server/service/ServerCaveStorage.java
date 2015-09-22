@@ -6,6 +6,7 @@ import cloud.cave.server.common.RoomRecord;
 import cloud.cave.server.common.ServerConfiguration;
 import cloud.cave.service.CaveStorage;
 import com.mongodb.MongoClient;
+import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import org.bson.Document;
@@ -23,17 +24,18 @@ public class ServerCaveStorage implements CaveStorage {
     private static final String COLLECTION_ROOMS = "rooms";
 
     private final MongoClient mongoClient;
-    private final MongoDatabase database;
+    private MongoDatabase database;
 
     // http://mongodb.github.io/mongo-java-driver/3.0/driver/getting-started/quick-tour/
     public ServerCaveStorage() {
-        mongoClient = new MongoClient();
+        mongoClient = new MongoClient("127.0.0.1", 27017);
         database = mongoClient.getDatabase(DB_NAME);
     }
 
     @Override
     public RoomRecord getRoom(String positionString) {
         MongoCollection<Document> roomCollection = database.getCollection(COLLECTION_ROOMS);
+        FindIterable<Document> foo = roomCollection.find();
         return null;
     }
 

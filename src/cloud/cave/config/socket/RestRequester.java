@@ -1,6 +1,7 @@
 package cloud.cave.config.socket;
 
 import cloud.cave.service.IRestRequest;
+import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.fluent.Request;
 import org.slf4j.Logger;
@@ -35,6 +36,16 @@ public class RestRequester implements IRestRequest {
     public String doRequest(String url, List<NameValuePair> params) throws IOException {
         logger.debug(String.format("Doing a get rest request to [%1$s] with socket timeout %2$s and connection timeout %3$s",
                 url, socketTimeout, connectionTimeout));
+        HttpResponse response = Request.Get(url)
+                .socketTimeout(socketTimeout)
+                .connectTimeout(connectionTimeout)
+                .execute()
+                .returnResponse();
+
+        if (response.getStatusLine().getStatusCode() == 200 || response.getStatusLine().getStatusCode() == 500) {
+
+        }
+
         return Request
                 .Get(url)
                 .socketTimeout(socketTimeout)
