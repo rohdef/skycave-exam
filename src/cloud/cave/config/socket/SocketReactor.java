@@ -27,7 +27,7 @@ import cloud.cave.server.common.ServerConfiguration;
 public class SocketReactor implements Reactor {
     private int portNumber;
     private Invoker invoker;
-    private Logger logger;
+    private static final Logger logger = LoggerFactory.getLogger(SocketReactor.class);
     private JSONParser parser;
 
     private ServerSocket serverSocket = null;
@@ -37,7 +37,6 @@ public class SocketReactor implements Reactor {
         portNumber = config.get(0).getPortNumber();
         this.invoker = invoker;
         parser = new JSONParser();
-        logger = LoggerFactory.getLogger(SocketReactor.class);
     }
 
     @Override
