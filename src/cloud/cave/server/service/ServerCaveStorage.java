@@ -1,17 +1,21 @@
 package cloud.cave.server.service;
 
 import cloud.cave.domain.Direction;
+import cloud.cave.doubles.FakeCaveStorage;
 import cloud.cave.server.common.PlayerRecord;
 import cloud.cave.server.common.RoomRecord;
 import cloud.cave.server.common.ServerConfiguration;
 import cloud.cave.service.CaveStorage;
 import com.mongodb.MongoClient;
-import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import org.bson.Document;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 
 /**
  * License MIT
@@ -22,56 +26,66 @@ public class ServerCaveStorage implements CaveStorage {
     private static final String DB_NAME = "whats-it-going-to-be-then";
     private static final String COLLECTION_PLAYERS = "droogs";
     private static final String COLLECTION_ROOMS = "rooms";
+    private static final Logger logger = LoggerFactory.getLogger(ServerCaveStorage.class);
 
     private final MongoClient mongoClient;
-    private MongoDatabase database;
+    private final MongoDatabase database;
+    private ServerConfiguration config;
+    private FakeCaveStorage fakeCaveStorage = new FakeCaveStorage();
 
     // http://mongodb.github.io/mongo-java-driver/3.0/driver/getting-started/quick-tour/
     public ServerCaveStorage() {
-        mongoClient = new MongoClient("127.0.0.1", 27017);
+        mongoClient = new MongoClient();
         database = mongoClient.getDatabase(DB_NAME);
+        java.util.logging.Logger mongoLogger = java.util.logging.Logger.getLogger("com.mongodb");
+        mongoLogger.setLevel(Level.SEVERE);
     }
 
     @Override
     public RoomRecord getRoom(String positionString) {
         MongoCollection<Document> roomCollection = database.getCollection(COLLECTION_ROOMS);
-        FindIterable<Document> foo = roomCollection.find();
-        return null;
+        Document room = roomCollection.find().first();
+        logger.info("****************************************************************");
+        logger.info("*************************************************** " + room.toJson());
+        logger.info("****************************************************************");
+        String description = room.getString("description");
+        return new RoomRecord(description, new ArrayList<String>());
     }
 
     @Override
     public boolean addRoom(String positionString, RoomRecord description) {
-        return false;
+        return fakeCaveStorage.addRoom(positionString, description);
     }
 
     @Override
     public List<Direction> getSetOfExitsFromRoom(String positionString) {
-        return null;
+        return fakeCaveStorage.getSetOfExitsFromRoom(positionString);
     }
 
     @Override
     public PlayerRecord getPlayerByID(String playerID) {
-        return null;
+        return fakeCaveStorage.getPlayerByID(playerID);
     }
 
     @Override
     public void updatePlayerRecord(PlayerRecord record) {
-
+        fakeCaveStorage.updatePlayerRecord(record);
     }
 
     @Override
     public List<PlayerRecord> computeListOfPlayersAt(String positionString) {
-        return null;
+        return fakeCaveStorage.computeListOfPlayersAt(positionString);
     }
 
     @Override
     public int computeCountOfActivePlayers() {
-        return 0;
+        return fakeCaveStorage.computeCountOfActivePlayers();
     }
 
     @Override
     public void initialize(ServerConfiguration config) {
-
+        this.config = config;
+        fakeCaveStorage.initialize(config);
     }
 
     @Override
@@ -81,6 +95,6 @@ public class ServerCaveStorage implements CaveStorage {
 
     @Override
     public ServerConfiguration getConfiguration() {
-        return null;
+        return this.config;
     }
 }
