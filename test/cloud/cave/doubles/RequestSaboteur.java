@@ -16,6 +16,7 @@ public class RequestSaboteur implements IRestRequest {
     private String garbage;
     private IOException throwNext;
     private RuntimeException throwNextRuntime;
+    private boolean nullGarbage = false;
 
     public RequestSaboteur(IRestRequest victim) {
         if (victim == null)
@@ -38,7 +39,11 @@ public class RequestSaboteur implements IRestRequest {
             throwNextRuntime = null;
             throw e;
         }
-        if (garbage != null) {
+        if (nullGarbage) {
+            value = null;
+            garbage = null;
+            nullGarbage = false;
+        } else if (garbage != null) {
             value = garbage;
             garbage = null;
         }
@@ -74,5 +79,15 @@ public class RequestSaboteur implements IRestRequest {
     public void setThrowNext(RuntimeException throwNext) {
         this.throwNextRuntime = throwNext;
         this.throwNext = null;
+    }
+
+    public void reset() {
+        this.throwNext = null;
+        this.throwNextRuntime = null;
+        this.garbage = null;
+    }
+
+    public void activateNullGarbage() {
+        this.nullGarbage = true;
     }
 }

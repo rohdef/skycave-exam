@@ -3,6 +3,9 @@ package cloud.cave.client;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.*;
 
+import cloud.cave.doubles.AllTestDoubleFactory;
+import cloud.cave.doubles.RequestSaboteur;
+import cloud.cave.service.WeatherService;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -13,6 +16,8 @@ import cloud.cave.doubles.LocalMethodCallClientRequestHandler;
 import cloud.cave.ipc.Invoker;
 import cloud.cave.server.StandardInvoker;
 
+import java.io.IOException;
+
 /**
  * Testing the weather method on the
  * client side
@@ -21,11 +26,14 @@ import cloud.cave.server.StandardInvoker;
  */
 public class TestWeatherClient {
     private PlayerProxy player;
+    private WeatherService weatherService;
 
     @Before
     public void setUp() throws Exception {
         // Create the server tier
+        AllTestDoubleFactory factory = CommonCaveTests.getFactory();
         Cave cave = CommonCaveTests.createTestDoubledConfiguredCave();
+        weatherService = factory.getLastWeatherService();
 
         // create the invoker on the server side, bind it to the cave
         Invoker srh = new StandardInvoker(cave);
@@ -45,7 +53,42 @@ public class TestWeatherClient {
     public void shouldGetWeatherClientSide() {
         String weather = player.getWeather();
 
-        assertThat(weather, containsString("The weather in ARHUS is Clear, temperature 27.4C (feelslike -2.7C). Wind: 1.2 m/s, direction West."));
-        assertThat(weather, containsString("This report is dated: Thu, 05 Mar 2015 09:38:37 +0100"));
+        assertThat(weather, containsString("The weather in ARHUS is Partly Cloudy, temperature 42.0C (feelslike 24.0C). Wind: 4.0 m/s, direction NNE."));
+        assertThat(weather, containsString("This report is dated: Tue, 08 Sep 2015 13:24:22 +0200"));
+    }
+
+    @Test
+    public void shouldGetErrorsClientSide() {
+        RequestSaboteur requestSaboteur = new RequestSaboteur(weatherService.getRestRequester());
+        weatherService.setRestRequester(requestSaboteur);
+
+        String weather = player.getWeather();
+        assertThat(weather, containsString("The weather in ARHUS is Partly Cloudy, temperature 42.0C (feelslike 24.0C). Wind: 4.0 m/s, direction NNE."));
+        assertThat(weather, containsString("This report is dated: Tue, 08 Sep 2015 13:24:22 +0200"));
+
+        requestSaboteur.setThrowNext(new IOException());
+        weather = player.getWeather();
+        assertThat(weather, containsString("*** Sorry - weather information is not available ***"));
+
+        weather = player.getWeather();
+        assertThat(weather, containsString("The weather in ARHUS is Partly Cloudy, temperature 42.0C (feelslike 24.0C). Wind: 4.0 m/s, direction NNE."));
+        assertThat(weather, containsString("This report is dated: Tue, 08 Sep 2015 13:24:22 +0200"));
+
+        requestSaboteur.setThrowNext(new IOException());
+        weather = player.getWeather();
+        assertThat(weather, containsString("*** Sorry - weather information is not available ***"));
+
+        requestSaboteur.setThrowNext(new IOException());
+        weather = player.getWeather();
+        assertThat(weather, containsString("*** Sorry - weather information is not available ***"));
+
+        requestSaboteur.setThrowNext(new IOException());
+        weather = player.getWeather();
+        assertThat(weather, containsString("*** Sorry - weather information is not available ***"));
+
+
+        requestSaboteur.setThrowNext(new IOException());
+        weather = player.getWeather();
+        assertThat(weather, containsString("*** Sorry - no weather (open circuit) ***"));
     }
 }

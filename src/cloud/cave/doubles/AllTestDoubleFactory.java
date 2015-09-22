@@ -2,6 +2,9 @@ package cloud.cave.doubles;
 
 import cloud.cave.config.CaveServerFactory;
 import cloud.cave.ipc.*;
+import cloud.cave.server.common.ServerConfiguration;
+import cloud.cave.server.service.ServerSubscriptionService;
+import cloud.cave.server.service.ServerWeatherService;
 import cloud.cave.service.*;
 
 /**
@@ -10,6 +13,7 @@ import cloud.cave.service.*;
  * @author Henrik Baerbak Christensen, Aarhus University
  */
 public class AllTestDoubleFactory implements CaveServerFactory {
+    private WeatherService weatherService;
 
     @Override
     public CaveStorage createCaveStorage() {
@@ -20,8 +24,13 @@ public class AllTestDoubleFactory implements CaveServerFactory {
 
     @Override
     public SubscriptionService createSubscriptionServiceConnector() {
-        SubscriptionService service = new TestStubSubscriptionService();
-        service.initialize(null); // no config object required for the stub
+        String host = "is-there-anybody-out-there";
+        int port = 57005;
+        ServerConfiguration serverConfiguration = new ServerConfiguration(host, port);
+
+        SubscriptionService service = new ServerSubscriptionService();
+        service.setRestRequester(new SubscriptionServiceRequestFake());
+        service.initialize(serverConfiguration);
         return service;
     }
 
@@ -32,10 +41,21 @@ public class AllTestDoubleFactory implements CaveServerFactory {
 
     @Override
     public WeatherService createWeatherServiceConnector() {
-        WeatherService service = new TestStubWeatherService();
-        service.initialize(null); // no config object required
-        service.setRestRequester(createRestRequester());
+        String host = "is-there-anybody-out-there";
+        int port = 57005;
+        ServerConfiguration serverConfiguration = new ServerConfiguration(host, port);
+
+        WeatherService service = new ServerWeatherService();
+        service.initialize(serverConfiguration); // no config object required
+        service.setRestRequester(new WeatherServiceRequestFake());
+        service.setSecondsDelay(1);
+
+        weatherService = service;
         return service;
+    }
+
+    public WeatherService getLastWeatherService() {
+        return this.weatherService;
     }
 
     @Override
@@ -43,6 +63,4 @@ public class AllTestDoubleFactory implements CaveServerFactory {
         // The reactor is not presently used in the test cases...
         return null;
     }
-
-
 }

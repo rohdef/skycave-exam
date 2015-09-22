@@ -10,4 +10,6 @@ package cloud.cave.server.common;
 public enum SubscriptionResult {
     LOGIN_NAME_HAS_VALID_SUBSCRIPTION, // Both login name and password match the subscription
     LOGIN_NAME_OR_PASSWORD_IS_UNKNOWN, // The login name is not found in subscription service
+    LOGIN_SERVICE_UNAVAILABLE_CLOSED,
+    LOGIN_SERVICE_UNAVAILABLE_OPEN,
 }

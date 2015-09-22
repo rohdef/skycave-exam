@@ -248,15 +248,16 @@
     </target>
 
     <!--- Execution -->
-    <property name="id" value="mikkel_aarskort"/>
-    <property name="pwd" value="123"/>
+    <property name="id" value="20052356"/>
+    <property name="pwd" value="621985792"/>
 
     <!-- Server daemon -->
     <target name="daemon"
             depends="build.all"
             description="--> * Execute the server daemon">
         <java classpathref="run.path.id"
-              classname="cloud.cave.main.CaveDaemon">
+              classname="cloud.cave.main.CaveDaemon"
+              fork="true">
         </java>
     </target>
 

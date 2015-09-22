@@ -24,4 +24,10 @@ public interface SubscriptionService extends ExternalService {
      * illegal record.
      */
     SubscriptionRecord lookup(String loginName, String password);
+
+    void setRestRequester(IRestRequest restRequest);
+
+    IRestRequest getRestRequester();
+
+    void setSecondsDelay(int secondsDelay);
 }

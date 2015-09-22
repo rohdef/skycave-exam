@@ -11,13 +11,13 @@ import java.util.List;
  *
  * @author Rohde Fischer
  */
-public class RequestFake implements IRestRequest {
+public class WeatherServiceRequestFake implements IRestRequest {
     private String lastUrl = "";
 
     @Override
     public String doRequest(String url, List<NameValuePair> params) throws IOException{
         this.lastUrl = url;
-        //String[] urlParts = url.split('/');
+
         String weather;
 
         String[] urlParts = url.split("/");
@@ -65,6 +65,12 @@ public class RequestFake implements IRestRequest {
             default:
                 weather = null;
         }
+
+        if (!urlParts[urlParts.length-3].equals("grp01"))
+            return String.format("{\"errorMessage\": \"GroupName %1$s or playerID %2$s is not authenticated.\"," +
+                            "\"authenticated\": \"false\" }",
+                    urlParts[urlParts.length-3], urlParts[urlParts.length-2]);
+
         return weather;
     }
 

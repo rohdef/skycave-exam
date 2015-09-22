@@ -67,7 +67,7 @@ public class TestInterpreter {
 
         // weather
         assertThat(output, containsString("The weather at: COPENHAGEN"));
-        assertThat(output, containsString("The weather in COPENHAGEN is Clear, temperature 27.4C (feelslike -2.7C). Wind: 1.2 m/s, direction West. This report is dated: Thu, 05 Mar 2015 09:38:37 +0100."));
+        assertThat(output, containsString("The weather in COPENHAGEN is Partly Cloudy, temperature -14.0C (feelslike -52.0C). Wind: 25.0 m/s, direction NNE. This report is dated: Tue, 08 Sep 2015 13:24:22 +0200."));
 
         // sys
         assertThat(output, containsString("ClientRequestHandler: cloud.cave.doubles.LocalMethodCallClientRequestHandler"));

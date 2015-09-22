@@ -2,12 +2,16 @@ package cloud.cave.server;
 
 import java.util.*;
 
+import cloud.cave.server.service.ServerWeatherService;
+import com.google.common.base.Strings;
 import org.json.simple.JSONObject;
 
 import cloud.cave.domain.*;
 import cloud.cave.ipc.*;
 import cloud.cave.server.common.*;
 import cloud.cave.service.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Standard implementation of Player on the server side. Interacts with
@@ -22,6 +26,7 @@ public class StandardServerPlayer implements Player {
      * The classpath used to search for Command objects
      */
     public static final String EXTENSION_CLASSPATH = "cloud.cave.extension";
+    private static final Logger logger = LoggerFactory.getLogger(StandardServerPlayer.class);
 
     private CaveStorage storage;
     private String ID;
@@ -136,9 +141,25 @@ public class StandardServerPlayer implements Player {
 
     @Override
     public String getWeather() {
-        JSONObject weatherAsJson =
-                weatherService.requestWeather(getGroupName(), getID(), getRegion());
-        return convertToFormattedString(weatherAsJson);
+        JSONObject weatherAsJson = weatherService.requestWeather(getGroupName(), getID(), getRegion());
+
+        // Prevent null pointer crashes etc.
+        String errorMessage = Strings.nullToEmpty((String) weatherAsJson.get("errorMessage"));
+        String authenticated = Strings.nullToEmpty((String) weatherAsJson.get("authenticated"));
+
+        if (errorMessage.equals(ServerWeatherService.ERROR_MESSAGE_OK))
+            return convertToFormattedString(weatherAsJson);
+        else if (errorMessage.equals(ServerWeatherService.ERROR_MESSAGE_UNAVAILABLE_CLOSED))
+            return "*** Sorry - weather information is not available ***";
+        else if (errorMessage.equals(ServerWeatherService.ERROR_MESSAGE_UNAVAILABLE_OPEN))
+            return "*** Sorry - no weather (open circuit) ***";
+        else if (authenticated.equals("false"))
+            return "The weather service failed with message: " + errorMessage;
+        else {
+            logger.error("An unknow error status was received in getWeather. The JSON received was: " +
+                    weatherAsJson.toJSONString());
+            return "Unrecognized error message recieved";
+        }
     }
 
     /**
@@ -149,35 +170,25 @@ public class StandardServerPlayer implements Player {
      * @return formatted string describing the weather
      */
     private String convertToFormattedString(JSONObject currentObservation) {
+        String temperature = currentObservation.get("temperature").toString();
+        double tempDouble = Double.parseDouble(temperature);
 
-        String result;
-        if (currentObservation.get("authenticated").equals("true")) {
-            String temperature = currentObservation.get("temperature").toString();
-            double tempDouble = Double.parseDouble(temperature);
+        String feelslike = currentObservation.get("feelslike").toString();
+        double feelDouble = Double.parseDouble(feelslike);
 
-            String feelslike = currentObservation.get("feelslike").toString();
-            double feelDouble = Double.parseDouble(feelslike);
+        String winddir = currentObservation.get("winddirection").toString();
 
-            String winddir = currentObservation.get("winddirection").toString();
+        String windspeed = currentObservation.get("windspeed").toString();
+        double windSpDouble = Double.parseDouble(windspeed);
 
-            String windspeed = currentObservation.get("windspeed").toString();
-            double windSpDouble = Double.parseDouble(windspeed);
+        String weather = currentObservation.get("weather").toString();
 
-            String weather = currentObservation.get("weather").toString();
+        String time = currentObservation.get("time").toString();
 
-            String time = currentObservation.get("time").toString();
-
-            result = String
-                    .format(
-                            Locale.US,
-                            "The weather in %s is %s, temperature %.1fC (feelslike %.1fC). Wind: %.1f m/s, direction %s. This report is dated: %s.",
-                            getRegion().toString(), weather, tempDouble, feelDouble,
-                            windSpDouble, winddir, time);
-        } else {
-            result = "The weather service failed with message: "
-                    + currentObservation.get("errorMessage");
-        }
-        return result;
+        return String.format(Locale.US,
+                "The weather in %s is %s, temperature %.1fC (feelslike %.1fC). Wind: %.1f m/s, direction %s. " +
+                        "This report is dated: %s.",
+                getRegion().toString(), weather, tempDouble, feelDouble, windSpDouble, winddir, time);
     }
 
     @Override

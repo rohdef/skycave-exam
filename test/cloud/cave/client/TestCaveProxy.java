@@ -90,7 +90,7 @@ public class TestCaveProxy {
         // System.out.println(configString);
         assertThat(configString, containsString("ClientRequestHandler: cloud.cave.doubles.LocalMethodCallClientRequestHandler"));
         assertThat(configString, containsString("CaveStorage: cloud.cave.doubles.FakeCaveStorage"));
-        assertThat(configString, containsString("SubscriptionService: cloud.cave.doubles.TestStubSubscriptionService"));
-        assertThat(configString, containsString("WeatherService: cloud.cave.doubles.TestStubWeatherService"));
+        assertThat(configString, containsString("SubscriptionService: cloud.cave.server.service.ServerSubscriptionService"));
+        assertThat(configString, containsString("WeatherService: cloud.cave.server.service.ServerWeatherService"));
     }
 }

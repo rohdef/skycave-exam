@@ -3,10 +3,15 @@ package cloud.cave.server;
 import static org.junit.Assert.*;
 import static org.hamcrest.CoreMatchers.*;
 
+import cloud.cave.doubles.AllTestDoubleFactory;
+import cloud.cave.doubles.RequestSaboteur;
+import cloud.cave.service.WeatherService;
 import org.junit.*;
 
 import cloud.cave.common.*;
 import cloud.cave.domain.*;
+
+import java.io.IOException;
 
 /**
  * Test server side implementation of the Player abstraction.
@@ -24,18 +29,50 @@ import cloud.cave.domain.*;
  * @author Henrik Baerbak Christensen, Aarhus University.
  */
 public class TestServerPlayer {
-
     private Cave cave;
     private Player player;
 
     private String description;
+    private WeatherService weatherService;
 
     @Before
     public void setup() {
         cave = CommonCaveTests.createTestDoubledConfiguredCave();
+        AllTestDoubleFactory factory = CommonCaveTests.getFactory();
 
         Login loginResult = cave.login("mikkel_aarskort", "123");
         player = loginResult.getPlayer();
+
+        weatherService = factory.getLastWeatherService();
+    }
+
+    @Test
+    public void shouldGiveWeatherOnNoError() {
+        String weather = player.getWeather();
+
+        assertThat(weather, containsString("The weather in ARHUS is Partly Cloudy, temperature 42.0C (feelslike 24.0C). Wind: 4.0 m/s, direction NNE."));
+        assertThat(weather, containsString("This report is dated: Tue, 08 Sep 2015 13:24:22 +0200"));
+    }
+
+    @Test
+    public void shouldGiveClosedOpenAndHalfOpenErrors() {
+        RequestSaboteur requestSaboteur = new RequestSaboteur(weatherService.getRestRequester());
+        weatherService.setRestRequester(requestSaboteur);
+
+        requestSaboteur.setThrowNext(new IOException());
+        String weather = player.getWeather();
+
+        assertThat(weather, containsString("*** Sorry - weather information is not available ***"));
+
+        // Now open this motherfucker up!
+        requestSaboteur.setThrowNext(new IOException());
+        weather = player.getWeather();
+        requestSaboteur.setThrowNext(new IOException());
+        weather = player.getWeather();
+        requestSaboteur.setThrowNext(new IOException());
+        weather = player.getWeather();
+
+        assertThat(weather, containsString("*** Sorry - no weather (open circuit) ***"));
     }
 
     // TDD of simple player attributes

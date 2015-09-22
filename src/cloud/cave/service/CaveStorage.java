@@ -4,6 +4,8 @@ import java.util.*;
 
 import cloud.cave.domain.*;
 import cloud.cave.server.common.*;
+import com.mongodb.client.MongoCollection;
+import org.bson.Document;
 
 /**
  * The storage service for the cave as a set of rooms and a set of players in
@@ -17,6 +19,9 @@ public interface CaveStorage extends ExternalService {
 
     /**
      * Get the room for the given position
+     *
+     *
+     *
      *
      * @param positionString the (x,y,z) of the position encoded as a position string.
      * @return the room's properties in a record
