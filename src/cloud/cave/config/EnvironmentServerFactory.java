@@ -35,11 +35,11 @@ public class EnvironmentServerFactory implements CaveServerFactory {
     public CaveStorage createCaveStorage() {
         CaveStorage caveStorage = null;
         caveStorage = Config.loadAndInstantiate(environmentReader,
-                Config.SKYCAVE_CAVESTORAGE_IMPLEMENTATION, caveStorage);
+                Config.SKYCAVE_CAVESTORAGE_IMPLEMENTATION,
+                caveStorage);
 
         // Read in the server configuration
-        ServerConfiguration config =
-                new ServerConfiguration(environmentReader, Config.SKYCAVE_DBSERVER);
+        ServerConfiguration config = new ServerConfiguration(environmentReader, Config.SKYCAVE_DBSERVER);
         caveStorage.initialize(config);
 
         logger.info("Creating cave storage with cfg: " + config);
@@ -51,13 +51,15 @@ public class EnvironmentServerFactory implements CaveServerFactory {
     public SubscriptionService createSubscriptionServiceConnector() {
         SubscriptionService subscriptionService = null;
         subscriptionService = Config.loadAndInstantiate(environmentReader,
-                Config.SKYCAVE_SUBSCRIPTION_IMPLEMENTATION, subscriptionService);
+                Config.SKYCAVE_SUBSCRIPTION_IMPLEMENTATION,
+                subscriptionService);
 
         // Read in the server configuration
-        ServerConfiguration config =
-                new ServerConfiguration(environmentReader, Config.SKYCAVE_SUBSCRIPTIONSERVER);
+        ServerConfiguration config = new ServerConfiguration(environmentReader, Config.SKYCAVE_SUBSCRIPTIONSERVER);
         subscriptionService.initialize(config);
-        subscriptionService.setRestRequester(createRestRequester());
+        IRestRequest restRequest = createRestRequester();
+        restRequest.setBuggySupport(true);
+        subscriptionService.setRestRequester(restRequest);
 
         logger.info("Creating subscription service with cfg: " + config);
 

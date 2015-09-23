@@ -25,7 +25,7 @@ public class CommonPlayerTests {
     public static void shouldAccessSimpleAttributes(Player player) {
         assertEquals("Mikkel", player.getName());
         assertEquals("user-001", player.getID());
-        assertEquals(Region.ARHUS, player.getRegion());
+        assertEquals(Region.AARHUS, player.getRegion());
         assertEquals("(0,0,0)", player.getPosition());
     }
 

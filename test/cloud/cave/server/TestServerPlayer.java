@@ -50,7 +50,7 @@ public class TestServerPlayer {
     public void shouldGiveWeatherOnNoError() {
         String weather = player.getWeather();
 
-        assertThat(weather, containsString("The weather in ARHUS is Partly Cloudy, temperature 42.0C (feelslike 24.0C). Wind: 4.0 m/s, direction NNE."));
+        assertThat(weather, containsString("The weather in AARHUS is Partly Cloudy, temperature 42.0C (feelslike 24.0C). Wind: 4.0 m/s, direction NNE."));
         assertThat(weather, containsString("This report is dated: Tue, 08 Sep 2015 13:24:22 +0200"));
     }
 
@@ -238,6 +238,6 @@ public class TestServerPlayer {
     @Test
     public void shouldReturnReasonableToString() {
         assertThat(player.toString(), containsString("StandardServerPlayer [storage=FakeCaveStorage"));
-        assertThat(player.toString(), containsString("name=Mikkel, ID=user-001, region=ARHUS"));
+        assertThat(player.toString(), containsString("name=Mikkel, ID=user-001, region=AARHUS"));
     }
 }

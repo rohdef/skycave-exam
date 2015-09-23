@@ -40,7 +40,7 @@ public class TestServerWeatherService {
 
     @Test
     public void shouldReturnWeather() {
-        JSONObject weather = weatherService.requestWeather(group, user, Region.ARHUS);
+        JSONObject weather = weatherService.requestWeather(group, user, Region.AARHUS);
 
         assertTrue(weather.containsKey("errorMessage"));
         assertTrue(weather.containsKey("windspeed"));
@@ -51,7 +51,7 @@ public class TestServerWeatherService {
 
     @Test
     public void shouldAccountForTheCityChosen() {
-        JSONObject weather = weatherService.requestWeather(group, user, Region.ARHUS);
+        JSONObject weather = weatherService.requestWeather(group, user, Region.AARHUS);
         assertThat(weather.get("temperature").toString(), containsString("42.0"));
         assertThat(weather.get("windspeed").toString(), containsString("4"));
 
@@ -74,7 +74,7 @@ public class TestServerWeatherService {
         weatherService.disconnect();
         weatherService = new ServerWeatherService(new WeatherServiceRequestFake());
 
-        JSONObject jsonObject = weatherService.requestWeather(group, user, Region.ARHUS);
+        JSONObject jsonObject = weatherService.requestWeather(group, user, Region.AARHUS);
         assertThat(jsonObject.containsKey("errorMessage"), is(true));
         assertThat(jsonObject.get("errorMessage").toString(), equalTo("UNAVAILABLE-CLOSED"));
 

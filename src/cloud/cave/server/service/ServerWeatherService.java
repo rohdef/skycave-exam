@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.net.URLEncoder;
 import java.util.Date;
 
 /**
@@ -153,16 +154,18 @@ public class ServerWeatherService implements WeatherService {
             if (region == null)
                 throw new NullPointerException("The region must be set");
 
-            String regionString = region.name().substring(0, 1).toUpperCase() + region.name().substring(1).toLowerCase();
-            String url = String.format("http://%s:%s/cave/weather/api/v1/%s/%s/%s",
-                    serverWeatherService.config.get(0).getHostName(),
-                    serverWeatherService.config.get(0).getPortNumber(),
-                    groupName,
-                    playerID,
-                    regionString);
+            String regionName = region.name().replace("AARHUS", "ARHUS");
+            String regionString = regionName.substring(0, 1).toUpperCase() + regionName.substring(1).toLowerCase();
 
             String weatherString;
             try {
+                String url = String.format("http://%s:%s/cave/weather/api/v1/%s/%s/%s",
+                        serverWeatherService.config.get(0).getHostName(),
+                        serverWeatherService.config.get(0).getPortNumber(),
+                        URLEncoder.encode(groupName, "UTF-8"),
+                        URLEncoder.encode(playerID, "UTF-8"),
+                        URLEncoder.encode(regionString, "UTF-8"));
+
                 weatherString = serverWeatherService.restRequest.doRequest(url, null);
             } catch (IOException e) {
                 throw new RuntimeException("An error occured in the connection to the weather REST service.", e);

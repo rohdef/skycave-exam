@@ -26,6 +26,11 @@ public class RequestSaboteur implements IRestRequest {
     }
 
     @Override
+    public void setBuggySupport(boolean buggySupport) {
+        // Do nothing, not relevant here
+    }
+
+    @Override
     public String doRequest(String url, List<NameValuePair> params) throws IOException{
         String value = victim.doRequest(url, params);
 

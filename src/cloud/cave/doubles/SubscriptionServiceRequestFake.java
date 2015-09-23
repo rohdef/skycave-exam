@@ -15,6 +15,11 @@ public class SubscriptionServiceRequestFake implements IRestRequest {
     private String lastUrl;
 
     @Override
+    public void setBuggySupport(boolean buggySupport) {
+        // Do nothing, not relevant here
+    }
+
+    @Override
     public String doRequest(String url, List<NameValuePair> params) throws IOException {
         lastUrl = url;
 
@@ -39,7 +44,7 @@ public class SubscriptionServiceRequestFake implements IRestRequest {
             success = true;
             playerName = "Mikkel";
             groupName = "grp01";
-            region = "ARHUS";
+            region = "AARHUS";
             playerId = "user-001";
         } else if (loginName.equals("magnus_aarskort") && password.equals("312")) {
             success = true;
@@ -57,7 +62,7 @@ public class SubscriptionServiceRequestFake implements IRestRequest {
             success = true;
             playerName = "ReservedCrunchUser";
             groupName = "zzz0";
-            region = "ARHUS";
+            region = "AARHUS";
             playerId = "user-reserved";
         } else {
             success = false;

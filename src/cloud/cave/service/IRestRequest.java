@@ -11,5 +11,7 @@ import java.util.List;
  * @author Rohde Fischer
  */
 public interface IRestRequest {
+    void setBuggySupport(boolean buggySupport);
+
     String doRequest(String url, List<NameValuePair> params) throws IOException;
 }

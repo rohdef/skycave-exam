@@ -15,6 +15,11 @@ public class WeatherServiceRequestFake implements IRestRequest {
     private String lastUrl = "";
 
     @Override
+    public void setBuggySupport(boolean buggySupport) {
+        // Do nothing, not relevant her
+    }
+
+    @Override
     public String doRequest(String url, List<NameValuePair> params) throws IOException{
         this.lastUrl = url;
 

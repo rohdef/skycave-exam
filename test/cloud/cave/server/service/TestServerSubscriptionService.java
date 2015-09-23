@@ -58,7 +58,7 @@ public class TestServerSubscriptionService {
         assertThat(subscriptionRecord.getPlayerID(), is("user-001"));
         assertThat(subscriptionRecord.getPlayerName(), is("Mikkel"));
         assertThat(subscriptionRecord.getGroupName(), is("grp01"));
-        assertThat(subscriptionRecord.getRegion(), is(Region.ARHUS));
+        assertThat(subscriptionRecord.getRegion(), is(Region.AARHUS));
 
 
         user = "magnus_aarskort";
@@ -91,7 +91,7 @@ public class TestServerSubscriptionService {
         assertThat(subscriptionRecord.getPlayerID(), is("user-reserved"));
         assertThat(subscriptionRecord.getPlayerName(), is("ReservedCrunchUser"));
         assertThat(subscriptionRecord.getGroupName(), is("zzz0"));
-        assertThat(subscriptionRecord.getRegion(), is(Region.ARHUS));
+        assertThat(subscriptionRecord.getRegion(), is(Region.AARHUS));
     }
 
     @Test

@@ -43,6 +43,8 @@ public class TestFactoryDynamicCreation {
                 "cloud.cave.server.service.ServerSubscriptionService");
         envReader.setNextExpectation(Config.SKYCAVE_SUBSCRIPTIONSERVER,
                 "subscription.baerbak.com:42042");
+        envReader.setNextExpectation(Config.REST_REQUEST_IMPLEMENTATION,
+                "cloud.cave.config.socket.RestRequester");
         SubscriptionService service = factory.createSubscriptionServiceConnector();
         assertThat(service.toString(), containsString("ServerSubscriptionService"));
         ServerConfiguration config = service.getConfiguration();
