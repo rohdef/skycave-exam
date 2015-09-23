@@ -44,10 +44,11 @@ public class RestRequester implements IRestRequest {
     public String doRequest(String url, List<NameValuePair> params) throws IOException {
         logger.debug(String.format("Doing a get rest request to [%1$s] with socket timeout %2$s and connection timeout %3$s",
                 url, socketTimeout, connectionTimeout));
-        if (this.buggySupport)
+        if (this.buggySupport) {
             return doNastyRequest(url, params);
-        else
+        } else {
             return doNiceRequest(url, params);
+        }
     }
 
     private String doNiceRequest(String url, List<NameValuePair> params) throws IOException {

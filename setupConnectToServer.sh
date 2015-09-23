@@ -8,8 +8,6 @@ export SKYCAVE_REACTOR_IMPLEMENTATION=cloud.cave.config.socket.SocketReactor
 # === Configure for server to run on localhost
 export SKYCAVE_APPSERVER=cloud.smatso.dk:37123
 
-# === Inject test doubles for all delegates (Note IP endpoints are dummies)
-
 # = Subscription service
 export SKYCAVE_SUBSCRIPTION_IMPLEMENTATION=cloud.cave.server.service.ServerSubscriptionService
 export SKYCAVE_SUBSCRIPTIONSERVER=cavereg.baerbak.com:4567
