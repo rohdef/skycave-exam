@@ -162,14 +162,15 @@ public class ServerSubscriptionService implements SubscriptionService {
         @Override
         public SubscriptionRecord lookup(String loginName, String password) {
             try {
+                logger.debug("\u001b[1;33mSubscription Service is CLOSED\u001b[0;37m");
                 SubscriptionRecord subscriptionRecord = performLookup(loginName, password);
                 retryCount = 0;
                 return subscriptionRecord;
             } catch (IllegalArgumentException e) {
-                logger.warn("Malformed login details detected", e);
+                logger.warn("\u001b[0;31mMalformed login details detected\u001b[0;37m", e);
                 return new SubscriptionRecord(SubscriptionResult.LOGIN_NAME_OR_PASSWORD_IS_UNKNOWN);
             } catch (Exception e) {
-                logger.warn("Could not contact the subscription service [closed]", e);
+                logger.warn("\u001b[0;31mCould not contact the subscription service [closed]\u001b[0;37m", e);
                 this.retryCount++;
 
                 if (this.retryCount >= this.threshold)
@@ -254,7 +255,7 @@ public class ServerSubscriptionService implements SubscriptionService {
 
         @Override
         public SubscriptionRecord lookup(String loginName, String password) {
-            logger.info("Subscription service is open, bypassing request");
+            logger.info("\u001b[1;33mSubscription service is OPEN, bypassing request\u001b[0;37m");
 
             long currentTime = (new Date()).getTime();
             if (timeToHalfOpen <= currentTime) {
@@ -290,15 +291,16 @@ public class ServerSubscriptionService implements SubscriptionService {
 
         @Override
         public SubscriptionRecord lookup(String loginName, String password) {
+            logger.info("\u001B[1;33mSubscription service is HALF-OPEN, trying normal request\u001b[0;37m");
             ClosedSubscriptionServiceState closedSubscriptionServiceState = new ClosedSubscriptionServiceState(serverSubscriptionService);
             SubscriptionRecord subscriptionRecord = closedSubscriptionServiceState.lookup(loginName, password);
 
             if (subscriptionRecord.getErrorCode() == SubscriptionResult.LOGIN_NAME_HAS_VALID_SUBSCRIPTION) {
-                logger.info("Contact to the subscription service re-established [half-open]");
+                logger.info("\u001B[0;31mContact to the subscription service re-established [half-open]\u001B[0;37m");
                 serverSubscriptionService.setSubscriptionServiceState(closedSubscriptionServiceState);
                 return subscriptionRecord;
             } else {
-                logger.warn("Could not contact the subscription service [half-open]");
+                logger.warn("\u001B[0;37mCould not contact the subscription service [half-open]\u001B[0;37m");
                 OpenSubscriptionServiceState openSubscriptionServiceState = new OpenSubscriptionServiceState(serverSubscriptionService);
                 serverSubscriptionService.setSubscriptionServiceState(openSubscriptionServiceState);
                 return openSubscriptionServiceState.lookup(loginName, password);

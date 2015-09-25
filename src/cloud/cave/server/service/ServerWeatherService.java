@@ -124,12 +124,13 @@ public class ServerWeatherService implements WeatherService {
 
         @Override
         public JSONObject requestWeather(String groupName, String playerID, Region region) {
+            logger.debug("\u001b[1;33mWeater Service is CLOSED\u001b[0;37m");
             try {
                 JSONObject jsonObject = performRequestWeather(groupName, playerID, region);
                 retryCount = 0;
                 return jsonObject;
             } catch (Exception e) {
-                logger.warn("Could not contact the weather service [closed]", e);
+                logger.warn("\u001B[0;31mCould not contact the weather service [closed]\u001B[0;37m", e);
                 this.retryCount++;
 
                 if (this.retryCount >= this.threshold)
@@ -206,15 +207,13 @@ public class ServerWeatherService implements WeatherService {
 
         @Override
         public JSONObject requestWeather(String groupName, String playerID, Region region) {
-            logger.info("Weather service is open, bypassing request");
-
             long currentTime = (new Date()).getTime();
             if (timeToHalfOpen <= currentTime) {
                 IWeatherServiceState serviceState = new HalfOpenWeatherService(serverWeatherService);
                 serverWeatherService.setWeatherServiceState(serviceState);
                 return serviceState.requestWeather(groupName, playerID, region);
-
             } else {
+                logger.info("\u001B[1;33mWeather service is open, bypassing request\u001B[0;37m");
                 JSONObject unavailableJson = new JSONObject();
                 unavailableJson.put("errorMessage", serverWeatherService.ERROR_MESSAGE_UNAVAILABLE_OPEN);
                 return unavailableJson;
@@ -231,15 +230,16 @@ public class ServerWeatherService implements WeatherService {
 
         @Override
         public JSONObject requestWeather(String groupName, String playerID, Region region) {
+            logger.info("\u001B[1;33mTrying to re-establish contact to the weather service [half-open]\u001B[0;37m");
             ClosedWeatherService closedWeatherService = new ClosedWeatherService(serverWeatherService);
             JSONObject jsonObject = closedWeatherService.requestWeather(groupName, playerID, region);
 
             if (jsonObject.get("errorMessage").equals(ERROR_MESSAGE_OK)) {
-                logger.info("Contact to the weather service re-established [half-open]");
+                logger.info("\u001B[1;33mContact to the weather service re-established [half-open]\u001B[0;37m");
                 serverWeatherService.setWeatherServiceState(closedWeatherService);
                 return jsonObject;
             } else {
-                logger.warn("Could not contact the weather service [half-open]");
+                logger.warn("\u001B[0;31mCould not contact the weather service [half-open]\u001B[0;37m");
                 OpenWeatherService openWeatherService = new OpenWeatherService(serverWeatherService);
                 serverWeatherService.setWeatherServiceState(openWeatherService);
                 return openWeatherService.requestWeather(groupName, playerID, region);
