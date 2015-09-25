@@ -33,8 +33,8 @@ public class RabbitRequestHandler implements ClientRequestHandler{
     @Override
     public JSONObject sendRequestAndBlockUntilReply(JSONObject requestJson) throws CaveIPCException {
         ConnectionFactory factory = new ConnectionFactory();
-        factory.setHost("172.17.0.1");
-        Connection connection = null;
+        factory.setHost(config.get(0).getHostName());
+        Connection connection;
         String response = null;
 
         JSONObject replyJson = null;

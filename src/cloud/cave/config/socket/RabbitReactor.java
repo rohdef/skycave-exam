@@ -36,7 +36,7 @@ public class RabbitReactor implements Reactor {
     public void run() {
 
         ConnectionFactory connectionFactory = new ConnectionFactory();
-        connectionFactory.setHost("172.17.0.1");
+        connectionFactory.setHost("localhost");
         try {
             Connection connection = connectionFactory.newConnection();
             Channel channel = connection.createChannel();
