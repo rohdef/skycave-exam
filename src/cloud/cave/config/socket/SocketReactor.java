@@ -105,6 +105,13 @@ public class SocketReactor implements Reactor {
             reply = Marshaling.createInvalidReplyWithExplantion(
                     StatusCode.SERVER_FAILURE, errorMsg);
         }
+        if (reply == null) {
+            String errorMsg = "The reply from the invoker was null";
+            logger.error(errorMsg);
+            reply = Marshaling.createInvalidReplyWithExplantion(
+                    StatusCode.SERVER_FAILURE, errorMsg);
+        }
+
         out.println(reply.toString());
         logger.debug("--< !!! replied: " + reply);
 
