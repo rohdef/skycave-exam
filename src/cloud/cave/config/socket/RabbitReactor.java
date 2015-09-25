@@ -1,8 +1,11 @@
 package cloud.cave.config.socket;
 
 import cloud.cave.config.RabbitMQConfig;
+import cloud.cave.domain.ThreadCrashExeption;
 import cloud.cave.ipc.Invoker;
+import cloud.cave.ipc.Marshaling;
 import cloud.cave.ipc.Reactor;
+import cloud.cave.ipc.StatusCode;
 import cloud.cave.server.common.ServerConfiguration;
 import com.mongodb.util.JSON;
 import com.rabbitmq.client.*;
@@ -44,36 +47,51 @@ public class RabbitReactor implements Reactor {
             logger.info("*** Connected to RabbitMQ ***");
 
             while (true){
-                logger.debug("Accepting ");
-                QueueingConsumer.Delivery delivery = consumer.nextDelivery();
-                BasicProperties props = delivery.getProperties();
-                AMQP.BasicProperties replyProps = new AMQP.BasicProperties
-                                                        .Builder()
-                                                        .correlationId(props.getCorrelationId())
-                                                        .build();
+                 try{
+                    logger.debug("--> Accepting... ");
+                    QueueingConsumer.Delivery delivery = consumer.nextDelivery();
+                    BasicProperties props = delivery.getProperties();
+                    AMQP.BasicProperties replyProps = new AMQP.BasicProperties
+                                                            .Builder()
+                                                            .correlationId(props.getCorrelationId())
+                                                            .build();
 
-                String message = new String(delivery.getBody());
-                System.out.println("Message recived: ");
-                System.out.println(message);
+                    String message = new String(delivery.getBody());
 
-                channel.basicPublish("", props.getReplyTo(), replyProps, message.getBytes());
-                channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
+                    logger.debug("--> AcceptED!");
 
+                    String reply = readMessageAndReply(message);
+
+                    channel.basicPublish("", props.getReplyTo(), replyProps, reply.getBytes());
+                    logger.debug("--< replied: " + reply);
+                    channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
+                    logger.debug("--< Acknowledged message handled");
+                } catch (IOException e) {
+                    logger.warn("Error receiving on RabbitReactor", e);
+                    throw new RuntimeException("Error receiving on RabbitReactor", e);
+                } catch (InterruptedException e) {
+                    logger.warn("Interrupted receiving on RabbitReactor", e);
+                    throw new RuntimeException("Interrupted receiving on RabbitReactor", e);
+                }catch (Exception e){
+                    logger.error("Critical error detected while receiving", e);
+                    throw new RuntimeException("Critical error detected while receiving", e);
+                }
             }
         } catch (IOException e) {
-            e.printStackTrace();
-            throw new RuntimeException("Error reciving on RabbitReactor", e);
+            logger.warn("Error receiving on RabbitReactor", e);
+            throw new ThreadCrashExeption("Error receiving on RabbitReactor", e);
         } catch (TimeoutException e) {
-            e.printStackTrace();
-            throw new RuntimeException("Error reciving on RabbitReactor", e);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-            throw new RuntimeException("Error reciving on RabbitReactor", e);
+            logger.warn("Timeout receiving on RabbitReactor", e);
+            throw new ThreadCrashExeption("Timeout receiving on RabbitReactor", e);
+        } catch (Exception e){
+            logger.error("Critical error detected while receiving", e);
+            throw new RuntimeException("Critical error detected while receiving", e);
         }
 
     }
 
-    private void readMessageAndReply(String message){
+    private String readMessageAndReply(String message){
+        logger.debug("--> Received " +message);
         JSONObject messageJSON, reply;
         JSONParser parser = new JSONParser();
 
@@ -81,14 +99,27 @@ public class RabbitReactor implements Reactor {
             messageJSON = (JSONObject) parser.parse(message);
             reply = invoker.handleRequest(messageJSON);
         } catch (ParseException e) {
-
-            e.printStackTrace();
-        } catch (NullPointerException e){
-            e.printStackTrace();
-        } catch (Exception e){
-            e.printStackTrace();
+            String errorMsg = "JSON Parse error on input: " + message;
+            logger.warn(errorMsg, e);
+            reply = Marshaling.createInvalidReplyWithExplantion(
+                    StatusCode.SERVER_FAILURE, errorMsg);
+        } catch (NullPointerException e) {
+            String errorMsg = "NullPointeException when trying to JSON parse error the input: " + message;
+            logger.warn(errorMsg, e);
+            reply = Marshaling.createInvalidReplyWithExplantion(
+                    StatusCode.SERVER_FAILURE, errorMsg);
+        } catch (Exception e) {
+            String errorMsg = "Error when JSON parsing the input: " + message;
+            logger.warn(errorMsg, e);
+            reply = Marshaling.createInvalidReplyWithExplantion(
+                    StatusCode.SERVER_FAILURE, errorMsg);
         }
-
-
+        if (reply == null) {
+            String errorMsg = "The reply from the invoker was null";
+            logger.error(errorMsg);
+            reply = Marshaling.createInvalidReplyWithExplantion(
+                    StatusCode.SERVER_FAILURE, errorMsg);
+        }
+        return reply.toJSONString();
     }
 }

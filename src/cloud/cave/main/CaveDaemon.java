@@ -2,6 +2,7 @@ package cloud.cave.main;
 
 import cloud.cave.config.*;
 import cloud.cave.domain.Cave;
+import cloud.cave.domain.ThreadCrashExeption;
 import cloud.cave.ipc.Invoker;
 import cloud.cave.ipc.Reactor;
 import cloud.cave.server.StandardInvoker;
@@ -23,6 +24,7 @@ import org.slf4j.MarkerFactory;
 public class CaveDaemon {
     @SuppressWarnings("FieldCanBeLocal")
     private static Thread daemon;
+    private static int crashCounter;
 
     public static void main(String[] args) throws InterruptedException {
         // Create the logging
@@ -53,10 +55,24 @@ public class CaveDaemon {
         System.out.println("Use ctrl-c to terminate!");
 
         // and start the daemon...
+        try{
         daemon = new Thread(reactor);
         daemon.start();
 
         // Ensure that its lifetime follows that of the main process
         daemon.join();
+        }catch (InterruptedException e){
+            throw e;
+        }catch (ThreadCrashExeption e){
+            crashCounter++;
+            if(crashCounter < 3){
+                main(args);
+                e.printStackTrace();
+            }else{
+                logger.error("The thread has crashed more than 3 times", e);
+                System.exit(1);
+            }
+        }
+
     }
 }

@@ -10,8 +10,14 @@ import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.sun.corba.se.spi.activation._RepositoryStub;
 import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.util.concurrent.TimeoutException;
 
 import static com.rabbitmq.client.AMQP.*;
@@ -21,17 +27,17 @@ import static com.rabbitmq.client.AMQP.*;
  */
 public class RabbitRequestHandler implements ClientRequestHandler{
 
-
+    private static final Logger logger= LoggerFactory.getLogger(RabbitRequestHandler.class);
     private ServerConfiguration config;
 
     @Override
     public JSONObject sendRequestAndBlockUntilReply(JSONObject requestJson) throws CaveIPCException {
-        System.out.println("************************************************** Dumme GED **********************");
         ConnectionFactory factory = new ConnectionFactory();
         factory.setHost("172.17.0.1");
         Connection connection = null;
         String response = null;
 
+        JSONObject replyJson = null;
         try {
             connection = factory.newConnection();
             Channel channel = connection.createChannel();
@@ -42,38 +48,47 @@ public class RabbitRequestHandler implements ClientRequestHandler{
             String message = requestJson.toJSONString();
 
             AMQP.BasicProperties props = new AMQP.BasicProperties.Builder()
-                                            .correlationId(corrId)
-                                            .replyTo(callbackQueueName)
-                                            .contentType("application/json")
-                                            .build();
+                    .correlationId(corrId)
+                    .replyTo(callbackQueueName)
+                    .contentType("application/json")
+                    .build();
 
             channel.basicPublish("", RabbitMQConfig.RPC_QUEUE_NAME,
-                                                    props,
-                                                    message.getBytes());
+                    props,
+                    message.getBytes());
 
 
             while (true) {
-                System.out.println("Unlimited repitition");
                 QueueingConsumer.Delivery delivery = consumer.nextDelivery();
-                System.out.println("Delivery: " + new String(delivery.getBody()));
 
                 if (delivery.getProperties().getCorrelationId().equals(corrId)) {
                     response = new String(delivery.getBody());
                     break;
                 }
             }
+
             channel.close();
             connection.close();
+            JSONParser parser = new JSONParser();
+            replyJson = (JSONObject) parser.parse(response);
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.warn("", e);
         } catch (TimeoutException e) {
-            e.printStackTrace();
+            logger.warn("", e);
         } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        System.out.println(response);
+            logger.warn("", e);
+        } catch (ParseException e) {
+            logger.error("Did not return valid JSON, response was: " + response, e);
+            throw new CaveIPCException("Did not return valid JSON, response was: " + response, e);
 
-        return null;
+        } catch (NullPointerException e){
+            logger.error("Unknown Nullpointer exception", e);
+            throw new CaveIPCException("Unknown Nullpointer exception", e);
+        } catch (Exception e){
+            logger.error("", e);
+            throw new CaveIPCException("Unknown critical error", e);
+        }
+        return replyJson;
     }
 
     @Override
