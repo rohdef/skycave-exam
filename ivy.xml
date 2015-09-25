@@ -66,5 +66,9 @@
         <dependency org="org.mongodb"
                     name="mongo-java-driver"
                     rev="3.0.4"/>
+
+        <dependency org="com.rabbitmq"
+                    name="amqp-client"
+                    rev="3.5.4"/>
     </dependencies>
 </ivy-module>
