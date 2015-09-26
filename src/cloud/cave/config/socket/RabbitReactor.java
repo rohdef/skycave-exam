@@ -25,18 +25,20 @@ import java.util.concurrent.TimeoutException;
 public class RabbitReactor implements Reactor {
     private static final Logger logger = LoggerFactory.getLogger(RabbitReactor.class);
     private Invoker invoker;
+    private ServerConfiguration config;
 
     @Override
     public void initialize(Invoker invoker, ServerConfiguration config) {
         this.invoker = invoker;
-
+        this.config = config;
     }
 
     @Override
     public void run() {
-
         ConnectionFactory connectionFactory = new ConnectionFactory();
-        connectionFactory.setHost("localhost");
+        connectionFactory.setHost(config.get(0).getHostName());
+        connectionFactory.setPort(config.get(0).getPortNumber());
+
         try {
             Connection connection = connectionFactory.newConnection();
             Channel channel = connection.createChannel();

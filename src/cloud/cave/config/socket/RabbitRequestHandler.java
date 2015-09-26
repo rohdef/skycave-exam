@@ -34,6 +34,7 @@ public class RabbitRequestHandler implements ClientRequestHandler{
     public JSONObject sendRequestAndBlockUntilReply(JSONObject requestJson) throws CaveIPCException {
         ConnectionFactory factory = new ConnectionFactory();
         factory.setHost(config.get(0).getHostName());
+        factory.setPort(config.get(0).getPortNumber());
         Connection connection;
         String response = null;
 

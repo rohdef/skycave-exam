@@ -6,7 +6,7 @@ export SKYCAVE_CLIENTREQUESTHANDLER_IMPLEMENTATION=cloud.cave.config.socket.Rabb
 export SKYCAVE_REACTOR_IMPLEMENTATION=cloud.cave.config.socket.RabbitReactor
 
 # === Configure for server to run on localhost
-export SKYCAVE_APPSERVER=localhost:37123
+export SKYCAVE_APPSERVER=localhost:5672
 
 # = Subscription service
 export SKYCAVE_SUBSCRIPTION_IMPLEMENTATION=cloud.cave.server.service.ServerSubscriptionService
