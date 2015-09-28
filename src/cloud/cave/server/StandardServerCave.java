@@ -19,7 +19,6 @@ import cloud.cave.service.*;
  * @author Henrik Baerbak Christensen, Aarhus University.
  */
 public class StandardServerCave implements Cave {
-
     private CaveStorage storage;
     private SubscriptionService subscriptionService;
     private WeatherService weatherService;
@@ -29,14 +28,11 @@ public class StandardServerCave implements Cave {
 
     public StandardServerCave(CaveServerFactory factory) {
         storage = factory.createCaveStorage();
-
-        subscriptionService = factory
-                .createSubscriptionServiceConnector();
-
+        subscriptionService = factory.createSubscriptionServiceConnector();
         weatherService = factory.createWeatherServiceConnector();
 
-        // TODO Currently the session cache strategy is not injected
-        sessionCache = new SimpleInMemoryCache();
+        sessionCache = new DatabaseCache(storage, weatherService);
+        //sessionCache = new SimpleInMemoryCache();
 
         logger = LoggerFactory.getLogger(StandardServerCave.class);
     }

@@ -23,7 +23,7 @@ import java.util.logging.Level;
  * @author Rohde Fischer
  */
 public class ServerCaveStorage implements CaveStorage {
-    private static final String DB_NAME = "whats-it-going-to-be-then";
+    public static final String DB_NAME = "whats-it-going-to-be-then";
     private static final String COLLECTION_PLAYERS = "droogs";
     private static final String COLLECTION_ROOMS = "rooms";
     private static final Logger logger = LoggerFactory.getLogger(ServerCaveStorage.class);
