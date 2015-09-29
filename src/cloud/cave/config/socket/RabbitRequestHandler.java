@@ -5,6 +5,7 @@ import cloud.cave.ipc.CaveIPCException;
 import cloud.cave.ipc.ClientRequestHandler;
 import cloud.cave.server.common.ServerConfiguration;
 
+import com.google.common.base.Strings;
 import com.rabbitmq.client.*;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
@@ -32,17 +33,28 @@ public class RabbitRequestHandler implements ClientRequestHandler{
 
     @Override
     public JSONObject sendRequestAndBlockUntilReply(JSONObject requestJson) throws CaveIPCException {
+        return doSendRequestAndBlockUntilReply("", RabbitMQConfig.RPC_QUEUE_NAME, requestJson);
+
+    }
+
+    JSONObject doSendRequestAndBlockUntilReply(String exchangeName, String routingKey, JSONObject requestJson) throws CaveIPCException {
         ConnectionFactory factory = new ConnectionFactory();
         factory.setHost(config.get(0).getHostName());
         factory.setPort(config.get(0).getPortNumber());
         Connection connection;
         String response = null;
 
+
         JSONObject replyJson = null;
         try {
             connection = factory.newConnection();
             Channel channel = connection.createChannel();
             String callbackQueueName = channel.queueDeclare().getQueue();
+            if(!Strings.isNullOrEmpty(exchangeName)){
+                channel.exchangeDeclare(exchangeName, "topic");
+                channel.queueBind(callbackQueueName, exchangeName, callbackQueueName);
+            }
+
             String corrId = java.util.UUID.randomUUID().toString();
             QueueingConsumer consumer = new QueueingConsumer(channel);
             channel.basicConsume(callbackQueueName, true, consumer);
@@ -54,13 +66,17 @@ public class RabbitRequestHandler implements ClientRequestHandler{
                     .contentType("application/json")
                     .build();
 
-            channel.basicPublish("", RabbitMQConfig.RPC_QUEUE_NAME,
+
+            channel.basicPublish(exchangeName, routingKey,
                     props,
                     message.getBytes());
 
+            System.out.println(message);
+            System.out.println(exchangeName);
 
             while (true) {
                 QueueingConsumer.Delivery delivery = consumer.nextDelivery();
+                System.out.println(delivery);
 
                 if (delivery.getProperties().getCorrelationId().equals(corrId)) {
                     response = new String(delivery.getBody());
@@ -89,6 +105,7 @@ public class RabbitRequestHandler implements ClientRequestHandler{
             logger.error("", e);
             throw new CaveIPCException("Unknown critical error", e);
         }
+        System.out.println("\u001b[0;31m"+replyJson.toString()+"\u001b[0;37m");
         return replyJson;
     }
 

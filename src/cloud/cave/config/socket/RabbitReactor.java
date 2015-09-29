@@ -92,7 +92,7 @@ public class RabbitReactor implements Reactor {
 
     }
 
-    private String readMessageAndReply(String message){
+    String readMessageAndReply(String message){
         logger.debug("--> Received " +message);
         JSONObject messageJSON, reply;
         JSONParser parser = new JSONParser();

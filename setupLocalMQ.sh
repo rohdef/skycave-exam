@@ -17,7 +17,7 @@ export SKYCAVE_CAVESTORAGE_IMPLEMENTATION=cloud.cave.doubles.FakeCaveStorage
 export SKYCAVE_DBSERVER=localhost:27017
 
 # = Rest Requester
-export REST_REQUEST_IMPLEMENTATION=cloud.cave.config.socket.RestRequester
+export REST_REQUEST_IMPLEMENTATION=cloud.cave.doubles.SubscriptionServiceRequestFake
 
 # = Weather service
 export SKYCAVE_WEATHER_IMPLEMENTATION=cloud.cave.server.service.ServerWeatherService
