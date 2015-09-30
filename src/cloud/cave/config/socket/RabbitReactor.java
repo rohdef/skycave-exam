@@ -1,6 +1,7 @@
 package cloud.cave.config.socket;
 
 import cloud.cave.config.RabbitMQConfig;
+import cloud.cave.domain.Region;
 import cloud.cave.domain.ThreadCrashExeption;
 import cloud.cave.ipc.Invoker;
 import cloud.cave.ipc.Marshaling;
@@ -34,6 +35,16 @@ public class RabbitReactor implements Reactor {
     }
 
     @Override
+    public void setRegion(Region region) {
+
+    }
+
+    @Override
+    public Region getRegion() {
+        return null;
+    }
+
+    @Override
     public void run() {
         ConnectionFactory connectionFactory = new ConnectionFactory();
         connectionFactory.setHost(config.get(0).getHostName());
@@ -61,11 +72,12 @@ public class RabbitReactor implements Reactor {
                     String message = new String(delivery.getBody());
 
                     logger.debug("--> AcceptED!");
+                    logger.debug("\u001b[1;33m--> Received " +message + "\u001b[0;37m");
 
                     String reply = readMessageAndReply(message);
 
                     channel.basicPublish("", props.getReplyTo(), replyProps, reply.getBytes());
-                    logger.debug("--< replied: " + reply);
+                    logger.debug("\u001b[1;32m--< replied: " + reply + "\u001b[0;37m");
                     channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
                     logger.debug("--< Acknowledged message handled");
                 } catch (IOException e) {
@@ -92,8 +104,7 @@ public class RabbitReactor implements Reactor {
 
     }
 
-    String readMessageAndReply(String message){
-        logger.debug("--> Received " +message);
+    String readMessageAndReply(String message) {
         JSONObject messageJSON, reply;
         JSONParser parser = new JSONParser();
 

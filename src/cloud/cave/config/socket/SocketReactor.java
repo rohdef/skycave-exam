@@ -3,6 +3,7 @@ package cloud.cave.config.socket;
 import java.io.*;
 import java.net.*;
 
+import cloud.cave.domain.Region;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.*;
 import org.slf4j.*;
@@ -37,6 +38,16 @@ public class SocketReactor implements Reactor {
         portNumber = config.get(0).getPortNumber();
         this.invoker = invoker;
         parser = new JSONParser();
+    }
+
+    @Override
+    public void setRegion(Region region) {
+
+    }
+
+    @Override
+    public Region getRegion() {
+        return null;
     }
 
     @Override

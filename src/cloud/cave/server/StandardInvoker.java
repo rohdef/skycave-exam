@@ -86,8 +86,8 @@ public class StandardInvoker implements Invoker {
             reply = Marshaling.createInvalidReplyWithExplantion(StatusCode.SERVER_UNKNOWN_METHOD_FAILURE,
                     "StandardInvoker.handleRequest: Unhandled request as the method key " + methodKey +
                             " is unknown. Full request=" + request.toString());
-            logger.warn("handleRequest: Unhandled request as the method key " + methodKey +
-                    " is unknown. Full request=" + request.toString());
+            logger.warn("\u001b[1;31mhandleRequest: Unhandled request as the method key " + methodKey +
+                    " is unknown. Full request=" + request.toString() + "\u001b[0;37m");
         }
 
         return reply;

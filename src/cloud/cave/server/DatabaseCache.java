@@ -5,10 +5,13 @@ import cloud.cave.server.service.ServerCaveStorage;
 import cloud.cave.service.CaveStorage;
 import cloud.cave.service.WeatherService;
 import com.mongodb.MongoClient;
+import com.mongodb.ServerAddress;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
-import org.bson.BSON;
 import org.bson.Document;
+
+import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  * License MIT
@@ -20,26 +23,28 @@ public class DatabaseCache implements PlayerSessionCache {
     private final CaveStorage storage;
     private final WeatherService weatherService;
 
-    private MongoClient client;
-    private MongoDatabase database;
     private MongoCollection<Document> cacheCollection;
+    private MongoDatabase database;
 
     public DatabaseCache(CaveStorage storage, WeatherService weatherService) {
         this.storage = storage;
         this.weatherService = weatherService;
 
-        client = new MongoClient();
+        MongoClient client = new MongoClient(storage.getConfiguration().get(0).getHostName(),
+                storage.getConfiguration().get(0).getPortNumber());
         database = client.getDatabase(ServerCaveStorage.DB_NAME);
-
-        cacheCollection = database.getCollection(CACHE_COLLECTION);
     }
 
     @Override
     public Player get(String playerID) {
-        Document document = new Document("playerID", playerID);
+        cacheCollection = database.getCollection(CACHE_COLLECTION);
+        Document document = new Document().append("playerID", playerID);
 
         if (cacheCollection.count(document) > 0) {
-            return new StandardServerPlayer(playerID, storage, weatherService, this);
+            Document doc = cacheCollection.find(document).first();
+            StandardServerPlayer player = new StandardServerPlayer(playerID, storage, weatherService, this);
+//            player.setSessionId(doc.getString("sess"));
+            return player;
         }
 
         return null;
@@ -47,13 +52,16 @@ public class DatabaseCache implements PlayerSessionCache {
 
     @Override
     public void add(String playerID, Player player) {
-        Document document = new Document("playerID", playerID);
+        cacheCollection = database.getCollection(CACHE_COLLECTION);
+        Document document = new Document().append("playerID", playerID)
+                .append("sess", player.getSessionID());
         cacheCollection.insertOne(document);
     }
 
     @Override
     public void remove(String playerID) {
-        Document document = new Document("playerID", playerID);
+        cacheCollection = database.getCollection(CACHE_COLLECTION);
+        Document document = new Document().append("playerID", playerID);
         cacheCollection.deleteMany(document);
     }
 }

@@ -3,6 +3,7 @@ package cloud.cave.config.socket;
 import java.io.*;
 import java.net.*;
 
+import cloud.cave.domain.Region;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.*;
 
@@ -57,7 +58,6 @@ public class SocketClientRequestHandler implements ClientRequestHandler {
             String reply;
 
             reply = in.readLine();
-            // System.out.println("--< reply: "+ reply.toString());
 
             JSONParser parser = new JSONParser();
             replyJson = (JSONObject) parser.parse(reply);
