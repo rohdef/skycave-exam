@@ -38,8 +38,6 @@ public class ServerCaveStorage implements CaveStorage {
     public ServerCaveStorage() {
         mongoClient = new MongoClient();
         database = mongoClient.getDatabase(DB_NAME);
-        java.util.logging.Logger mongoLogger = java.util.logging.Logger.getLogger("com.mongodb");
-        mongoLogger.setLevel(Level.SEVERE);
     }
 
     @Override

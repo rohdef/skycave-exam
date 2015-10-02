@@ -250,6 +250,7 @@
     <!--- Execution -->
     <property name="id" value="20052356"/>
     <property name="pwd" value="621985792"/>
+    <property name="region" value="AARHUS"/>
 
     <!-- Server daemon -->
     <target name="daemon"
@@ -258,6 +259,8 @@
         <java classpathref="run.path.id"
               classname="cloud.cave.main.CaveDaemon"
               fork="yes">
+
+            <arg value="${region}" />
         </java>
     </target>
 
@@ -269,6 +272,8 @@
               classname="cloud.cave.main.CaveDaemon"
               fork="true">
             <jvmarg value="-Dlog4j.configuration=log4j-prod.properties"/>
+
+            <arg value="${region}" />
         </java>
     </target>
 

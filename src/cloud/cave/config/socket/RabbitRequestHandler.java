@@ -1,6 +1,7 @@
 package cloud.cave.config.socket;
 
 import cloud.cave.config.RabbitMQConfig;
+import cloud.cave.domain.Region;
 import cloud.cave.ipc.CaveIPCException;
 import cloud.cave.ipc.ClientRequestHandler;
 import cloud.cave.server.common.ServerConfiguration;
@@ -26,7 +27,7 @@ import static com.rabbitmq.client.AMQP.*;
 /**
  * Created by mark on 9/22/15.
  */
-public class RabbitRequestHandler implements ClientRequestHandler{
+public class RabbitRequestHandler implements ClientRequestHandler {
 
     private static final Logger logger= LoggerFactory.getLogger(RabbitRequestHandler.class);
     private ServerConfiguration config;
@@ -71,12 +72,8 @@ public class RabbitRequestHandler implements ClientRequestHandler{
                     props,
                     message.getBytes());
 
-            System.out.println(message);
-            System.out.println(exchangeName);
-
             while (true) {
                 QueueingConsumer.Delivery delivery = consumer.nextDelivery();
-                System.out.println(delivery);
 
                 if (delivery.getProperties().getCorrelationId().equals(corrId)) {
                     response = new String(delivery.getBody());
@@ -105,7 +102,7 @@ public class RabbitRequestHandler implements ClientRequestHandler{
             logger.error("", e);
             throw new CaveIPCException("Unknown critical error", e);
         }
-        System.out.println("\u001b[0;31m"+replyJson.toString()+"\u001b[0;37m");
+
         return replyJson;
     }
 

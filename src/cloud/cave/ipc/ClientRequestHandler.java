@@ -1,5 +1,6 @@
 package cloud.cave.ipc;
 
+import cloud.cave.domain.Region;
 import org.json.simple.JSONObject;
 
 import cloud.cave.server.common.ServerConfiguration;

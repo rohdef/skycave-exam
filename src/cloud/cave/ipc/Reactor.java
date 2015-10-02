@@ -1,5 +1,6 @@
 package cloud.cave.ipc;
 
+import cloud.cave.domain.Region;
 import cloud.cave.server.common.ServerConfiguration;
 
 /**
@@ -23,4 +24,7 @@ public interface Reactor extends Runnable {
      * @param config  the configuration of IP and ports.
      */
     void initialize(Invoker invoker, ServerConfiguration config);
+
+    void setRegion(Region region);
+    Region getRegion();
 }

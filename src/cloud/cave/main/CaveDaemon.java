@@ -2,6 +2,7 @@ package cloud.cave.main;
 
 import cloud.cave.config.*;
 import cloud.cave.domain.Cave;
+import cloud.cave.domain.Region;
 import cloud.cave.domain.ThreadCrashExeption;
 import cloud.cave.ipc.Invoker;
 import cloud.cave.ipc.Reactor;
@@ -27,6 +28,19 @@ public class CaveDaemon {
     private static int crashCounter;
 
     public static void main(String[] args) throws InterruptedException {
+        Region playerRegion = null;
+        if (args.length != 1) {
+            System.out.println("Invalid set of arguments given. There must be exactly one argument for the region.");
+            System.exit(1);
+        }
+        try {
+            playerRegion = Region.valueOf(args[0].toUpperCase());
+        } catch (Exception e) {
+            System.out.println("Invalid region specified.");
+            System.exit(1);
+        }
+
+
         // Create the logging
         Logger logger = LoggerFactory.getLogger(CaveDaemon.class);
 
@@ -46,6 +60,7 @@ public class CaveDaemon {
 
         // Create the server side reactor...
         Reactor reactor = factory.createReactor(serverInvoker);
+        reactor.setRegion(playerRegion);
 
         // Make a section in the log file, marking the new session
         logger.info("=== SkyCave Reactor starting...");

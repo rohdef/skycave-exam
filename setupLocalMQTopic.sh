@@ -1,6 +1,7 @@
 #!/bin/bash
 echo Setting everything for socket based connection on LocalHost with test doubles
 
+
 # === Configure for socket communication on client and app server side
 export SKYCAVE_CLIENTREQUESTHANDLER_IMPLEMENTATION=cloud.cave.config.socket.RabbitTopicRequestHandler
 export SKYCAVE_REACTOR_IMPLEMENTATION=cloud.cave.config.socket.RabbitTopicReactor
@@ -22,6 +23,4 @@ export REST_REQUEST_IMPLEMENTATION=cloud.cave.doubles.SubscriptionServiceRequest
 # = Weather service
 export SKYCAVE_WEATHER_IMPLEMENTATION=cloud.cave.server.service.ServerWeatherService
 export SKYCAVE_WEATHERSERVER=caveweather.baerbak.com:8182
-
-
 
