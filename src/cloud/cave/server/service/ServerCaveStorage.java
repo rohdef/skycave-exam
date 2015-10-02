@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 
@@ -44,17 +45,23 @@ public class ServerCaveStorage implements CaveStorage {
     @Override
     public RoomRecord getRoom(String positionString) {
         MongoCollection<Document> roomCollection = database.getCollection(COLLECTION_ROOMS);
-        Document room = roomCollection.find().first();
-        logger.info("****************************************************************");
-        logger.info("*************************************************** " + room.toJson());
-        logger.info("****************************************************************");
+        Document room = roomCollection.find(new Document("position", positionString)).first();
+        logger.debug(positionString);
         String description = room.getString("description");
-        return new RoomRecord(description, new ArrayList<String>());
+        //String[] messages = room.get("messageList", String[].class);
+
+        return new RoomRecord(description, new ArrayList());
     }
 
     @Override
     public boolean addRoom(String positionString, RoomRecord description) {
-        return fakeCaveStorage.addRoom(positionString, description);
+        MongoCollection<Document> roomCollection = database.getCollection(COLLECTION_ROOMS);
+        Document room = new Document()
+                            .append("position", positionString)
+                            .append("description", description.description)
+                            .append("messageList",new ArrayList<String>());
+        roomCollection.insertOne(room);
+        return true;
     }
 
     @Override

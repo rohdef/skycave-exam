@@ -22,8 +22,8 @@ public class RestRequester implements IRestRequest {
     private boolean buggySupport;
 
     public RestRequester() {
-        this.socketTimeout = 5;
-        this.connectionTimeout = 5;
+        this.socketTimeout = 5000;
+        this.connectionTimeout = 5000;
         this.buggySupport = false;
     }
 

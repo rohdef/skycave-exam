@@ -1,5 +1,5 @@
 #!/bin/bash
 
 ant clean
-source setupLocalMQ.sh
+source setupLocalSocket.sh
 rlwrap ant cmd

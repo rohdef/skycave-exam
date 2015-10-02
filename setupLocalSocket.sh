@@ -2,8 +2,8 @@
 echo Setting everything for socket based connection on LocalHost with test doubles
 
 # === Configure for socket communication on client and app server side
-export SKYCAVE_CLIENTREQUESTHANDLER_IMPLEMENTATION=cloud.cave.config.socket.RabbitRequestHandler
-export SKYCAVE_REACTOR_IMPLEMENTATION=cloud.cave.config.socket.RabbitReactor
+export SKYCAVE_CLIENTREQUESTHANDLER_IMPLEMENTATION=cloud.cave.config.socket.SocketClientRequestHandler
+export SKYCAVE_REACTOR_IMPLEMENTATION=cloud.cave.config.socket.SocketReactor
 
 # === Configure for server to run on localhost
 export SKYCAVE_APPSERVER=localhost:37123
@@ -13,7 +13,7 @@ export SKYCAVE_SUBSCRIPTION_IMPLEMENTATION=cloud.cave.server.service.ServerSubsc
 export SKYCAVE_SUBSCRIPTIONSERVER=cavereg.baerbak.com:4567
 
 # = Cave storage
-export SKYCAVE_CAVESTORAGE_IMPLEMENTATION=cloud.cave.doubles.FakeCaveStorage
+export SKYCAVE_CAVESTORAGE_IMPLEMENTATION=cloud.cave.server.service.ServerCaveStorage
 export SKYCAVE_DBSERVER=localhost:27017
 
 # = Rest Requester
