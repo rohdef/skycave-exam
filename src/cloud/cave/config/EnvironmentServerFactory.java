@@ -110,7 +110,6 @@ public class EnvironmentServerFactory implements CaveServerFactory {
 
     @Override
     public PlayerSessionCache createPlayerSessionCache(CaveStorage storage, WeatherService weatherService) {
-        return new SimpleInMemoryCache();
-        //return new DatabaseCache(storage, weatherService);
+        return new DatabaseCache(storage, weatherService);
     }
 }

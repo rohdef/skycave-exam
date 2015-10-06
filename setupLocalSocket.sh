@@ -22,6 +22,3 @@ export REST_REQUEST_IMPLEMENTATION=cloud.cave.config.socket.RestRequester
 # = Weather service
 export SKYCAVE_WEATHER_IMPLEMENTATION=cloud.cave.server.service.ServerWeatherService
 export SKYCAVE_WEATHERSERVER=caveweather.baerbak.com:8182
-
-
-
