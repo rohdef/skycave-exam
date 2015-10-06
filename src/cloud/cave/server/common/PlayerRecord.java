@@ -1,5 +1,6 @@
 package cloud.cave.server.common;
 
+import cloud.cave.domain.Player;
 import cloud.cave.domain.Region;
 
 /**
@@ -19,6 +20,16 @@ public class PlayerRecord {
 
     private String positionAsString;
     private String sessionID;
+
+    public PlayerRecord(String playerID, String playerName, String groupName, Region region, String positionAsString, String sessionID) {
+        super();
+        this.playerID = playerID;
+        this.playerName = playerName;
+        this.groupName = groupName;
+        this.region = region;
+        this.positionAsString = positionAsString;
+        this.sessionID = sessionID;
+    }
 
     public PlayerRecord(SubscriptionRecord subscription,
                         String positionString,

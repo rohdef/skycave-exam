@@ -1,22 +1,29 @@
 package cloud.cave.server.service;
 
 import cloud.cave.domain.Direction;
+import cloud.cave.domain.Region;
 import cloud.cave.doubles.FakeCaveStorage;
 import cloud.cave.server.common.PlayerRecord;
+import cloud.cave.server.common.Point3;
 import cloud.cave.server.common.RoomRecord;
 import cloud.cave.server.common.ServerConfiguration;
 import cloud.cave.service.CaveStorage;
+import com.mongodb.Block;
 import com.mongodb.MongoClient;
+import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.UpdateOptions;
 import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.logging.Level;
+
+import static com.mongodb.client.model.Filters.*;
+
 
 /**
  * License MIT
@@ -32,7 +39,6 @@ public class ServerCaveStorage implements CaveStorage {
     private final MongoClient mongoClient;
     private final MongoDatabase database;
     private ServerConfiguration config;
-    private FakeCaveStorage fakeCaveStorage = new FakeCaveStorage();
 
     // http://mongodb.github.io/mongo-java-driver/3.0/driver/getting-started/quick-tour/
     public ServerCaveStorage() {
@@ -45,10 +51,14 @@ public class ServerCaveStorage implements CaveStorage {
         MongoCollection<Document> roomCollection = database.getCollection(COLLECTION_ROOMS);
         Document room = roomCollection.find(new Document("position", positionString)).first();
         logger.debug(positionString);
-        String description = room.getString("description");
-        //String[] messages = room.get("messageList", String[].class);
+        if(room != null){
+            String description = room.getString("description");
 
-        return new RoomRecord(description, new ArrayList());
+            ArrayList<String> messageList = room.get("messageList", (new ArrayList<String>()).getClass());
+            System.out.println(messageList.size());
+            return new RoomRecord(description, messageList);
+        }
+        throw new NullPointerException("There is no room");
     }
 
     @Override
@@ -64,33 +74,71 @@ public class ServerCaveStorage implements CaveStorage {
 
     @Override
     public List<Direction> getSetOfExitsFromRoom(String positionString) {
-        return fakeCaveStorage.getSetOfExitsFromRoom(positionString);
+        MongoCollection<Document> roomCollection = database.getCollection(COLLECTION_ROOMS);
+        List<Direction> listOfExits = new ArrayList<>();
+        Point3 pZero = Point3.parseString(positionString);
+        Point3 p;
+        for (Direction d : Direction.values()) {
+            p = new Point3(pZero.x(), pZero.y(), pZero.z());
+            p.translate(d);
+            String position = p.getPositionString();
+
+            if(roomCollection.count(new Document("position", position)) > 0)
+                listOfExits.add(d);
+
+        }
+        return listOfExits;
     }
 
     @Override
     public PlayerRecord getPlayerByID(String playerID) {
-        return fakeCaveStorage.getPlayerByID(playerID);
+        MongoCollection<Document> playerCollection = database.getCollection(COLLECTION_PLAYERS);
+        Document players = playerCollection.find(new Document("_id", playerID)).first();
+        return documentToPlayerRecord(players);
     }
+
 
     @Override
     public void updatePlayerRecord(PlayerRecord record) {
-        fakeCaveStorage.updatePlayerRecord(record);
+        MongoCollection<Document> playerCollection = database.getCollection(COLLECTION_PLAYERS);
+        Document player = new Document()
+                .append("_id", record.getPlayerID())
+                .append("playerName", record.getPlayerName())
+                .append("groupName", record.getGroupName())
+                .append("region",record.getRegion().toString())
+                .append("positionAsString",record.getPositionAsString())
+                .append("sessionID",record.getSessionId());
+        playerCollection.replaceOne(new Document("_id", record.getPlayerID()), player, new UpdateOptions().upsert(true));
     }
 
     @Override
     public List<PlayerRecord> computeListOfPlayersAt(String positionString) {
-        return fakeCaveStorage.computeListOfPlayersAt(positionString);
+        MongoCollection<Document> playerCollection = database.getCollection(COLLECTION_PLAYERS);
+        FindIterable<Document> playersAt = playerCollection.find(new Document("positionAsString", positionString));
+        final LinkedList <PlayerRecord> playersAtLocationList = new LinkedList<>();
+
+        playersAt.forEach(new Block<Document>() {
+            @Override
+            public void apply(Document document) {
+                System.out.println(document);
+                playersAtLocationList.add(documentToPlayerRecord(document));
+            }
+        });
+
+        return playersAtLocationList;
     }
 
     @Override
-    public int computeCountOfActivePlayers() {
-        return fakeCaveStorage.computeCountOfActivePlayers();
+    public long computeCountOfActivePlayers() {
+        MongoCollection<Document> playerCollection = database.getCollection(COLLECTION_PLAYERS);
+        long activePlayers = playerCollection.count(ne("sessionID", null));
+
+        return activePlayers;
     }
 
     @Override
     public void initialize(ServerConfiguration config) {
         this.config = config;
-        fakeCaveStorage.initialize(config);
     }
 
     @Override
@@ -102,4 +150,22 @@ public class ServerCaveStorage implements CaveStorage {
     public ServerConfiguration getConfiguration() {
         return this.config;
     }
+
+    private PlayerRecord documentToPlayerRecord(Document document){
+        PlayerRecord p = null;
+
+        if(document != null){
+            String playerID = document.getString("_id");
+            String playerName = document.getString("playerName");
+            String groupName = document.getString("groupName");
+            String positionAsString = document.getString("positionAsString");
+            Region region = Region.valueOf(document.getString("region"));
+            String sessionID = document.getString("sessionID");
+
+
+            p = new PlayerRecord(playerID, playerName, groupName, region, positionAsString, sessionID);
+        }
+        return p;
+    }
+
 }

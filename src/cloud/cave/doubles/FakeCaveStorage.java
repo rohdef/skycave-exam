@@ -128,7 +128,7 @@ public class FakeCaveStorage implements CaveStorage {
     }
 
     @Override
-    public int computeCountOfActivePlayers() {
+    public long computeCountOfActivePlayers() {
         return getPlayerList().size();
     }
 

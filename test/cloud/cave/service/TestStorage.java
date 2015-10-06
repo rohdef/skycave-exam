@@ -96,8 +96,8 @@ public class TestStorage {
         updatePlayerPosition(id1, p273.getPositionString());
 
         // assert that we have recorded the player
-        int count = storage.computeCountOfActivePlayers();
-        assertThat(count, is(1));
+        long count = storage.computeCountOfActivePlayers();
+        assertThat(count, is(1l));
 
         // Tutmosis is in the cave
         assertThat(storage.getPlayerByID(id1).getPlayerName(), is("Tutmosis"));
@@ -117,7 +117,7 @@ public class TestStorage {
         addPlayerRecordToStorageForSubscription(sub2, "session2");
 
 
-        assertThat(storage.computeCountOfActivePlayers(), is(2));
+        assertThat(storage.computeCountOfActivePlayers(), is(2l));
 
         // move player 2 to same 8,7,6
         updatePlayerPosition(id2, p876.getPositionString());
@@ -156,7 +156,7 @@ public class TestStorage {
         addPlayerRecordToStorageForSubscription(sub2, "session2");
 
         // two players in cave
-        assertThat(storage.computeCountOfActivePlayers(), is(2));
+        assertThat(storage.computeCountOfActivePlayers(), is(2l));
 
         // end session for player one
         PlayerRecord rec1 = storage.getPlayerByID(id1);
@@ -164,7 +164,7 @@ public class TestStorage {
         storage.updatePlayerRecord(rec1);
 
         // now only one left
-        assertThat(storage.computeCountOfActivePlayers(), is(1));
+        assertThat(storage.computeCountOfActivePlayers(), is(1l));
 
         // and the right one is left
         PlayerRecord p;

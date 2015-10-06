@@ -147,7 +147,7 @@ class SpyCaveStorage implements CaveStorage {
     }
 
 
-    public int computeCountOfActivePlayers() {
+    public long computeCountOfActivePlayers() {
         return decoratee.computeCountOfActivePlayers();
     }
 

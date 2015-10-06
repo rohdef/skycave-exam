@@ -81,6 +81,6 @@ public interface CaveStorage extends ExternalService {
      *
      * @return the number of active players in the cave
      */
-    int computeCountOfActivePlayers();
+    long computeCountOfActivePlayers();
 
 }
