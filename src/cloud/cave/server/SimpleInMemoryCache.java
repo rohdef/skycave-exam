@@ -10,7 +10,6 @@ import cloud.cave.domain.Player;
  * @author Henrik Baerbak Christensen, Aarhus University.
  */
 public class SimpleInMemoryCache implements PlayerSessionCache {
-
     private Map<String, Player> cacheOfOnlinePlayer;
 
     public SimpleInMemoryCache() {
