@@ -1,5 +1,7 @@
 package cloud.cave.server;
 
+import java.util.LinkedList;
+import java.util.List;
 import java.util.UUID;
 
 import org.slf4j.*;
@@ -33,6 +35,56 @@ public class StandardServerCave implements Cave {
         sessionCache = factory.createPlayerSessionCache(storage, weatherService);
 
         logger = LoggerFactory.getLogger(StandardServerCave.class);
+        doMassLogin();
+    }
+
+    private List<Player> doMassLogin() {
+        List<Player> players = new LinkedList<>();
+
+        Login loginResult;
+
+        loginResult = this.login("rwar400t", "727b9c");
+        players.add(loginResult.getPlayer());
+        loginResult = this.login("rwar401t", "ynizl2");
+        players.add(loginResult.getPlayer());
+        loginResult = this.login("rwar402t", "f0s4p3");
+        players.add(loginResult.getPlayer());
+        loginResult = this.login("rwar403t", "plcs74");
+        players.add(loginResult.getPlayer());
+        loginResult = this.login("rwar404t", "v76ifd");
+        players.add(loginResult.getPlayer());
+        loginResult = this.login("rwar405t", "jxe9ha");
+        players.add(loginResult.getPlayer());
+        loginResult = this.login("rwar406t", "6xp9jl");
+        players.add(loginResult.getPlayer());
+        loginResult = this.login("rwar407t", "u3mxug");
+        players.add(loginResult.getPlayer());
+        loginResult = this.login("rwar408t", "trv9gy");
+        players.add(loginResult.getPlayer());
+        loginResult = this.login("rwar409t", "1d5fh3");
+        players.add(loginResult.getPlayer());
+        loginResult = this.login("rwar410t", "zsafci");
+        players.add(loginResult.getPlayer());
+        loginResult = this.login("rwar411t", "v324q6");
+        players.add(loginResult.getPlayer());
+        loginResult = this.login("rwar412t", "2jdfhz");
+        players.add(loginResult.getPlayer());
+        loginResult = this.login("rwar413t", "zja3ig");
+        players.add(loginResult.getPlayer());
+        loginResult = this.login("rwar414t", "04nj10");
+        players.add(loginResult.getPlayer());
+        loginResult = this.login("rwar415t", "zu5qar");
+        players.add(loginResult.getPlayer());
+        loginResult = this.login("rwar416t", "qildw2");
+        players.add(loginResult.getPlayer());
+        loginResult = this.login("rwar417t", "61w8sh");
+        players.add(loginResult.getPlayer());
+        loginResult = this.login("rwar418t", "exwt5w");
+        players.add(loginResult.getPlayer());
+        loginResult = this.login("rwar419t", "n7lzqw");
+        players.add(loginResult.getPlayer());
+
+        return players;
     }
 
     /**
