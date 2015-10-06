@@ -35,7 +35,7 @@ public class StandardServerCave implements Cave {
         sessionCache = factory.createPlayerSessionCache(storage, weatherService);
 
         logger = LoggerFactory.getLogger(StandardServerCave.class);
-        doMassLogin();
+//        doMassLogin();
     }
 
     private List<Player> doMassLogin() {

@@ -35,20 +35,50 @@ public class ServerCaveStorage implements CaveStorage {
     private static final String COLLECTION_ROOMS = "rooms";
     private static final Logger logger = LoggerFactory.getLogger(ServerCaveStorage.class);
 
-    private final MongoClient mongoClient;
-    private final MongoDatabase database;
+    private MongoClient mongoClient;
+    private MongoDatabase database;
     private ServerConfiguration config;
 
     // http://mongodb.github.io/mongo-java-driver/3.0/driver/getting-started/quick-tour/
-    public ServerCaveStorage() {
-        mongoClient = new MongoClient();
-        database = mongoClient.getDatabase(DB_NAME);
+    public ServerCaveStorage() {}
+
+    private void createBaseData() {
+        List<String> messageList = new ArrayList<>();
+        messageList.add("[Mark] First Like");
+        messageList.add("[Rohde] OMG det sagde du bare ikk");
+        messageList.add("[Mark] Jo, jeg fik First Like");
+
+        RoomRecord entryRoom = new RoomRecord("You are standing at the end of a road before a small brick building.",
+                messageList);
+        this.addRoom(new Point3(0, 0, 0).getPositionString(), entryRoom);
+
+        //North
+        messageList = new ArrayList<>();
+        messageList.add("[Little Prince] Why are you drinking?");
+        messageList.add("[Tippler] So that I may forget");
+        messageList.add("[Little Prince] Forget what?");
+        messageList.add("[Tippler] Forget that I am ashamed");
+        messageList.add("[Little Prince] Ashamed of what?");
+        messageList.add("[Tippler] Ashamed of drinking!");
+
+        this.addRoom(new Point3(0, 1, 0).getPositionString(),
+                new RoomRecord("You are in open forest, with a deep valley to one side.", messageList));
+
+        //East
+        this.addRoom(new Point3(1, 0, 0).getPositionString(),
+                new RoomRecord("You are inside a building, a well house for a large spring.", new ArrayList<String>()));
+        //West
+        this.addRoom(new Point3(-1, 0, 0).getPositionString(),
+                new RoomRecord("You have walked up a hill, still in the forest.", new ArrayList<String>()));
+        //Up
+        this.addRoom(new Point3(0, 0, 1).getPositionString(),
+                new RoomRecord("You are in the top of a tall tree, at the end of a road.", new ArrayList<String>()));
     }
 
     @Override
     public RoomRecord getRoom(String positionString) {
         MongoCollection<Document> roomCollection = database.getCollection(COLLECTION_ROOMS);
-        Document room = roomCollection.find(new Document("position", positionString)).first();
+        Document room = roomCollection.find(new Document("_id", positionString)).first();
         logger.debug(positionString);
         if(room != null){
             String description = room.getString("description");
@@ -61,12 +91,12 @@ public class ServerCaveStorage implements CaveStorage {
     }
 
     @Override
-    public boolean addRoom(String positionString, RoomRecord description) {
+    public boolean addRoom(String positionString, RoomRecord roomRecord) {
         MongoCollection<Document> roomCollection = database.getCollection(COLLECTION_ROOMS);
         Document room = new Document()
-                            .append("position", positionString)
-                            .append("description", description.description)
-                            .append("messageList",new ArrayList<String>());
+                            .append("_id", positionString)
+                            .append("description", roomRecord.description)
+                            .append("messageList", roomRecord.getMessageList());
         roomCollection.insertOne(room);
         return true;
     }
@@ -82,7 +112,7 @@ public class ServerCaveStorage implements CaveStorage {
             p.translate(d);
             String position = p.getPositionString();
 
-            if(roomCollection.count(new Document("position", position)) > 0)
+            if(roomCollection.count(new Document("_id", position)) > 0)
                 listOfExits.add(d);
 
         }
@@ -138,6 +168,13 @@ public class ServerCaveStorage implements CaveStorage {
     @Override
     public void initialize(ServerConfiguration config) {
         this.config = config;
+
+        mongoClient = new MongoClient(config.get(0).getHostName());
+        database = mongoClient.getDatabase(DB_NAME);
+
+        MongoCollection<Document> roomCollection = database.getCollection(COLLECTION_ROOMS);
+        if (roomCollection.count() == 0)
+            createBaseData();
     }
 
     @Override
