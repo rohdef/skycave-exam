@@ -1,9 +1,12 @@
 package cloud.cave.client;
 
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;
 import static org.hamcrest.Matchers.*;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.json.simple.JSONObject;
@@ -229,6 +232,88 @@ public class TestPlayerProxy {
     // prevented from any actions ("disconnected" in
     // a sense). This is similar to the behavior of
     // Blizzard games (which is probably the standard).
+    private List<Player> doMassLogin() {
+        List<Player> players = new LinkedList<>();
+
+        Login loginResult;
+
+        loginResult = caveProxy.login("rwar400t", "727b9c");
+        players.add(loginResult.getPlayer());
+        loginResult = caveProxy.login("rwar401t", "ynizl2");
+        players.add(loginResult.getPlayer());
+        loginResult = caveProxy.login("rwar402t", "f0s4p3");
+        players.add(loginResult.getPlayer());
+        loginResult = caveProxy.login("rwar403t", "plcs74");
+        players.add(loginResult.getPlayer());
+        loginResult = caveProxy.login("rwar404t", "v76ifd");
+        players.add(loginResult.getPlayer());
+        loginResult = caveProxy.login("rwar405t", "jxe9ha");
+        players.add(loginResult.getPlayer());
+        loginResult = caveProxy.login("rwar406t", "6xp9jl");
+        players.add(loginResult.getPlayer());
+        loginResult = caveProxy.login("rwar407t", "u3mxug");
+        players.add(loginResult.getPlayer());
+        loginResult = caveProxy.login("rwar408t", "trv9gy");
+        players.add(loginResult.getPlayer());
+        loginResult = caveProxy.login("rwar409t", "1d5fh3");
+        players.add(loginResult.getPlayer());
+        loginResult = caveProxy.login("rwar410t", "zsafci");
+        players.add(loginResult.getPlayer());
+        loginResult = caveProxy.login("rwar411t", "v324q6");
+        players.add(loginResult.getPlayer());
+        loginResult = caveProxy.login("rwar412t", "2jdfhz");
+        players.add(loginResult.getPlayer());
+        loginResult = caveProxy.login("rwar413t", "zja3ig");
+        players.add(loginResult.getPlayer());
+        loginResult = caveProxy.login("rwar414t", "04nj10");
+        players.add(loginResult.getPlayer());
+        loginResult = caveProxy.login("rwar415t", "zu5qar");
+        players.add(loginResult.getPlayer());
+        loginResult = caveProxy.login("rwar416t", "qildw2");
+        players.add(loginResult.getPlayer());
+        loginResult = caveProxy.login("rwar417t", "61w8sh");
+        players.add(loginResult.getPlayer());
+        loginResult = caveProxy.login("rwar418t", "exwt5w");
+        players.add(loginResult.getPlayer());
+        loginResult = caveProxy.login("rwar419t", "n7lzqw");
+        players.add(loginResult.getPlayer());
+
+        return players;
+    }
+
+    @Test
+    public void shouldShowPlayerListBoundedAndResetAtEnd() {
+        enterBothPlayers();
+        doMassLogin();
+
+        String longRoomDescription = p1.getLongRoomDescription(0);
+        String[] descriptionParts = longRoomDescription.split("\n");
+        String[] playerParts = Arrays.copyOfRange(descriptionParts, 4, descriptionParts.length);
+        assertThat(playerParts.length, is(10));
+
+        longRoomDescription = p1.getLongRoomDescription(1);
+        descriptionParts = longRoomDescription.split("\n");
+        playerParts = Arrays.copyOfRange(descriptionParts, 4, descriptionParts.length);
+        assertThat(playerParts.length, is(14));
+
+        // Default behavior is to show just first 10
+        p1.addMessage("Hello world");
+        longRoomDescription = p1.getLongRoomDescription(-1);
+        descriptionParts = longRoomDescription.split("\n");
+        playerParts = Arrays.copyOfRange(descriptionParts, 4, descriptionParts.length);
+        assertThat(playerParts.length, is(10));
+
+        longRoomDescription = p1.getLongRoomDescription(-1);
+        descriptionParts = longRoomDescription.split("\n");
+        playerParts = Arrays.copyOfRange(descriptionParts, 4, descriptionParts.length);
+        assertThat(playerParts.length, is(14));
+
+        // We expect it to restart
+        longRoomDescription = p1.getLongRoomDescription(-1);
+        descriptionParts = longRoomDescription.split("\n");
+        playerParts = Arrays.copyOfRange(descriptionParts, 4, descriptionParts.length);
+        assertThat(playerParts.length, is(10));
+    }
 
     @Test
     public void shouldPreventCallsFromDualLogins() {
@@ -277,7 +362,7 @@ public class TestPlayerProxy {
         }
 
         try {
-            p2.getLongRoomDescription();
+            p2.getLongRoomDescription(-1);
             fail("The first client must throw an exception when attempting any further calls");
         } catch (PlayerSessionExpiredException e) {
             assertThat(e.getMessage(), containsString("The session for player user-003 is no longer valid"));
@@ -291,7 +376,7 @@ public class TestPlayerProxy {
         }
 
         try {
-            p2.getPlayersHere();
+            p2.getPlayersHere(0);
             fail("The first client must throw an exception when attempting any further calls");
         } catch (PlayerSessionExpiredException e) {
             assertThat(e.getMessage(), containsString("The session for player user-003 is no longer valid"));

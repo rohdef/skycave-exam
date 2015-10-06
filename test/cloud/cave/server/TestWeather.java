@@ -27,8 +27,6 @@ public class TestWeather {
 
     @Before
     public void setUp() throws Exception {
-
-
         cave = CommonCaveTests.createTestDoubledConfiguredCave();
         String loginName = "mikkel_aarskort";
         Login loginResult = cave.login(loginName, "123");

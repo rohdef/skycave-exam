@@ -189,7 +189,7 @@ public class CmdInterpreter {
         switch (primaryCommand) {
             // look
             case 'l': {
-                systemOut.println(player.getLongRoomDescription());
+                systemOut.println(player.getLongRoomDescription(-1));
                 break;
             }
             // The movement commands

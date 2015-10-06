@@ -48,10 +48,14 @@ public class TestNetworkLoad {
     @Test
     public void shouldVerifyBytesSentOverNetwork() {
         spy.reset();
-        player.getLongRoomDescription();
+        player.getLongRoomDescription(0);
         // Verify the amount of bytes sent and received
-        assertThat(spy.getSent(), is(156));
-        assertThat(spy.getReived(), is(232));
+        assertThat(spy.getSent(), is(157));
+        assertThat(spy.getReived(), is(264));
+
+        spy.reset();
+        player.getLongRoomDescription(2000000000);
+        assertThat(spy.getSent(), is(166));
     }
 
 }

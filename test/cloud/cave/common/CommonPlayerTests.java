@@ -64,7 +64,7 @@ public class CommonPlayerTests {
     }
 
     public static void shouldProvideLongDescription(Player player) {
-        String longDescription = player.getLongRoomDescription();
+        String longDescription = player.getLongRoomDescription(0);
 
         assertTrue(longDescription.contains("There are exits in"));
         assertTrue(longDescription.contains("NORTH"));
@@ -77,7 +77,7 @@ public class CommonPlayerTests {
     }
 
     public static void shouldShowExitsForPlayersPosition(Player player) {
-        String description = player.getLongRoomDescription();
+        String description = player.getLongRoomDescription(0);
         assertTrue(description.contains("NORTH"));
         assertTrue(description.contains("WEST"));
         assertTrue(description.contains("EAST"));
@@ -85,7 +85,7 @@ public class CommonPlayerTests {
 
         // move east, which only as one exit, back west
         player.move(Direction.EAST);
-        description = player.getLongRoomDescription();
+        description = player.getLongRoomDescription(0);
         assertFalse(description.contains("NORTH"));
         assertTrue(description.contains("WEST"));
         assertFalse(description.contains("EAST"));
@@ -129,7 +129,7 @@ public class CommonPlayerTests {
         Login loginResult = caveProxy.login("mathilde_aarskort", "321");
         Player m = loginResult.getPlayer();
 
-        List<String> playersInEntryRoom = m.getPlayersHere();
+        List<String> playersInEntryRoom = m.getPlayersHere(0);
         assertThat(playersInEntryRoom.size(), is(2));
         assertThat(playersInEntryRoom, hasItems(m.getName(), playerAlreadyInRoom.getName()));
 
@@ -145,7 +145,7 @@ public class CommonPlayerTests {
         assertNotNull(m2);
         // System.out.println(m2.getLongRoomDescription());
 
-        playersInEntryRoom = m2.getPlayersHere();
+        playersInEntryRoom = m2.getPlayersHere(0);
         assertThat(playersInEntryRoom.size(), is(2));
         assertThat(playersInEntryRoom, hasItems(m2.getName(), playerAlreadyInRoom.getName()));
     }

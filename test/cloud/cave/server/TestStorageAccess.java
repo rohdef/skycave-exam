@@ -58,7 +58,7 @@ public class TestStorageAccess {
         // Uncomment the statement below to get full stack traces of
         // where the storage queries are made in the player impl.
         // spy.setTracingTo(true);
-        p1.getLongRoomDescription();
+        p1.getLongRoomDescription(0);
         spy.setTracingTo(false);
 
         assertThat(spy.getPlayerUpdateCount(), is(1)); // no updates
@@ -142,8 +142,8 @@ class SpyCaveStorage implements CaveStorage {
     }
 
 
-    public List<PlayerRecord> computeListOfPlayersAt(String positionString) {
-        return decoratee.computeListOfPlayersAt(positionString);
+    public List<PlayerRecord> computeListOfPlayersAt(String positionString, int offset) {
+        return decoratee.computeListOfPlayersAt(positionString, offset);
     }
 
 

@@ -2,7 +2,6 @@ package cloud.cave.server.service;
 
 import cloud.cave.domain.Direction;
 import cloud.cave.domain.Region;
-import cloud.cave.doubles.FakeCaveStorage;
 import cloud.cave.server.common.PlayerRecord;
 import cloud.cave.server.common.Point3;
 import cloud.cave.server.common.RoomRecord;
@@ -112,7 +111,7 @@ public class ServerCaveStorage implements CaveStorage {
     }
 
     @Override
-    public List<PlayerRecord> computeListOfPlayersAt(String positionString) {
+    public List<PlayerRecord> computeListOfPlayersAt(String positionString, int offset) {
         MongoCollection<Document> playerCollection = database.getCollection(COLLECTION_PLAYERS);
         FindIterable<Document> playersAt = playerCollection.find(new Document("positionAsString", positionString));
         final LinkedList <PlayerRecord> playersAtLocationList = new LinkedList<>();

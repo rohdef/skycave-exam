@@ -14,7 +14,7 @@ public class Common {
         // move north
         player.move(Direction.NORTH);
         String pos;
-        String desc = player.getLongRoomDescription();
+        String desc = player.getLongRoomDescription(0);
 
         // validate new position
         pos = player.getPosition();
@@ -31,7 +31,7 @@ public class Common {
         assertThat(pos, is("(0,0,0)"));
 
         // and the room description is not identical to the old one
-        assertThat(player.getLongRoomDescription(), not(is(desc)));
+        assertThat(player.getLongRoomDescription(0), not(is(desc)));
 
         // and that it is the 'You are standing...'
         assertThat(player.getShortRoomDescription(), containsString("You are standing at the end of a road"));

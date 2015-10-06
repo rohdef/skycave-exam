@@ -116,7 +116,15 @@ public class FakeCaveStorage implements CaveStorage {
     }
 
     @Override
-    public List<PlayerRecord> computeListOfPlayersAt(String positionString) {
+    public List<PlayerRecord> computeListOfPlayersAt(String positionString, int offset) {
+        int start = 0;
+        int max = 10;
+
+        if (offset > 0) {
+            start = 10 + (20*(offset-1));
+            max = 10 + (20*(offset));
+        }
+
         List<PlayerRecord> theList = new ArrayList<>();
         for (String id : playerId2PlayerSpecs.keySet()) {
             PlayerRecord ps = playerId2PlayerSpecs.get(id);
@@ -124,7 +132,12 @@ public class FakeCaveStorage implements CaveStorage {
                 theList.add(ps);
             }
         }
-        return theList;
+
+        // Safety cap to keep within bounds
+        if (theList.size() == 0 || theList.size() <= start) return new ArrayList<>();
+        max = Math.min(theList.size(), max);
+
+        return theList.subList(start, max);
     }
 
     @Override

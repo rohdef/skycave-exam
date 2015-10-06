@@ -1,6 +1,7 @@
 package cloud.cave.config;
 
 import cloud.cave.ipc.*;
+import cloud.cave.server.PlayerSessionCache;
 import cloud.cave.service.*;
 
 /**
@@ -53,4 +54,5 @@ public interface CaveServerFactory {
      */
     Reactor createReactor(Invoker invoker);
 
+    PlayerSessionCache createPlayerSessionCache(CaveStorage storage, WeatherService weatherService);
 }

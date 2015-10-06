@@ -56,8 +56,9 @@ public class PlayerDispatcher implements Dispatcher {
                     break;
                 // === LONG ROOM
                 case MarshalingKeys.GET_LONG_ROOM_DESCRIPTION_METHOD_KEY:
+                    int offset = Integer.parseInt(parameter1);
                     reply = Marshaling.createValidReplyWithReturnValue(player
-                            .getLongRoomDescription());
+                            .getLongRoomDescription(offset));
                     break;
                 // === REGION
                 case MarshalingKeys.GET_REGION_METHOD_KEY:
@@ -71,7 +72,8 @@ public class PlayerDispatcher implements Dispatcher {
                     break;
                 // === PLAYERS HERE
                 case MarshalingKeys.GET_PLAYERS_HERE_METHOD_KEY: {
-                    List<String> playersHere = player.getPlayersHere();
+                    offset = Integer.parseInt(parameter1);
+                    List<String> playersHere = player.getPlayersHere(offset);
                     String[] asArray = new String[playersHere.size()];
                     playersHere.toArray(asArray);
 
@@ -114,7 +116,6 @@ public class PlayerDispatcher implements Dispatcher {
                 }
                 // === EXECUTE
                 case MarshalingKeys.EXECUTE_METHOD_KEY: {
-                    String commandName = parameter1;
                     String[] parameters = new String[3];
                     int i = 0;
                     for (Object obj : parameterList) {
@@ -122,7 +123,7 @@ public class PlayerDispatcher implements Dispatcher {
                         i++;
                     }
 
-                    reply = player.execute(commandName, parameters);
+                    reply = player.execute(parameter1, parameters);
                     break;
                 }
                 // == WEATHER
@@ -140,8 +141,7 @@ public class PlayerDispatcher implements Dispatcher {
                     break;
                 }
                 case MarshalingKeys.ADD_MESSAGE_METHOD_KEY: {
-                    String message = parameter1;
-                    player.addMessage(message);
+                    player.addMessage(parameter1);
 
                     reply = Marshaling.createValidReplyWithReturnValue(StatusCode.OK);
                     break;

@@ -30,9 +30,7 @@ public class StandardServerCave implements Cave {
         storage = factory.createCaveStorage();
         subscriptionService = factory.createSubscriptionServiceConnector();
         weatherService = factory.createWeatherServiceConnector();
-
-        sessionCache = new DatabaseCache(storage, weatherService);
-        //sessionCache = new SimpleInMemoryCache();
+        sessionCache = factory.createPlayerSessionCache(storage, weatherService);
 
         logger = LoggerFactory.getLogger(StandardServerCave.class);
     }

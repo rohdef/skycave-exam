@@ -21,7 +21,6 @@ import org.slf4j.LoggerFactory;
  * @author Henrik Baerbak Christensen, Aarhus University.
  */
 public class StandardServerPlayer implements Player {
-
     /**
      * The classpath used to search for Command objects
      */
@@ -83,18 +82,26 @@ public class StandardServerPlayer implements Player {
     }
 
     @Override
-    public String getLongRoomDescription() {
+    public String getLongRoomDescription(int offset) {
+        if (offset == -1) offset = 0;
+
         String allOfIt = getShortRoomDescription() + "\nThere are exits in directions:\n";
         for (Direction dir : getExitSet()) {
             allOfIt += "  " + dir + " ";
         }
         allOfIt += "\nYou see other players:\n";
-        List<String> playerNameList = getPlayersHere();
+        List<String> playerNameList = getPlayersHere(offset);
         int count = 0;
         for (String p : playerNameList) {
-            allOfIt += "  [" + count + "] " + p;
+            allOfIt += "  [" + count + "] " + p + "\n";
             count++;
         }
+
+        if (offset == 0 && count < 10)
+            allOfIt += " *** End of player list *** \n";
+        else if (offset > 0 && count < 20)
+            allOfIt += " *** End of player list *** \n";
+
         return allOfIt;
     }
 
@@ -114,8 +121,8 @@ public class StandardServerPlayer implements Player {
     }
 
     @Override
-    public List<String> getPlayersHere() {
-        List<PlayerRecord> playerList = storage.computeListOfPlayersAt(getPosition());
+    public List<String> getPlayersHere(int offset) {
+        List<PlayerRecord> playerList = storage.computeListOfPlayersAt(getPosition(), offset);
         List<String> playerNameList = new ArrayList<>();
         for (PlayerRecord record : playerList) {
             playerNameList.add(record.getPlayerName());

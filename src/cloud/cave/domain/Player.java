@@ -124,15 +124,16 @@ public interface Player {
      *
      * @return list of player data transfer objects
      */
-    List<String> getPlayersHere();
+    List<String> getPlayersHere(int offset);
 
     /**
      * Get a long description of the current room, which includes a textual list
      * of exits, and textual list of players in this room.
      *
+     * @param offset an offset for the list of players starting from 0. -1 is for default behaviour (if specified)
      * @return long description of the room the player is in
      */
-    String getLongRoomDescription();
+    String getLongRoomDescription(int offset);
 
     /**
      * Get the set of exits that lead to new rooms from the players current

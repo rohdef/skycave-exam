@@ -2,6 +2,8 @@ package cloud.cave.doubles;
 
 import cloud.cave.config.CaveServerFactory;
 import cloud.cave.ipc.*;
+import cloud.cave.server.PlayerSessionCache;
+import cloud.cave.server.SimpleInMemoryCache;
 import cloud.cave.server.common.ServerConfiguration;
 import cloud.cave.server.service.ServerSubscriptionService;
 import cloud.cave.server.service.ServerWeatherService;
@@ -62,5 +64,10 @@ public class AllTestDoubleFactory implements CaveServerFactory {
     public Reactor createReactor(Invoker invoker) {
         // The reactor is not presently used in the test cases...
         return null;
+    }
+
+    @Override
+    public PlayerSessionCache createPlayerSessionCache(CaveStorage storage, WeatherService weatherService) {
+        return new SimpleInMemoryCache();
     }
 }

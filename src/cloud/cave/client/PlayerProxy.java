@@ -37,6 +37,7 @@ public class PlayerProxy implements Player {
     private String playerID;
     private String playerName;
     private String sessionID;
+    private int countCallsForLongRoomDescription;
 
     private JSONObject requestJson;
 
@@ -59,6 +60,7 @@ public class PlayerProxy implements Player {
         this.playerName = playerName;
         this.sessionID = sessionID;
         this.crh = crh;
+        this.countCallsForLongRoomDescription = 0;
     }
 
     @Override
@@ -68,6 +70,7 @@ public class PlayerProxy implements Player {
 
     @Override
     public String getShortRoomDescription() {
+        this.countCallsForLongRoomDescription = 0;
         // Build the request object
         requestJson = createRequestObject(MarshalingKeys.GET_SHORT_ROOM_DESCRIPTION_METHOD_KEY, "");
         // send the request over the connector and retrieve the reply object
@@ -77,24 +80,39 @@ public class PlayerProxy implements Player {
     }
 
     @Override
-    public String getLongRoomDescription() {
-        requestJson = createRequestObject(MarshalingKeys.GET_LONG_ROOM_DESCRIPTION_METHOD_KEY, "");
+    public String getLongRoomDescription(int offset) {
+        if (offset == -1) {
+            offset = this.countCallsForLongRoomDescription++;
+        } else {
+            this.countCallsForLongRoomDescription = offset;
+        }
+
+        requestJson = createRequestObject(MarshalingKeys.GET_LONG_ROOM_DESCRIPTION_METHOD_KEY, ""+offset);
         JSONObject replyJson = requestAndAwaitReply(requestJson);
-        return replyJson.get(MarshalingKeys.RETURNVALUE_HEAD_KEY).toString();
+        String reply = replyJson.get(MarshalingKeys.RETURNVALUE_HEAD_KEY).toString();
+        String[] lines = reply.split("\n");
+        String lastLine = lines[lines.length-1];
+        if (lastLine.equals(" *** End of player list *** "))
+            this.countCallsForLongRoomDescription = 0;
+
+        return reply;
     }
 
     @Override
     public String getName() {
+        this.countCallsForLongRoomDescription = 0;
         return playerName;
     }
 
     @Override
     public String getSessionID() {
+        this.countCallsForLongRoomDescription = 0;
         return sessionID;
     }
 
     @Override
     public Region getRegion() {
+        this.countCallsForLongRoomDescription = 0;
         requestJson = createRequestObject(MarshalingKeys.GET_REGION_METHOD_KEY,
                 "");
         JSONObject replyJson = requestAndAwaitReply(requestJson);
@@ -104,6 +122,7 @@ public class PlayerProxy implements Player {
 
     @Override
     public boolean move(Direction direction) {
+        this.countCallsForLongRoomDescription = 0;
         requestJson = createRequestObject(MarshalingKeys.MOVE_METHOD_KEY,
                 direction.toString());
         JSONObject replyJson = requestAndAwaitReply(requestJson);
@@ -113,10 +132,13 @@ public class PlayerProxy implements Player {
 
     @Override
     public boolean digRoom(Direction direction, String description) {
+        this.countCallsForLongRoomDescription = 0;
         JSONObject requestJson =
                 Marshaling.createRequestObject(playerID,
-                        sessionID, MarshalingKeys.DIG_ROOM_METHOD_KEY,
-                        "" + direction.toString(), description);
+                        sessionID,
+                        MarshalingKeys.DIG_ROOM_METHOD_KEY,
+                        direction.toString(),
+                        description);
         JSONObject replyJson = requestAndAwaitReply(requestJson);
         String asString = replyJson.get(MarshalingKeys.RETURNVALUE_HEAD_KEY).toString();
         return Boolean.parseBoolean(asString);
@@ -124,6 +146,7 @@ public class PlayerProxy implements Player {
 
     @Override
     public String getPosition() {
+        this.countCallsForLongRoomDescription = 0;
         requestJson = createRequestObject(MarshalingKeys.GET_POSITION_METHOD_KEY, null);
         JSONObject replyJson = requestAndAwaitReply(requestJson);
 
@@ -132,6 +155,7 @@ public class PlayerProxy implements Player {
 
     @Override
     public List<Direction> getExitSet() {
+        this.countCallsForLongRoomDescription = 0;
         requestJson = createRequestObject(MarshalingKeys.GET_EXITSET_METHOD_KEY, null);
         JSONObject replyJson = requestAndAwaitReply(requestJson);
         // The HEAD is not used, the list of player names are stored in the TAIL
@@ -145,8 +169,9 @@ public class PlayerProxy implements Player {
     }
 
     @Override
-    public List<String> getPlayersHere() {
-        JSONObject requestJson = createRequestObject(MarshalingKeys.GET_PLAYERS_HERE_METHOD_KEY, "");
+    public List<String> getPlayersHere(int offset) {
+        this.countCallsForLongRoomDescription = 0;
+        JSONObject requestJson = createRequestObject(MarshalingKeys.GET_PLAYERS_HERE_METHOD_KEY, "" + offset);
         JSONObject replyJson = requestAndAwaitReply(requestJson);
         // The HEAD is not used, the list of player names are stored in the TAIL
         List<String> playersHere = new ArrayList<>();
@@ -160,6 +185,7 @@ public class PlayerProxy implements Player {
 
     @Override
     public void addMessage(String message) {
+        this.countCallsForLongRoomDescription = 0;
         JSONObject requestJson = Marshaling.createRequestObject(playerID,
                 sessionID,
                 MarshalingKeys.ADD_MESSAGE_METHOD_KEY,
@@ -174,6 +200,7 @@ public class PlayerProxy implements Player {
 
     @Override
     public List<String> getMessageList() {
+        this.countCallsForLongRoomDescription = 0;
         List<String> contents = new ArrayList<>();
 
         JSONObject requestJson = Marshaling.createRequestObject(playerID,
@@ -193,6 +220,7 @@ public class PlayerProxy implements Player {
 
     @Override
     public String getWeather() {
+        this.countCallsForLongRoomDescription = 0;
         JSONObject requestJson = Marshaling.createRequestObject(playerID, sessionID, MarshalingKeys.GET_WEATHER_METHOD_KEY, null);
         JSONObject replyJson = requestAndAwaitReply(requestJson);
 
@@ -201,6 +229,7 @@ public class PlayerProxy implements Player {
 
     @Override
     public JSONObject execute(String commandName, String... parameters) {
+        this.countCallsForLongRoomDescription = 0;
         JSONObject requestJson =
                 Marshaling.createRequestObject(playerID, sessionID, MarshalingKeys.EXECUTE_METHOD_KEY, commandName, parameters);
         return requestAndAwaitReply(requestJson);
@@ -208,6 +237,7 @@ public class PlayerProxy implements Player {
 
     @Override
     public String toString() {
+        this.countCallsForLongRoomDescription = 0;
         return "(PlayerClientProxy: " + getID() + "/" + getName() + ")";
     }
 

@@ -2,6 +2,8 @@ package cloud.cave.config;
 
 import cloud.cave.ipc.Invoker;
 import cloud.cave.ipc.Reactor;
+import cloud.cave.server.DatabaseCache;
+import cloud.cave.server.PlayerSessionCache;
 import cloud.cave.server.common.ServerConfiguration;
 import cloud.cave.service.CaveStorage;
 import cloud.cave.service.IRestRequest;
@@ -105,4 +107,8 @@ public class EnvironmentServerFactory implements CaveServerFactory {
         return reactor;
     }
 
+    @Override
+    public PlayerSessionCache createPlayerSessionCache(CaveStorage storage, WeatherService weatherService) {
+        return new DatabaseCache(storage, weatherService);
+    }
 }

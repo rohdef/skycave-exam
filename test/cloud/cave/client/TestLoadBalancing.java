@@ -61,7 +61,7 @@ public class TestLoadBalancing {
         // Verify that requests are forwarded to server 1
         assertThat(crh.toString(), containsString("server 1"));
         // Verify that method calls runs smoothly to the server
-        assertThat(player.getLongRoomDescription(), containsString("[0] Mikkel"));
+        assertThat(player.getLongRoomDescription(0), containsString("[0] Mikkel"));
 
         // now we simulate that the next request will be forwarded to server 2
         // by the load balancing of the SkyCave system
@@ -71,7 +71,7 @@ public class TestLoadBalancing {
 
         // Verify that the shit hits the fan now!
         try {
-            String d = player.getLongRoomDescription();
+            String d = player.getLongRoomDescription(0);
             assertThat(d, containsString("[0] Mikkel"));
         } catch (NullPointerException exc) {
             // In a proper scalable implementation, session state
@@ -119,12 +119,11 @@ class LoadBalancedLocalMethodCallClientRequestHandler implements ClientRequestHa
     @Override
     public JSONObject sendRequestAndBlockUntilReply(JSONObject requestJson) {
         Invoker requestHandler = null;
-        if (whichOne == 1) requestHandler = requesterServer1;
-        else requestHandler = requesterServer2;
-        // System.out.println("--> CRH("+whichOne+"): "+ requestJson);
-        JSONObject reply = requestHandler.handleRequest(requestJson);
-        // System.out.println("<-- CRH("+whichOne+"): "+ reply);
-        return reply;
+        if (whichOne == 1)
+            requestHandler = requesterServer1;
+        else
+            requestHandler = requesterServer2;
+        return requestHandler.handleRequest(requestJson);
     }
 
     @Override

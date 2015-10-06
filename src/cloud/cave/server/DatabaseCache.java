@@ -43,7 +43,7 @@ public class DatabaseCache implements PlayerSessionCache {
         if (cacheCollection.count(document) > 0) {
             Document doc = cacheCollection.find(document).first();
             StandardServerPlayer player = new StandardServerPlayer(playerID, storage, weatherService, this);
-//            player.setSessionId(doc.getString("sess"));
+
             return player;
         }
 
