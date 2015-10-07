@@ -1,16 +1,11 @@
 package cloud.cave.config.socket;
 
 import cloud.cave.config.RabbitMQConfig;
-import cloud.cave.domain.Region;
 import cloud.cave.ipc.CaveIPCException;
 import cloud.cave.ipc.ClientRequestHandler;
 import cloud.cave.server.common.ServerConfiguration;
-
 import com.google.common.base.Strings;
 import com.rabbitmq.client.*;
-import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.Connection;
-import com.sun.corba.se.spi.activation._RepositoryStub;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -18,11 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.net.SocketException;
-import java.net.UnknownHostException;
 import java.util.concurrent.TimeoutException;
-
-import static com.rabbitmq.client.AMQP.*;
 
 /**
  * Created by mark on 9/22/15.
