@@ -26,7 +26,6 @@ public class RabbitRequestHandler implements ClientRequestHandler {
     @Override
     public JSONObject sendRequestAndBlockUntilReply(JSONObject requestJson) throws CaveIPCException {
         return doSendRequestAndBlockUntilReply("", RabbitMQConfig.RPC_QUEUE_NAME, requestJson);
-
     }
 
     JSONObject doSendRequestAndBlockUntilReply(String exchangeName, String routingKey, JSONObject requestJson) throws CaveIPCException {

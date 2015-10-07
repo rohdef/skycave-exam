@@ -2,6 +2,7 @@ package cloud.cave.server;
 
 import java.util.List;
 
+import com.google.common.base.Strings;
 import org.json.simple.*;
 
 import cloud.cave.common.PlayerSessionExpiredException;
@@ -56,6 +57,8 @@ public class PlayerDispatcher implements Dispatcher {
                     break;
                 // === LONG ROOM
                 case MarshalingKeys.GET_LONG_ROOM_DESCRIPTION_METHOD_KEY:
+                    if (Strings.isNullOrEmpty(parameter1))
+                        parameter1 = "0";
                     int offset = Integer.parseInt(parameter1);
                     reply = Marshaling.createValidReplyWithReturnValue(player
                             .getLongRoomDescription(offset));
@@ -72,6 +75,8 @@ public class PlayerDispatcher implements Dispatcher {
                     break;
                 // === PLAYERS HERE
                 case MarshalingKeys.GET_PLAYERS_HERE_METHOD_KEY: {
+                    if (Strings.isNullOrEmpty(parameter1))
+                        parameter1 = "0";
                     offset = Integer.parseInt(parameter1);
                     List<String> playersHere = player.getPlayersHere(offset);
                     String[] asArray = new String[playersHere.size()];
