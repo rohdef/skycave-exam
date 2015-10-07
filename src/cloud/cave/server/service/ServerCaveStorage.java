@@ -2,16 +2,15 @@ package cloud.cave.server.service;
 
 import cloud.cave.domain.Direction;
 import cloud.cave.domain.Region;
-import cloud.cave.server.common.PlayerRecord;
-import cloud.cave.server.common.Point3;
-import cloud.cave.server.common.RoomRecord;
-import cloud.cave.server.common.ServerConfiguration;
+import cloud.cave.server.common.*;
 import cloud.cave.service.CaveStorage;
 import com.mongodb.Block;
 import com.mongodb.MongoClient;
+import com.mongodb.ServerAddress;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.Sorts;
 import com.mongodb.client.model.UpdateOptions;
 import org.bson.Document;
 import org.slf4j.Logger;
@@ -87,7 +86,7 @@ public class ServerCaveStorage implements CaveStorage {
             System.out.println(messageList.size());
             return new RoomRecord(description, messageList);
         }
-        throw new NullPointerException("There is no room");
+        return null;
     }
 
     @Override
@@ -142,14 +141,24 @@ public class ServerCaveStorage implements CaveStorage {
 
     @Override
     public List<PlayerRecord> computeListOfPlayersAt(String positionString, int offset) {
+        int start = 0;
+        int limit = 10;
+
+        if (offset > 0) {
+            start = 10 + (20*(offset-1));
+            limit = 20;
+        }
+
         MongoCollection<Document> playerCollection = database.getCollection(COLLECTION_PLAYERS);
-        FindIterable<Document> playersAt = playerCollection.find(new Document("positionAsString", positionString));
+        FindIterable<Document> playersAt = playerCollection.find(new Document("positionAsString", positionString))
+                .sort(Sorts.ascending("_id"))
+                .skip(start)
+                .limit(limit);
         final LinkedList <PlayerRecord> playersAtLocationList = new LinkedList<>();
 
         playersAt.forEach(new Block<Document>() {
             @Override
             public void apply(Document document) {
-                System.out.println(document);
                 playersAtLocationList.add(documentToPlayerRecord(document));
             }
         });
@@ -168,8 +177,15 @@ public class ServerCaveStorage implements CaveStorage {
     @Override
     public void initialize(ServerConfiguration config) {
         this.config = config;
+        List<ServerAddress> serverAddresses = new ArrayList<>();
 
-        mongoClient = new MongoClient(config.get(0).getHostName());
+        for (int i = 0; i<config.size(); i++) {
+            ServerData hostConfig = config.get(i);
+            serverAddresses.add(new ServerAddress(hostConfig.getHostName(), hostConfig.getPortNumber()));
+        }
+
+
+        mongoClient = new MongoClient(serverAddresses);
         database = mongoClient.getDatabase(DB_NAME);
 
         MongoCollection<Document> roomCollection = database.getCollection(COLLECTION_ROOMS);
