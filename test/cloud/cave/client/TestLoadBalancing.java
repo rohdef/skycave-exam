@@ -3,19 +3,24 @@ package cloud.cave.client;
 import static org.junit.Assert.*;
 import static org.hamcrest.CoreMatchers.*;
 
+import cloud.cave.server.service.ServerSubscriptionService;
+import cloud.cave.server.service.ServerWeatherService;
 import org.json.simple.JSONObject;
 import org.junit.*;
 
+import cloud.cave.config.CaveServerFactory;
 import cloud.cave.common.CommonCaveTests;
 import cloud.cave.domain.*;
+import cloud.cave.doubles.*;
 import cloud.cave.ipc.*;
-import cloud.cave.server.StandardInvoker;
+import cloud.cave.server.*;
 import cloud.cave.server.common.ServerConfiguration;
+import cloud.cave.service.*;
 
 /**
  * Test scalability of servers, what happens when a request hits a server that
  * has never handled any previous requests from the player before, because
- * the session was initialized on some other (load balanced) server
+ * the session was initialized on some other (load balanced) server.
  * <p/>
  * To scale from one server to several handling load, each server has to be
  * stateless, or rather handle session state in some well defined manner
@@ -24,18 +29,32 @@ import cloud.cave.server.common.ServerConfiguration;
  * @author Henrik Baerbak Christensen, Aarhus University.
  */
 public class TestLoadBalancing {
-
     private Player player;
     private LoadBalancedLocalMethodCallClientRequestHandler crh;
+    private CaveProxy caveProxy;
+    private CaveStorage storage;
+    private WeatherService weatherService;
+    private Player player2;
 
     @Before
     public void setup() {
+        // In a multi server scenario that facilitate testing a
+        // 'Session Database' handling of session data, we of course
+        // must have two servers that access the same underlying
+        // storage system. Thus we create one FakeStorage, and
+        // let the two servers both share that.
+        storage = new FakeCaveStorage();
+        storage.initialize(null);
+
         // In a multi server scenario, each server creates its own
-        // cave during initialization; we mimic the multi server
+        // cave object during initialization; we mimic the multi server
         // configuration by creating two caves, assigned to different
-        // servers
-        Cave caveServer1 = CommonCaveTests.createTestDoubledConfiguredCave();
-        Cave caveServer2 = CommonCaveTests.createTestDoubledConfiguredCave();
+        // servers but with the same underlying storage
+        CaveServerFactory factory = new FactoryWithSharedStorage(storage);
+        weatherService = factory.createWeatherServiceConnector();
+
+        Cave caveServer1 = new StandardServerCave(factory);
+        Cave caveServer2 = new StandardServerCave(factory);
 
         // Create the server side invokers
         Invoker srh1 = new StandardInvoker(caveServer1);
@@ -50,10 +69,12 @@ public class TestLoadBalancing {
         // Create the cave proxy, and login mikkel; server communication
         // will be made with server 1 as this is the default for the
         // load balancing requester.
-        CaveProxy caveProxy = new CaveProxy(crh);
+        caveProxy = new CaveProxy(crh);
         Login loginResult = caveProxy.login("mikkel_aarskort", "123");
 
         player = loginResult.getPlayer();
+        loginResult = caveProxy.login("mathilde_aarskort", "321");
+        player2 = loginResult.getPlayer();
     }
 
     @Test
@@ -72,17 +93,81 @@ public class TestLoadBalancing {
         // Verify that the shit hits the fan now!
         try {
             String d = player.getLongRoomDescription(0);
+
             assertThat(d, containsString("[0] Mikkel"));
         } catch (NullPointerException exc) {
             // In a proper scalable implementation, session state
-            // must be available across all servers. This is
+            // must be available across all servers. This is 
             // future exercise. Enable the fail below once this
             // is implemented.
-            // fail("The server is statefull which disallows scaling!");
+            fail("The server is statefull which disallows scaling!");
         }
     }
-
 }
+
+/**
+ * A factory that creates test doubles but in case of the
+ * storage, returns the SAME storage to allow different caves
+ * access to the same underlying storage.
+ *
+ * @author Henrik Baerbak Christensen, Aarhus University.
+ */
+class FactoryWithSharedStorage implements CaveServerFactory {
+    private CaveStorage storage;
+
+    public FactoryWithSharedStorage(CaveStorage storage) {
+        this.storage = storage;
+    }
+
+    @Override
+    public CaveStorage createCaveStorage() {
+        // Return the SAME for both caves
+        return storage;
+    }
+
+    @Override
+    public SubscriptionService createSubscriptionServiceConnector() {
+        String host = "is-there-anybody-out-there";
+        int port = 57005;
+        ServerConfiguration serverConfiguration = new ServerConfiguration(host, port);
+
+        SubscriptionService service = new ServerSubscriptionService();
+        service.setRestRequester(new SubscriptionServiceRequestFake());
+        service.initialize(serverConfiguration);
+        return service;
+    }
+
+    @Override
+    public IRestRequest createRestRequester() {
+        return null;
+    }
+
+    @Override
+    public WeatherService createWeatherServiceConnector() {
+        String host = "is-there-anybody-out-there";
+        int port = 57005;
+        ServerConfiguration serverConfiguration = new ServerConfiguration(host, port);
+
+        WeatherService service = new ServerWeatherService();
+        service.initialize(serverConfiguration); // no config object required
+        service.setRestRequester(new WeatherServiceRequestFake());
+        service.setSecondsDelay(1);
+
+        return service;
+    }
+
+    @Override
+    public Reactor createReactor(Invoker invoker) {
+        // Not used...
+        return null;
+    }
+
+    @Override
+    public PlayerSessionCache createPlayerSessionCache(CaveStorage storage, WeatherService weatherService) {
+        return new DatabaseCache(storage, weatherService);
+    }
+}
+
 
 /**
  * A test double request handler which simulates load balancing
@@ -131,4 +216,3 @@ class LoadBalancedLocalMethodCallClientRequestHandler implements ClientRequestHa
         return "LoadBalancedLocalMethodCallClientRequestHandler, dispatching to server " + whichOne;
     }
 }
-

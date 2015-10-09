@@ -24,7 +24,6 @@ import org.slf4j.*;
  * @author Henrik Baerbak Christensen, Aarhus University
  */
 public class CaveProxy implements Cave {
-
     private ClientRequestHandler crh;
     private JSONObject requestJson;
 

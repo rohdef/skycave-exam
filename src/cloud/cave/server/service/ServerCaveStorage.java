@@ -125,7 +125,6 @@ public class ServerCaveStorage implements CaveStorage {
         return documentToPlayerRecord(players);
     }
 
-
     @Override
     public void updatePlayerRecord(PlayerRecord record) {
         MongoCollection<Document> playerCollection = database.getCollection(COLLECTION_PLAYERS);
