@@ -16,9 +16,7 @@ import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 import static com.mongodb.client.model.Filters.*;
 
@@ -32,6 +30,7 @@ public class ServerCaveStorage implements CaveStorage {
     public static final String DB_NAME = "whats-it-going-to-be-then";
     private static final String COLLECTION_PLAYERS = "droogs";
     private static final String COLLECTION_ROOMS = "rooms";
+    private static final String COLLECTION_MESSAGES = "messages";
     private static final Logger logger = LoggerFactory.getLogger(ServerCaveStorage.class);
 
     private MongoClient mongoClient;
@@ -48,8 +47,10 @@ public class ServerCaveStorage implements CaveStorage {
         messageList.add("[Mark] Jo, jeg fik First Like");
 
         RoomRecord entryRoom = new RoomRecord("You are standing at the end of a road before a small brick building.",
-                messageList);
+                new ArrayList<String>());
         this.addRoom(new Point3(0, 0, 0).getPositionString(), entryRoom);
+
+        this.getRoom(new Point3(0, 0, 0).getPositionString()).getMessageList().addAll(messageList);
 
         //North
         messageList = new ArrayList<>();
@@ -61,7 +62,7 @@ public class ServerCaveStorage implements CaveStorage {
         messageList.add("[Tippler] Ashamed of drinking!");
 
         this.addRoom(new Point3(0, 1, 0).getPositionString(),
-                new RoomRecord("You are in open forest, with a deep valley to one side.", messageList));
+                new RoomRecord("You are in open forest, with a deep valley to one side.", new ArrayList<String>()));
 
         //East
         this.addRoom(new Point3(1, 0, 0).getPositionString(),
@@ -72,6 +73,19 @@ public class ServerCaveStorage implements CaveStorage {
         //Up
         this.addRoom(new Point3(0, 0, 1).getPositionString(),
                 new RoomRecord("You are in the top of a tall tree, at the end of a road.", new ArrayList<String>()));
+
+        this.getRoom(new Point3(0, 1, 0).getPositionString()).getMessageList().addAll(messageList);
+    }
+
+    @Override
+    public boolean addRoom(String positionString, RoomRecord roomRecord) {
+        MongoCollection<Document> roomCollection = database.getCollection(COLLECTION_ROOMS);
+        Document room = new Document()
+                            .append("_id", positionString)
+                            .append("description", roomRecord.description);
+        roomCollection.insertOne(room);
+
+        return true;
     }
 
     @Override
@@ -82,22 +96,166 @@ public class ServerCaveStorage implements CaveStorage {
         if(room != null){
             String description = room.getString("description");
 
-            ArrayList<String> messageList = room.get("messageList", (new ArrayList<String>()).getClass());
-            System.out.println(messageList.size());
+            List<String> messageList = new MongoMessageList(positionString);
             return new RoomRecord(description, messageList);
         }
         return null;
     }
 
-    @Override
-    public boolean addRoom(String positionString, RoomRecord roomRecord) {
-        MongoCollection<Document> roomCollection = database.getCollection(COLLECTION_ROOMS);
-        Document room = new Document()
-                            .append("_id", positionString)
-                            .append("description", roomRecord.description)
-                            .append("messageList", roomRecord.getMessageList());
-        roomCollection.insertOne(room);
-        return true;
+    private class MongoMessageList implements List<String> {
+        private String id;
+        private List<String> lastRead;
+
+        public MongoMessageList(String id) {
+            this.id = id;
+            this.lastRead = new ArrayList<>();
+        }
+
+        private List<String> getMessages() {
+            MongoCollection<Document> messageCollection = database.getCollection(COLLECTION_MESSAGES);
+            FindIterable<Document> messages = messageCollection.find(new Document("room", id))
+                    .sort(Sorts.ascending("timestamp"));
+
+            final ArrayList<String> messageList = new ArrayList<>();
+            messages.forEach(new Block<Document>() {
+                @Override
+                public void apply(Document document) {
+                    messageList.add(document.getString("message"));
+                }
+            });
+
+            lastRead = messageList;
+            return lastRead;
+        }
+
+        @Override
+        public boolean add(String s) {
+            MongoCollection<Document> messageCollection = database.getCollection(COLLECTION_MESSAGES);
+
+            Document message = new Document()
+                    .append("room", id)
+                    .append("message", s)
+                    .append("timestamp", new Date().getTime());
+            messageCollection.insertOne(message);
+
+            return true;
+        }
+
+        @Override
+        public String get(int i) {
+            return getMessages().get(i);
+        }
+
+        @Override
+        public int size() {
+            return getMessages().size();
+        }
+
+        @Override
+        public boolean isEmpty() {
+            if (lastRead.isEmpty())
+                return getMessages().isEmpty();
+            else
+                return false;
+        }
+
+        @Override
+        public Iterator<String> iterator() {
+            return getMessages().iterator();
+        }
+
+        @Override
+        public Object[] toArray() {
+            return getMessages().toArray();
+        }
+
+        @Override
+        public ListIterator<String> listIterator() {
+            return getMessages().listIterator();
+        }
+
+        @Override
+        public ListIterator<String> listIterator(int i) {
+            return getMessages().listIterator(i);
+        }
+
+        @Override
+        public boolean contains(Object o) {
+            throw new RuntimeException("Not implemented");
+        }
+
+        @Override
+        public <T> T[] toArray(T[] ts) {
+            return getMessages().toArray(ts);
+        }
+
+        @Override
+        public boolean remove(Object o) {
+            throw new RuntimeException("Not implemented");
+        }
+
+        @Override
+        public boolean containsAll(Collection<?> collection) {
+            throw new RuntimeException("Not implemented");
+        }
+
+        @Override
+        public boolean addAll(Collection<? extends String> collection) {
+            for (String m : collection) {
+                this.add(m);
+            }
+            return true;
+        }
+
+        @Override
+        public boolean addAll(int i, Collection<? extends String> collection) {
+            throw new RuntimeException("Not implemented");
+        }
+
+        @Override
+        public boolean removeAll(Collection<?> collection) {
+            throw new RuntimeException("Not implemented");
+        }
+
+        @Override
+        public boolean retainAll(Collection<?> collection) {
+            throw new RuntimeException("Not implemented");
+        }
+
+        @Override
+        public void clear() {
+            throw new RuntimeException("Not implemented");
+        }
+
+        @Override
+        public String set(int i, String s) {
+            throw new RuntimeException("Not implemented");
+        }
+
+        @Override
+        public void add(int i, String s) {
+            throw new RuntimeException("Not implemented");
+        }
+
+        @Override
+        public String remove(int i) {
+            throw new RuntimeException("Not implemented");
+        }
+
+        @Override
+        public int indexOf(Object o) {
+            throw new RuntimeException("Not implemented");
+        }
+
+        @Override
+        public int lastIndexOf(Object o) {
+            throw new RuntimeException("Not implemented");
+        }
+
+        @Override
+        public List<String> subList(int i, int i1) {
+            throw new RuntimeException("Not implemented");
+        }
     }
 
     @Override
