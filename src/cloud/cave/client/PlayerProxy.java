@@ -2,6 +2,7 @@ package cloud.cave.client;
 
 import java.util.*;
 
+import cloud.cave.common.CaveStorageException;
 import org.json.simple.*;
 
 import cloud.cave.common.PlayerSessionExpiredException;
@@ -256,6 +257,9 @@ public class PlayerProxy implements Player {
         if (statusCode.equals(StatusCode.SERVER_PLAYER_SESSION_EXPIRED_FAILURE)) {
             String errMsg = replyJson.get(MarshalingKeys.ERROR_MSG_KEY).toString();
             throw new PlayerSessionExpiredException(errMsg);
+        } else if (statusCode.equals(StatusCode.SERVER_STORAGE_UNAVAILABLE)) {
+            String errMsg = replyJson.get(MarshalingKeys.ERROR_MSG_KEY).toString();
+            throw new CaveStorageException(errMsg);
         }
 
         return replyJson;

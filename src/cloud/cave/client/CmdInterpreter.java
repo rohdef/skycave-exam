@@ -123,15 +123,12 @@ public class CmdInterpreter {
             if (isValid) {
                 systemOut.println("You dug a new room in direction " + direction);
             } else {
-                systemOut
-                        .println("You cannot dig there as there is already a room in direction "
-                                + direction);
+                systemOut.println("You cannot dig there as there is already a room in direction " + direction);
             }
 
         } else if (command.equals("who")) {
             systemOut.println("You are: " + player.getName() + "/" + player.getID() + " in Region " + player.getRegion());
             systemOut.println("   in local session: " + player.getSessionID());
-
         } else if (command.equals("weather")) {
             String weather = player.getWeather();
             systemOut.println("The weather at: " + player.getRegion());
@@ -160,8 +157,7 @@ public class CmdInterpreter {
                 systemOut.println("You executed command:" + tokens[1]);
                 systemOut.println("  Response as JSON: " + response);
             } else {
-                systemOut
-                        .println("Exec commands require at least one parameter. Set it to null if irrelevant");
+                systemOut.println("Exec commands require at least one parameter. Set it to null if irrelevant");
             }
         } else {
             systemOut.println("I do not understand that long command. (Type 'h' for help)");

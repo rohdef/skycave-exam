@@ -1,6 +1,7 @@
 package cloud.cave.server.service;
 
 import cloud.cave.domain.Direction;
+import cloud.cave.domain.IMongoSetup;
 import cloud.cave.domain.Region;
 import cloud.cave.server.common.*;
 import cloud.cave.service.CaveStorage;
@@ -27,18 +28,21 @@ import static com.mongodb.client.model.Filters.*;
  * @author Rohde Fischer
  */
 public class ServerCaveStorage implements CaveStorage {
-    public static final String DB_NAME = "whats-it-going-to-be-then";
-    private static final String COLLECTION_PLAYERS = "droogs";
-    private static final String COLLECTION_ROOMS = "rooms";
-    private static final String COLLECTION_MESSAGES = "messages";
+    public static final String COLLECTION_PLAYERS = "droogs";
+    public static final String COLLECTION_ROOMS = "rooms";
+    public static final String COLLECTION_MESSAGES = "messages";
     private static final Logger logger = LoggerFactory.getLogger(ServerCaveStorage.class);
-
-    private MongoClient mongoClient;
-    private MongoDatabase database;
     private ServerConfiguration config;
+    private final IMongoSetup mongoSetup;
+
+    public ServerCaveStorage() {
+        this(new MongoConnectionSetup());
+    }
 
     // http://mongodb.github.io/mongo-java-driver/3.0/driver/getting-started/quick-tour/
-    public ServerCaveStorage() {}
+    public ServerCaveStorage(IMongoSetup mongoSetup) {
+        this.mongoSetup = mongoSetup;
+    }
 
     private void createBaseData() {
         List<String> messageList = new ArrayList<>();
@@ -79,7 +83,7 @@ public class ServerCaveStorage implements CaveStorage {
 
     @Override
     public boolean addRoom(String positionString, RoomRecord roomRecord) {
-        MongoCollection<Document> roomCollection = database.getCollection(COLLECTION_ROOMS);
+        MongoCollection<Document> roomCollection = mongoSetup.getCollection(COLLECTION_ROOMS);
         Document room = new Document()
                             .append("_id", positionString)
                             .append("description", roomRecord.description.trim());
@@ -90,7 +94,7 @@ public class ServerCaveStorage implements CaveStorage {
 
     @Override
     public RoomRecord getRoom(String positionString) {
-        MongoCollection<Document> roomCollection = database.getCollection(COLLECTION_ROOMS);
+        MongoCollection<Document> roomCollection = mongoSetup.getCollection(COLLECTION_ROOMS);
         Document room = roomCollection.find(new Document("_id", positionString)).first();
         logger.debug(positionString);
         if(room != null){
@@ -112,7 +116,7 @@ public class ServerCaveStorage implements CaveStorage {
         }
 
         private List<String> getMessages() {
-            MongoCollection<Document> messageCollection = database.getCollection(COLLECTION_MESSAGES);
+            MongoCollection<Document> messageCollection = mongoSetup.getCollection(COLLECTION_MESSAGES);
             FindIterable<Document> messages = messageCollection.find(new Document("room", id))
                     .sort(Sorts.ascending("timestamp"));
 
@@ -130,7 +134,7 @@ public class ServerCaveStorage implements CaveStorage {
 
         @Override
         public boolean add(String s) {
-            MongoCollection<Document> messageCollection = database.getCollection(COLLECTION_MESSAGES);
+            MongoCollection<Document> messageCollection = mongoSetup.getCollection(COLLECTION_MESSAGES);
 
             Document message = new Document()
                     .append("room", id)
@@ -260,7 +264,7 @@ public class ServerCaveStorage implements CaveStorage {
 
     @Override
     public List<Direction> getSetOfExitsFromRoom(String positionString) {
-        MongoCollection<Document> roomCollection = database.getCollection(COLLECTION_ROOMS);
+        MongoCollection<Document> roomCollection = mongoSetup.getCollection(COLLECTION_ROOMS);
         List<Direction> listOfExits = new ArrayList<>();
         Point3 pZero = Point3.parseString(positionString);
         Point3 p;
@@ -278,14 +282,14 @@ public class ServerCaveStorage implements CaveStorage {
 
     @Override
     public PlayerRecord getPlayerByID(String playerID) {
-        MongoCollection<Document> playerCollection = database.getCollection(COLLECTION_PLAYERS);
+        MongoCollection<Document> playerCollection = mongoSetup.getCollection(COLLECTION_PLAYERS);
         Document players = playerCollection.find(new Document("_id", playerID)).first();
         return documentToPlayerRecord(players);
     }
 
     @Override
     public void updatePlayerRecord(PlayerRecord record) {
-        MongoCollection<Document> playerCollection = database.getCollection(COLLECTION_PLAYERS);
+        MongoCollection<Document> playerCollection = mongoSetup.getCollection(COLLECTION_PLAYERS);
         Document player = new Document()
                 .append("_id", record.getPlayerID())
                 .append("playerName", record.getPlayerName())
@@ -306,7 +310,7 @@ public class ServerCaveStorage implements CaveStorage {
             limit = 20;
         }
 
-        MongoCollection<Document> playerCollection = database.getCollection(COLLECTION_PLAYERS);
+        MongoCollection<Document> playerCollection = mongoSetup.getCollection(COLLECTION_PLAYERS);
         FindIterable<Document> playersAt = playerCollection.find(new Document("positionAsString", positionString))
                 .sort(Sorts.ascending("_id"))
                 .skip(start)
@@ -325,7 +329,7 @@ public class ServerCaveStorage implements CaveStorage {
 
     @Override
     public long computeCountOfActivePlayers() {
-        MongoCollection<Document> playerCollection = database.getCollection(COLLECTION_PLAYERS);
+        MongoCollection<Document> playerCollection = mongoSetup.getCollection(COLLECTION_PLAYERS);
         long activePlayers = playerCollection.count(ne("sessionID", null));
 
         return activePlayers;
@@ -334,25 +338,16 @@ public class ServerCaveStorage implements CaveStorage {
     @Override
     public void initialize(ServerConfiguration config) {
         this.config = config;
-        List<ServerAddress> serverAddresses = new ArrayList<>();
+        this.mongoSetup.initialize(config);
 
-        for (int i = 0; i<config.size(); i++) {
-            ServerData hostConfig = config.get(i);
-            serverAddresses.add(new ServerAddress(hostConfig.getHostName(), hostConfig.getPortNumber()));
-        }
-
-
-        mongoClient = new MongoClient(serverAddresses);
-        database = mongoClient.getDatabase(DB_NAME);
-
-        MongoCollection<Document> roomCollection = database.getCollection(COLLECTION_ROOMS);
+        MongoCollection<Document> roomCollection = mongoSetup.getCollection(COLLECTION_ROOMS);
         if (roomCollection.count() == 0)
             createBaseData();
     }
 
     @Override
     public void disconnect() {
-        mongoClient.close();
+        this.mongoSetup.disconnect();
     }
 
     @Override

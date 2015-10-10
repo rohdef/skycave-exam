@@ -2,6 +2,7 @@ package cloud.cave.server;
 
 import java.util.List;
 
+import cloud.cave.common.CaveStorageException;
 import com.google.common.base.Strings;
 import org.json.simple.*;
 
@@ -155,6 +156,9 @@ public class PlayerDispatcher implements Dispatcher {
         } catch (PlayerSessionExpiredException exc) {
             reply = Marshaling.createInvalidReplyWithExplantion(StatusCode.SERVER_PLAYER_SESSION_EXPIRED_FAILURE,
                     exc.getMessage());
+        } catch (CaveStorageException e) {
+            reply = Marshaling.createInvalidReplyWithExplantion(StatusCode.SERVER_STORAGE_UNAVAILABLE,
+                    e.getMessage());
         }
         return reply;
     }
