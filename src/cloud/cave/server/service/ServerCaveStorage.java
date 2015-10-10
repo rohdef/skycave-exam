@@ -82,7 +82,7 @@ public class ServerCaveStorage implements CaveStorage {
         MongoCollection<Document> roomCollection = database.getCollection(COLLECTION_ROOMS);
         Document room = new Document()
                             .append("_id", positionString)
-                            .append("description", roomRecord.description);
+                            .append("description", roomRecord.description.trim());
         roomCollection.insertOne(room);
 
         return true;
