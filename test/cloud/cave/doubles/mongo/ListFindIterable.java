@@ -90,7 +90,9 @@ public class ListFindIterable implements FindIterable<Document> {
 
     @Override
     public Document first() {
-        return documentList.get(0);
+        if (documentList.size() > 0)
+            return documentList.get(0);
+        return null;
     }
 
     @Override

@@ -52,6 +52,9 @@ public class RoomMongoCollection extends AbstractMongoCollection {
 
     @Override
     public FindIterable<Document> find(Bson bson) {
+        if (bson.toString().contains("null")) {
+            return new ListFindIterable(new LinkedList<Document>());
+        }
         return documentFindIterable;
     }
 }

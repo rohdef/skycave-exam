@@ -293,7 +293,8 @@
             depends="build.all"
             description="--> * Execute the storage tier load generator">
         <java classpathref="run.path.id"
-              classname="cloud.cave.manual.LoadGenerateStorageWrite">
+              classname="cloud.cave.manual.LoadGenerateStorageWrite"
+              fork="true">
         </java>
     </target>
 

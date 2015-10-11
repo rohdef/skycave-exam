@@ -1,16 +1,17 @@
 package cloud.cave.server.service;
 
+import cloud.cave.common.CaveStorageException;
 import cloud.cave.domain.Direction;
 import cloud.cave.domain.IMongoSetup;
 import cloud.cave.domain.Region;
-import cloud.cave.server.common.*;
+import cloud.cave.server.common.PlayerRecord;
+import cloud.cave.server.common.Point3;
+import cloud.cave.server.common.RoomRecord;
+import cloud.cave.server.common.ServerConfiguration;
 import cloud.cave.service.CaveStorage;
-import com.mongodb.Block;
-import com.mongodb.MongoClient;
-import com.mongodb.ServerAddress;
+import com.mongodb.*;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Sorts;
 import com.mongodb.client.model.UpdateOptions;
 import org.bson.Document;
@@ -19,7 +20,8 @@ import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
-import static com.mongodb.client.model.Filters.*;
+import static com.mongodb.client.model.Filters.exists;
+import static com.mongodb.client.model.Filters.ne;
 
 
 /**
@@ -81,31 +83,206 @@ public class ServerCaveStorage implements CaveStorage {
         this.getRoom(new Point3(0, 1, 0).getPositionString()).getMessageList().addAll(messageList);
     }
 
+    private <T> T executeSafe(Delegate<T> delegate) {
+        try {
+            return delegate.run();
+        } catch (MongoSocketReadException e) {
+            throw new CaveStorageException(e.getMessage(), e);
+        } catch (MongoSocketWriteException e) {
+            throw new CaveStorageException(e.getMessage(), e);
+        } catch (MongoSocketOpenException e) {
+            throw new CaveStorageException(e.getMessage(), e);
+        } catch (Exception e) {
+            throw new RuntimeException("Unexpected exception while inserting into mongodb", e);
+        }
+    }
+
+    private interface Delegate<T> {
+        T run();
+    }
+
     @Override
-    public boolean addRoom(String positionString, RoomRecord roomRecord) {
-        MongoCollection<Document> roomCollection = mongoSetup.getCollection(COLLECTION_ROOMS);
-        Document room = new Document()
-                            .append("_id", positionString)
-                            .append("description", roomRecord.description.trim());
-        roomCollection.insertOne(room);
+    public boolean addRoom(final String positionString, final RoomRecord roomRecord) {
+        executeSafe(new Delegate<Void>() {
+            @Override
+            public Void run() {
+                MongoCollection<Document> collection = mongoSetup.getCollection(COLLECTION_ROOMS);
+
+                Document room = new Document()
+                        .append("_id", positionString)
+                        .append("description", roomRecord.description.trim());
+                collection.insertOne(room);
+
+                return null;
+            }
+        });
+
 
         return true;
     }
 
     @Override
-    public RoomRecord getRoom(String positionString) {
-        MongoCollection<Document> roomCollection = mongoSetup.getCollection(COLLECTION_ROOMS);
-        Document room = roomCollection.find(new Document("_id", positionString)).first();
-        logger.debug(positionString);
-        if(room != null){
-            String description = room.getString("description");
+    public RoomRecord getRoom(final String positionString) {
+        return executeSafe(new Delegate<RoomRecord>() {
+            @Override
+            public RoomRecord run() {
+                MongoCollection<Document> roomCollection = mongoSetup.getCollection(COLLECTION_ROOMS);
+                Document room = roomCollection.find(new Document("_id", positionString)).first();
+                logger.debug(positionString);
+                if(room != null){
+                    String description = room.getString("description");
 
-            List<String> messageList = new MongoMessageList(positionString);
-            return new RoomRecord(description, messageList);
-        }
-        return null;
+                    List<String> messageList = new MongoMessageList(positionString);
+                    return new RoomRecord(description, messageList);
+                }
+                return null;
+            }
+        });
     }
 
+    @Override
+    public List<Direction> getSetOfExitsFromRoom(final String positionString) {
+        return executeSafe(new Delegate<List<Direction>>() {
+            @Override
+            public List<Direction> run() {
+                MongoCollection<Document> roomCollection = mongoSetup.getCollection(COLLECTION_ROOMS);
+                List<Direction> listOfExits = new ArrayList<>();
+                Point3 pZero = Point3.parseString(positionString);
+                Point3 p;
+                for (Direction d : Direction.values()) {
+                    p = new Point3(pZero.x(), pZero.y(), pZero.z());
+                    p.translate(d);
+                    String position = p.getPositionString();
+
+                    if(roomCollection.count(new Document("_id", position)) > 0)
+                        listOfExits.add(d);
+
+                }
+                return listOfExits;
+            }
+        });
+    }
+
+    @Override
+    public PlayerRecord getPlayerByID(final String playerID) {
+        return executeSafe(new Delegate<PlayerRecord>() {
+            @Override
+            public PlayerRecord run() {
+                MongoCollection<Document> playerCollection = mongoSetup.getCollection(COLLECTION_PLAYERS);
+                Document players = playerCollection.find(new Document("_id", playerID)).first();
+                return documentToPlayerRecord(players);
+            }
+        });
+    }
+
+    @Override
+    public void updatePlayerRecord(final PlayerRecord record) {
+        executeSafe(new Delegate<Void>() {
+            @Override
+            public Void run() {
+                MongoCollection<Document> playerCollection = mongoSetup.getCollection(COLLECTION_PLAYERS);
+                Document player = new Document()
+                        .append("_id", record.getPlayerID())
+                        .append("playerName", record.getPlayerName())
+                        .append("groupName", record.getGroupName())
+                        .append("region", record.getRegion().toString())
+                        .append("positionAsString", record.getPositionAsString())
+                        .append("sessionID", record.getSessionId());
+                playerCollection.replaceOne(new Document("_id", record.getPlayerID()), player, new UpdateOptions().upsert(true));
+                return null;
+            }
+        });
+    }
+
+    @Override
+    public List<PlayerRecord> computeListOfPlayersAt(final String positionString, final int offset) {
+        return executeSafe(new Delegate<List<PlayerRecord>>() {
+            @Override
+            public List<PlayerRecord> run() {
+                int start = 0;
+                int limit = 10;
+
+                if (offset > 0) {
+                    start = 10 + (20*(offset-1));
+                    limit = 20;
+                }
+
+                MongoCollection<Document> playerCollection = mongoSetup.getCollection(COLLECTION_PLAYERS);
+                FindIterable<Document> playersAt = playerCollection.find(new Document("positionAsString", positionString))
+                        .sort(Sorts.ascending("_id"))
+                        .skip(start)
+                        .limit(limit);
+                final LinkedList <PlayerRecord> playersAtLocationList = new LinkedList<>();
+
+                playersAt.forEach(new Block<Document>() {
+                    @Override
+                    public void apply(Document document) {
+                        playersAtLocationList.add(documentToPlayerRecord(document));
+                    }
+                });
+
+                return playersAtLocationList;
+            }
+        });
+    }
+
+    @Override
+    public long computeCountOfActivePlayers() {
+        return executeSafe(new Delegate<Long>() {
+            @Override
+            public Long run() {
+                MongoCollection<Document> playerCollection = mongoSetup.getCollection(COLLECTION_PLAYERS);
+                long activePlayers = playerCollection.count(ne("sessionID", null));
+
+                return activePlayers;
+            }
+        });
+    }
+
+    @Override
+    public void initialize(ServerConfiguration config) {
+        this.config = config;
+        this.mongoSetup.initialize(config);
+
+        executeSafe(new Delegate<Void>() {
+            @Override
+            public Void run() {
+                MongoCollection<Document> roomCollection = mongoSetup.getCollection(COLLECTION_ROOMS);
+                if (roomCollection.count() == 0)
+                    createBaseData();
+                return null;
+            }
+        });
+    }
+
+    @Override
+    public void disconnect() {
+        this.mongoSetup.disconnect();
+    }
+
+    @Override
+    public ServerConfiguration getConfiguration() {
+        return this.config;
+    }
+
+    private PlayerRecord documentToPlayerRecord(Document document){
+        PlayerRecord p = null;
+
+        if(document != null){
+            String playerID = document.getString("_id");
+            String playerName = document.getString("playerName");
+            String groupName = document.getString("groupName");
+            String positionAsString = document.getString("positionAsString");
+            Region region = Region.valueOf(document.getString("region"));
+            String sessionID = document.getString("sessionID");
+
+
+            p = new PlayerRecord(playerID, playerName, groupName, region, positionAsString, sessionID);
+        }
+        return p;
+    }
+
+    // Helper class for message list
     private class MongoMessageList implements List<String> {
         private String id;
         private List<String> lastRead;
@@ -116,33 +293,43 @@ public class ServerCaveStorage implements CaveStorage {
         }
 
         private List<String> getMessages() {
-            MongoCollection<Document> messageCollection = mongoSetup.getCollection(COLLECTION_MESSAGES);
-            FindIterable<Document> messages = messageCollection.find(new Document("room", id))
-                    .sort(Sorts.ascending("timestamp"));
-
-            final ArrayList<String> messageList = new ArrayList<>();
-            messages.forEach(new Block<Document>() {
+            return executeSafe(new Delegate<List<String>>() {
                 @Override
-                public void apply(Document document) {
-                    messageList.add(document.getString("message"));
+                public List<String> run() {
+                    MongoCollection<Document> messageCollection = mongoSetup.getCollection(COLLECTION_MESSAGES);
+                    FindIterable<Document> messages = messageCollection.find(new Document("room", id))
+                            .sort(Sorts.ascending("timestamp"));
+
+                    final ArrayList<String> messageList = new ArrayList<>();
+                    messages.forEach(new Block<Document>() {
+                        @Override
+                        public void apply(Document document) {
+                            messageList.add(document.getString("message"));
+                        }
+                    });
+
+                    lastRead = messageList;
+                    return lastRead;
                 }
             });
-
-            lastRead = messageList;
-            return lastRead;
         }
 
         @Override
-        public boolean add(String s) {
-            MongoCollection<Document> messageCollection = mongoSetup.getCollection(COLLECTION_MESSAGES);
+        public boolean add(final String s) {
+            return executeSafe(new Delegate<Boolean>() {
+                @Override
+                public Boolean run() {
+                    MongoCollection<Document> messageCollection = mongoSetup.getCollection(COLLECTION_MESSAGES);
 
-            Document message = new Document()
-                    .append("room", id)
-                    .append("message", s)
-                    .append("timestamp", new Date().getTime());
-            messageCollection.insertOne(message);
+                    Document message = new Document()
+                            .append("room", id)
+                            .append("message", s)
+                            .append("timestamp", new Date().getTime());
+                    messageCollection.insertOne(message);
 
-            return true;
+                    return true;
+                }
+            });
         }
 
         @Override
@@ -261,115 +448,4 @@ public class ServerCaveStorage implements CaveStorage {
             throw new RuntimeException("Not implemented");
         }
     }
-
-    @Override
-    public List<Direction> getSetOfExitsFromRoom(String positionString) {
-        MongoCollection<Document> roomCollection = mongoSetup.getCollection(COLLECTION_ROOMS);
-        List<Direction> listOfExits = new ArrayList<>();
-        Point3 pZero = Point3.parseString(positionString);
-        Point3 p;
-        for (Direction d : Direction.values()) {
-            p = new Point3(pZero.x(), pZero.y(), pZero.z());
-            p.translate(d);
-            String position = p.getPositionString();
-
-            if(roomCollection.count(new Document("_id", position)) > 0)
-                listOfExits.add(d);
-
-        }
-        return listOfExits;
-    }
-
-    @Override
-    public PlayerRecord getPlayerByID(String playerID) {
-        MongoCollection<Document> playerCollection = mongoSetup.getCollection(COLLECTION_PLAYERS);
-        Document players = playerCollection.find(new Document("_id", playerID)).first();
-        return documentToPlayerRecord(players);
-    }
-
-    @Override
-    public void updatePlayerRecord(PlayerRecord record) {
-        MongoCollection<Document> playerCollection = mongoSetup.getCollection(COLLECTION_PLAYERS);
-        Document player = new Document()
-                .append("_id", record.getPlayerID())
-                .append("playerName", record.getPlayerName())
-                .append("groupName", record.getGroupName())
-                .append("region",record.getRegion().toString())
-                .append("positionAsString",record.getPositionAsString())
-                .append("sessionID",record.getSessionId());
-        playerCollection.replaceOne(new Document("_id", record.getPlayerID()), player, new UpdateOptions().upsert(true));
-    }
-
-    @Override
-    public List<PlayerRecord> computeListOfPlayersAt(String positionString, int offset) {
-        int start = 0;
-        int limit = 10;
-
-        if (offset > 0) {
-            start = 10 + (20*(offset-1));
-            limit = 20;
-        }
-
-        MongoCollection<Document> playerCollection = mongoSetup.getCollection(COLLECTION_PLAYERS);
-        FindIterable<Document> playersAt = playerCollection.find(new Document("positionAsString", positionString))
-                .sort(Sorts.ascending("_id"))
-                .skip(start)
-                .limit(limit);
-        final LinkedList <PlayerRecord> playersAtLocationList = new LinkedList<>();
-
-        playersAt.forEach(new Block<Document>() {
-            @Override
-            public void apply(Document document) {
-                playersAtLocationList.add(documentToPlayerRecord(document));
-            }
-        });
-
-        return playersAtLocationList;
-    }
-
-    @Override
-    public long computeCountOfActivePlayers() {
-        MongoCollection<Document> playerCollection = mongoSetup.getCollection(COLLECTION_PLAYERS);
-        long activePlayers = playerCollection.count(ne("sessionID", null));
-
-        return activePlayers;
-    }
-
-    @Override
-    public void initialize(ServerConfiguration config) {
-        this.config = config;
-        this.mongoSetup.initialize(config);
-
-        MongoCollection<Document> roomCollection = mongoSetup.getCollection(COLLECTION_ROOMS);
-        if (roomCollection.count() == 0)
-            createBaseData();
-    }
-
-    @Override
-    public void disconnect() {
-        this.mongoSetup.disconnect();
-    }
-
-    @Override
-    public ServerConfiguration getConfiguration() {
-        return this.config;
-    }
-
-    private PlayerRecord documentToPlayerRecord(Document document){
-        PlayerRecord p = null;
-
-        if(document != null){
-            String playerID = document.getString("_id");
-            String playerName = document.getString("playerName");
-            String groupName = document.getString("groupName");
-            String positionAsString = document.getString("positionAsString");
-            Region region = Region.valueOf(document.getString("region"));
-            String sessionID = document.getString("sessionID");
-
-
-            p = new PlayerRecord(playerID, playerName, groupName, region, positionAsString, sessionID);
-        }
-        return p;
-    }
-
 }

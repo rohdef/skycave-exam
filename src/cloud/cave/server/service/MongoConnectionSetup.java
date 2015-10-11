@@ -19,7 +19,6 @@ public class MongoConnectionSetup implements IMongoSetup {
     public static final String DB_NAME = "whats-it-going-to-be-then";
     private MongoClient mongoClient;
     private MongoDatabase database;
-    private ServerConfiguration config;
 
     @Override
     public MongoCollection<Document> getCollection(String name) {
@@ -28,8 +27,6 @@ public class MongoConnectionSetup implements IMongoSetup {
 
     @Override
     public void initialize(ServerConfiguration config) {
-        this.config = config;
-
         List<ServerAddress> serverAddresses = new ArrayList<>();
 
         for (int i = 0; i<config.size(); i++) {

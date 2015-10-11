@@ -117,7 +117,6 @@ public abstract class AbstractMongoCollection implements MongoCollection<Documen
 
     @Override
     public void insertOne(Document document) {
-
     }
 
     @Override
