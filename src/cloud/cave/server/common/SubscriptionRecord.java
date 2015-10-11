@@ -11,11 +11,10 @@ import cloud.cave.domain.Region;
  * @author Henrik Baerbak Christensen, Aarhus University.
  */
 public class SubscriptionRecord {
-
-    private String playerName;
-    private String playerID;
-    private String groupName;
-    private Region region;
+    private final String playerName;
+    private final String playerID;
+    private final String groupName;
+    private final Region region;
 
     private SubscriptionResult errorCode;
 
@@ -25,7 +24,7 @@ public class SubscriptionRecord {
      * @param errorCode the code of the error describing the failed subscription
      */
     public SubscriptionRecord(SubscriptionResult errorCode) {
-        this.errorCode = errorCode;
+        this(null, null, null, null, errorCode);
     }
 
     /**
@@ -37,11 +36,15 @@ public class SubscriptionRecord {
      * @param region     region of player
      */
     public SubscriptionRecord(String playerID, String playerName, String groupName, Region region) {
+        this(playerName, playerID, groupName, region, SubscriptionResult.LOGIN_NAME_HAS_VALID_SUBSCRIPTION);
+    }
+
+    private SubscriptionRecord(String playerName, String playerID, String groupName, Region region, SubscriptionResult errorCode) {
         this.playerName = playerName;
         this.playerID = playerID;
         this.groupName = groupName;
         this.region = region;
-        this.errorCode = SubscriptionResult.LOGIN_NAME_HAS_VALID_SUBSCRIPTION;
+        this.errorCode = errorCode;
     }
 
     public String getPlayerName() {
@@ -62,9 +65,8 @@ public class SubscriptionRecord {
 
     @Override
     public String toString() {
-        return "SubscriptionRecord [playerName=" + playerName + ", playerID="
-                + playerID + ", groupName=" + groupName + ", region=" + region
-                + ", errorCode=" + errorCode + "]";
+        return "SubscriptionRecord [playerName=" + playerName + ", playerID=" + playerID + ", groupName=" + groupName
+                + ", region=" + region + ", errorCode=" + errorCode + "]";
     }
 
     public String getGroupName() {

@@ -13,17 +13,13 @@ public enum LoginResult {
     LOGIN_FAILED_SERVER_ERROR; // The login failed due to some error on the server side, review server logs
 
     /**
-     * Return true in case the login result represents a valid
-     * login
+     * Return true in case the login result represents a valid login
      *
      * @param loginResult one of the login result enums
      * @return true if the code represents a valid login
      */
     public static boolean isValidLogin(LoginResult loginResult) {
-        boolean isValidLogin =
-                loginResult == LoginResult.LOGIN_SUCCESS ||
+        return loginResult == LoginResult.LOGIN_SUCCESS ||
                         loginResult == LoginResult.LOGIN_SUCCESS_PLAYER_ALREADY_LOGGED_IN;
-
-        return isValidLogin;
     }
 }

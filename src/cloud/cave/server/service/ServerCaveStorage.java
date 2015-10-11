@@ -9,7 +9,9 @@ import cloud.cave.server.common.Point3;
 import cloud.cave.server.common.RoomRecord;
 import cloud.cave.server.common.ServerConfiguration;
 import cloud.cave.service.CaveStorage;
+import com.google.common.collect.ImmutableList;
 import com.mongodb.*;
+import com.mongodb.annotations.Immutable;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Sorts;
@@ -106,9 +108,9 @@ public class ServerCaveStorage implements CaveStorage {
         executeSafe(new Delegate<Void>() {
             @Override
             public Void run() {
-                MongoCollection<Document> collection = mongoSetup.getCollection(COLLECTION_ROOMS);
+                final MongoCollection<Document> collection = mongoSetup.getCollection(COLLECTION_ROOMS);
 
-                Document room = new Document()
+                final Document room = new Document()
                         .append("_id", positionString)
                         .append("description", roomRecord.description.trim());
                 collection.insertOne(room);
@@ -126,13 +128,13 @@ public class ServerCaveStorage implements CaveStorage {
         return executeSafe(new Delegate<RoomRecord>() {
             @Override
             public RoomRecord run() {
-                MongoCollection<Document> roomCollection = mongoSetup.getCollection(COLLECTION_ROOMS);
-                Document room = roomCollection.find(new Document("_id", positionString)).first();
+                final MongoCollection<Document> roomCollection = mongoSetup.getCollection(COLLECTION_ROOMS);
+                final Document room = roomCollection.find(new Document("_id", positionString)).first();
                 logger.debug(positionString);
                 if(room != null){
-                    String description = room.getString("description");
+                    final String description = room.getString("description");
 
-                    List<String> messageList = new MongoMessageList(positionString);
+                    final List<String> messageList = new MongoMessageList(positionString);
                     return new RoomRecord(description, messageList);
                 }
                 return null;
@@ -145,14 +147,14 @@ public class ServerCaveStorage implements CaveStorage {
         return executeSafe(new Delegate<List<Direction>>() {
             @Override
             public List<Direction> run() {
-                MongoCollection<Document> roomCollection = mongoSetup.getCollection(COLLECTION_ROOMS);
-                List<Direction> listOfExits = new ArrayList<>();
-                Point3 pZero = Point3.parseString(positionString);
-                Point3 p;
+                final MongoCollection<Document> roomCollection = mongoSetup.getCollection(COLLECTION_ROOMS);
+                final List<Direction> listOfExits = new ArrayList<>();
+                final Point3 pZero = Point3.parseString(positionString);
+
                 for (Direction d : Direction.values()) {
-                    p = new Point3(pZero.x(), pZero.y(), pZero.z());
+                    final Point3 p = new Point3(pZero.x(), pZero.y(), pZero.z());
                     p.translate(d);
-                    String position = p.getPositionString();
+                    final String position = p.getPositionString();
 
                     if(roomCollection.count(new Document("_id", position)) > 0)
                         listOfExits.add(d);
@@ -168,8 +170,8 @@ public class ServerCaveStorage implements CaveStorage {
         return executeSafe(new Delegate<PlayerRecord>() {
             @Override
             public PlayerRecord run() {
-                MongoCollection<Document> playerCollection = mongoSetup.getCollection(COLLECTION_PLAYERS);
-                Document players = playerCollection.find(new Document("_id", playerID)).first();
+                final MongoCollection<Document> playerCollection = mongoSetup.getCollection(COLLECTION_PLAYERS);
+                final Document players = playerCollection.find(new Document("_id", playerID)).first();
                 return documentToPlayerRecord(players);
             }
         });
@@ -180,8 +182,8 @@ public class ServerCaveStorage implements CaveStorage {
         executeSafe(new Delegate<Void>() {
             @Override
             public Void run() {
-                MongoCollection<Document> playerCollection = mongoSetup.getCollection(COLLECTION_PLAYERS);
-                Document player = new Document()
+                final MongoCollection<Document> playerCollection = mongoSetup.getCollection(COLLECTION_PLAYERS);
+                final Document player = new Document()
                         .append("_id", record.getPlayerID())
                         .append("playerName", record.getPlayerName())
                         .append("groupName", record.getGroupName())
@@ -199,20 +201,23 @@ public class ServerCaveStorage implements CaveStorage {
         return executeSafe(new Delegate<List<PlayerRecord>>() {
             @Override
             public List<PlayerRecord> run() {
-                int start = 0;
-                int limit = 10;
+                final int start;
+                final int limit;
 
                 if (offset > 0) {
                     start = 10 + (20*(offset-1));
                     limit = 20;
+                } else {
+                    start = 0;
+                    limit = 10;
                 }
 
-                MongoCollection<Document> playerCollection = mongoSetup.getCollection(COLLECTION_PLAYERS);
-                FindIterable<Document> playersAt = playerCollection.find(new Document("positionAsString", positionString))
+                final MongoCollection<Document> playerCollection = mongoSetup.getCollection(COLLECTION_PLAYERS);
+                final FindIterable<Document> playersAt = playerCollection.find(new Document("positionAsString", positionString))
                         .sort(Sorts.ascending("_id"))
                         .skip(start)
                         .limit(limit);
-                final LinkedList <PlayerRecord> playersAtLocationList = new LinkedList<>();
+                final LinkedList<PlayerRecord> playersAtLocationList = new LinkedList<>();
 
                 playersAt.forEach(new Block<Document>() {
                     @Override
@@ -221,7 +226,7 @@ public class ServerCaveStorage implements CaveStorage {
                     }
                 });
 
-                return playersAtLocationList;
+                return ImmutableList.copyOf(playersAtLocationList);
             }
         });
     }
@@ -231,8 +236,8 @@ public class ServerCaveStorage implements CaveStorage {
         return executeSafe(new Delegate<Long>() {
             @Override
             public Long run() {
-                MongoCollection<Document> playerCollection = mongoSetup.getCollection(COLLECTION_PLAYERS);
-                long activePlayers = playerCollection.count(ne("sessionID", null));
+                final MongoCollection<Document> playerCollection = mongoSetup.getCollection(COLLECTION_PLAYERS);
+                final long activePlayers = playerCollection.count(ne("sessionID", null));
 
                 return activePlayers;
             }
@@ -247,7 +252,7 @@ public class ServerCaveStorage implements CaveStorage {
         executeSafe(new Delegate<Void>() {
             @Override
             public Void run() {
-                MongoCollection<Document> roomCollection = mongoSetup.getCollection(COLLECTION_ROOMS);
+                final MongoCollection<Document> roomCollection = mongoSetup.getCollection(COLLECTION_ROOMS);
                 if (roomCollection.count() == 0)
                     createBaseData();
                 return null;
@@ -266,25 +271,24 @@ public class ServerCaveStorage implements CaveStorage {
     }
 
     private PlayerRecord documentToPlayerRecord(Document document){
-        PlayerRecord p = null;
-
         if(document != null){
-            String playerID = document.getString("_id");
-            String playerName = document.getString("playerName");
-            String groupName = document.getString("groupName");
-            String positionAsString = document.getString("positionAsString");
-            Region region = Region.valueOf(document.getString("region"));
-            String sessionID = document.getString("sessionID");
+            final String playerID = document.getString("_id");
+            final String playerName = document.getString("playerName");
+            final String groupName = document.getString("groupName");
+            final String positionAsString = document.getString("positionAsString");
+            final Region region = Region.valueOf(document.getString("region"));
+            final String sessionID = document.getString("sessionID");
 
 
-            p = new PlayerRecord(playerID, playerName, groupName, region, positionAsString, sessionID);
+            return new PlayerRecord(playerID, playerName, groupName, region, positionAsString, sessionID);
+        } else {
+            return null;
         }
-        return p;
     }
 
     // Helper class for message list
     private class MongoMessageList implements List<String> {
-        private String id;
+        private final String id;
         private List<String> lastRead;
 
         public MongoMessageList(String id) {
@@ -296,8 +300,8 @@ public class ServerCaveStorage implements CaveStorage {
             return executeSafe(new Delegate<List<String>>() {
                 @Override
                 public List<String> run() {
-                    MongoCollection<Document> messageCollection = mongoSetup.getCollection(COLLECTION_MESSAGES);
-                    FindIterable<Document> messages = messageCollection.find(new Document("room", id))
+                    final MongoCollection<Document> messageCollection = mongoSetup.getCollection(COLLECTION_MESSAGES);
+                    final FindIterable<Document> messages = messageCollection.find(new Document("room", id))
                             .sort(Sorts.ascending("timestamp"));
 
                     final ArrayList<String> messageList = new ArrayList<>();
@@ -308,7 +312,7 @@ public class ServerCaveStorage implements CaveStorage {
                         }
                     });
 
-                    lastRead = messageList;
+                    lastRead = ImmutableList.copyOf(messageList);
                     return lastRead;
                 }
             });
@@ -319,9 +323,9 @@ public class ServerCaveStorage implements CaveStorage {
             return executeSafe(new Delegate<Boolean>() {
                 @Override
                 public Boolean run() {
-                    MongoCollection<Document> messageCollection = mongoSetup.getCollection(COLLECTION_MESSAGES);
+                    final MongoCollection<Document> messageCollection = mongoSetup.getCollection(COLLECTION_MESSAGES);
 
-                    Document message = new Document()
+                    final Document message = new Document()
                             .append("room", id)
                             .append("message", s)
                             .append("timestamp", new Date().getTime());

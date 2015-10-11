@@ -192,7 +192,7 @@ public class TestPlayerProxy {
 
         assertThat( //"The invalid request should tell where the error is",
                 reply.get(MarshalingKeys.ERROR_MSG_KEY).toString(),
-                containsString("StandardInvoker.handleRequest: Unhandled request as the method key invalid-method-key is unknown."));
+                containsString("StandardInvoker.handleRequest: Unknown dispatcher for the methodKey: invalid-method-key. Full request"));
     }
 
     @Test

@@ -37,9 +37,7 @@ public class EnvironmentServerFactory implements CaveServerFactory {
     @Override
     public CaveStorage createCaveStorage() {
         CaveStorage caveStorage = null;
-        caveStorage = Config.loadAndInstantiate(environmentReader,
-                Config.SKYCAVE_CAVESTORAGE_IMPLEMENTATION,
-                caveStorage);
+        caveStorage = Config.loadAndInstantiate(environmentReader, Config.SKYCAVE_CAVESTORAGE_IMPLEMENTATION, caveStorage);
 
         // Read in the server configuration
         ServerConfiguration config = new ServerConfiguration(environmentReader, Config.SKYCAVE_DBSERVER);
@@ -101,8 +99,7 @@ public class EnvironmentServerFactory implements CaveServerFactory {
         reactor = Config.loadAndInstantiate(environmentReader, Config.SKYCAVE_REACTOR_IMPLEMENTATION, reactor);
 
         // Read in the server configuration
-        ServerConfiguration config =
-                new ServerConfiguration(environmentReader, Config.SKYCAVE_APPSERVER);
+        ServerConfiguration config = new ServerConfiguration(environmentReader, Config.SKYCAVE_APPSERVER);
         reactor.initialize(invoker, config);
 
         return reactor;

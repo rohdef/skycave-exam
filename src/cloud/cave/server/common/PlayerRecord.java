@@ -1,6 +1,5 @@
 package cloud.cave.server.common;
 
-import cloud.cave.domain.Player;
 import cloud.cave.domain.Region;
 
 /**
@@ -13,13 +12,13 @@ import cloud.cave.domain.Region;
  * @author Henrik Baerbak Christensen, Aarhus University.
  */
 public class PlayerRecord {
-    private String playerID;
-    private String playerName;
-    private String groupName;
-    private Region region;
+    private final String playerID;
+    private final String playerName;
+    private final String groupName;
+    private final Region region;
 
     private String positionAsString;
-    private String sessionID;
+    private final String sessionID;
 
     public PlayerRecord(String playerID, String playerName, String groupName, Region region, String positionAsString, String sessionID) {
         super();
@@ -28,18 +27,6 @@ public class PlayerRecord {
         this.groupName = groupName;
         this.region = region;
         this.positionAsString = positionAsString;
-        this.sessionID = sessionID;
-    }
-
-    public PlayerRecord(SubscriptionRecord subscription,
-                        String positionString,
-                        String sessionID) {
-        super();
-        this.playerID = subscription.getPlayerID();
-        this.playerName = subscription.getPlayerName();
-        this.groupName = subscription.getGroupName();
-        this.region = subscription.getRegion();
-        this.positionAsString = positionString;
         this.sessionID = sessionID;
     }
 
@@ -78,12 +65,9 @@ public class PlayerRecord {
         return sessionID != null;
     }
 
+    @Deprecated
     public void setPositionAsString(String positionAsString) {
         this.positionAsString = positionAsString;
-    }
-
-    public void setSessionId(String sessionId) {
-        this.sessionID = sessionId;
     }
 
     @Override

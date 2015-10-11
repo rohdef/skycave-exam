@@ -1,17 +1,21 @@
 package cloud.cave.server;
 
-import java.util.LinkedList;
-import java.util.List;
-import java.util.UUID;
-
-import org.slf4j.*;
-
-import cloud.cave.common.*;
+import cloud.cave.common.LoginRecord;
 import cloud.cave.config.CaveServerFactory;
 import cloud.cave.domain.*;
 import cloud.cave.ipc.CaveIPCException;
-import cloud.cave.server.common.*;
-import cloud.cave.service.*;
+import cloud.cave.server.common.PlayerRecord;
+import cloud.cave.server.common.Point3;
+import cloud.cave.server.common.SubscriptionRecord;
+import cloud.cave.service.CaveStorage;
+import cloud.cave.service.SubscriptionService;
+import cloud.cave.service.WeatherService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * The standard server side implementation of the Cave. Just as the server side
@@ -21,70 +25,19 @@ import cloud.cave.service.*;
  * @author Henrik Baerbak Christensen, Aarhus University.
  */
 public class StandardServerCave implements Cave {
-    private CaveStorage storage;
-    private SubscriptionService subscriptionService;
-    private WeatherService weatherService;
-    private PlayerSessionCache sessionCache;
+    private final CaveStorage storage;
+    private final SubscriptionService subscriptionService;
+    private final WeatherService weatherService;
+    private final PlayerSessionCache sessionCache;
 
-    private Logger logger;
+    private final ReentrantLock lock = new ReentrantLock();
+    private static final Logger logger = LoggerFactory.getLogger(StandardServerCave.class);
 
     public StandardServerCave(CaveServerFactory factory) {
         storage = factory.createCaveStorage();
         subscriptionService = factory.createSubscriptionServiceConnector();
         weatherService = factory.createWeatherServiceConnector();
         sessionCache = factory.createPlayerSessionCache(storage, weatherService);
-
-        logger = LoggerFactory.getLogger(StandardServerCave.class);
-//        doMassLogin();
-    }
-
-    private List<Player> doMassLogin() {
-        List<Player> players = new LinkedList<>();
-
-        Login loginResult;
-
-        loginResult = this.login("rwar400t", "727b9c");
-        players.add(loginResult.getPlayer());
-        loginResult = this.login("rwar401t", "ynizl2");
-        players.add(loginResult.getPlayer());
-        loginResult = this.login("rwar402t", "f0s4p3");
-        players.add(loginResult.getPlayer());
-        loginResult = this.login("rwar403t", "plcs74");
-        players.add(loginResult.getPlayer());
-        loginResult = this.login("rwar404t", "v76ifd");
-        players.add(loginResult.getPlayer());
-        loginResult = this.login("rwar405t", "jxe9ha");
-        players.add(loginResult.getPlayer());
-        loginResult = this.login("rwar406t", "6xp9jl");
-        players.add(loginResult.getPlayer());
-        loginResult = this.login("rwar407t", "u3mxug");
-        players.add(loginResult.getPlayer());
-        loginResult = this.login("rwar408t", "trv9gy");
-        players.add(loginResult.getPlayer());
-        loginResult = this.login("rwar409t", "1d5fh3");
-        players.add(loginResult.getPlayer());
-        loginResult = this.login("rwar410t", "zsafci");
-        players.add(loginResult.getPlayer());
-        loginResult = this.login("rwar411t", "v324q6");
-        players.add(loginResult.getPlayer());
-        loginResult = this.login("rwar412t", "2jdfhz");
-        players.add(loginResult.getPlayer());
-        loginResult = this.login("rwar413t", "zja3ig");
-        players.add(loginResult.getPlayer());
-        loginResult = this.login("rwar414t", "04nj10");
-        players.add(loginResult.getPlayer());
-        loginResult = this.login("rwar415t", "zu5qar");
-        players.add(loginResult.getPlayer());
-        loginResult = this.login("rwar416t", "qildw2");
-        players.add(loginResult.getPlayer());
-        loginResult = this.login("rwar417t", "61w8sh");
-        players.add(loginResult.getPlayer());
-        loginResult = this.login("rwar418t", "exwt5w");
-        players.add(loginResult.getPlayer());
-        loginResult = this.login("rwar419t", "n7lzqw");
-        players.add(loginResult.getPlayer());
-
-        return players;
     }
 
     /**
@@ -98,17 +51,18 @@ public class StandardServerCave implements Cave {
      * @return the result of the login
      */
     @Override
-    public Login login(String loginName, String password) {
-        Login result;
+    public Login login(final String loginName, final String password) {
+        final Login result;
 
         // Fetch the subscription for the given loginName
-        SubscriptionRecord subscription = null;
+        final SubscriptionRecord subscription;
 
         try {
             subscription = subscriptionService.lookup(loginName, password);
         } catch (CaveIPCException e) {
             String errorMsg = "Lookup failed on subscription service due to IPC exception:" + e.getMessage();
             logger.error(errorMsg, e);
+            return new LoginRecord(LoginResult.LOGIN_FAILED_SERVER_ERROR);
         }
 
         if (subscription == null) {
@@ -130,23 +84,23 @@ public class StandardServerCave implements Cave {
         }
 
         // Now the subscription is assumed to be a valid player
-        String playerID = subscription.getPlayerID();
+        final String playerID = subscription.getPlayerID();
 
         // Create id of session as a random UUID
-        String sessionID = UUID.randomUUID().toString();
+        final String sessionID = UUID.randomUUID().toString();
 
         // Enter the player, creating the player's session in the cave
         // (which may overwrite an already ongoing session which is then
         // implicitly invalidated).
-        LoginResult theResult = startPlayerSession(subscription, sessionID);
+        final LoginResult theResult = startPlayerSession(subscription, sessionID);
 
-        boolean validLogin = LoginResult.isValidLogin(theResult);
+        final boolean validLogin = LoginResult.isValidLogin(theResult);
         if (!validLogin) {
             return new LoginRecord(theResult);
         }
 
         // Create player domain object
-        Player player = new StandardServerPlayer(playerID, storage, weatherService, sessionCache);
+        final Player player = new StandardServerPlayer(playerID, storage, weatherService, sessionCache);
 
         // Cache the player session for faster lookups
         sessionCache.add(playerID, player);
@@ -166,53 +120,83 @@ public class StandardServerCave implements Cave {
      * @return result of the login which is always a valid login, but
      * may signal a 'second login' that overrules a previous one.
      */
-    private LoginResult startPlayerSession(SubscriptionRecord subscription,
-                                           String sessionID) {
-        LoginResult result = LoginResult.LOGIN_SUCCESS; // Assume success
+    private LoginResult startPlayerSession(final SubscriptionRecord subscription,
+                                           final String sessionID) {
+        final LoginResult result;
 
         // get the record of the player from storage
-        PlayerRecord playerRecord = storage.getPlayerByID(subscription.getPlayerID());
+        try {
+            lock.tryLock(5, TimeUnit.SECONDS);
 
-        if (playerRecord == null) {
-            // Apparently a newly registered player, so create the record
-            // and add it to the cave storage
-            String position = new Point3(0, 0, 0).getPositionString();
-            playerRecord = new PlayerRecord(subscription, position, sessionID);
-            storage.updatePlayerRecord(playerRecord);
-        } else {
-            // Player has been seen before; if he/she has an existing
-            // session ("= is in cave") we flag this as a warning,
-            // and clear the cache entry
-            if (playerRecord.isInCave()) {
-                result = LoginResult.LOGIN_SUCCESS_PLAYER_ALREADY_LOGGED_IN;
+            final PlayerRecord playerRecord = storage.getPlayerByID(subscription.getPlayerID());
+            final PlayerRecord playerRecordCreated;
+
+            if (playerRecord == null) {
+                // Apparently a newly registered player, so create the record and add it to the cave storage
+                final String position = new Point3(0, 0, 0).getPositionString();
+                playerRecordCreated = new PlayerRecord(subscription.getPlayerID(),
+                        subscription.getPlayerName(),
+                        subscription.getGroupName(),
+                        subscription.getRegion(),
+                        position,
+                        sessionID);
+                result = LoginResult.LOGIN_SUCCESS;
+            } else {
+                // Player has been seen before; if he/she has an existing
+                // session ("= is in cave") we flag this as a warning,
+                // and clear the cache entry
+                if (playerRecord.isInCave()) {
+                    result = LoginResult.LOGIN_SUCCESS_PLAYER_ALREADY_LOGGED_IN;
+                } else {
+                    result = LoginResult.LOGIN_SUCCESS;
+                }
+
+                playerRecordCreated = new PlayerRecord(playerRecord.getPlayerID(),
+                        playerRecord.getPlayerName(),
+                        playerRecord.getGroupName(),
+                        playerRecord.getRegion(),
+                        playerRecord.getPositionAsString(),
+                        sessionID);
             }
-            // update the session id in the storage system
-            playerRecord.setSessionId(sessionID);
-            storage.updatePlayerRecord(playerRecord);
-        }
+            storage.updatePlayerRecord(playerRecordCreated);
 
-        return result;
+            return result;
+        } catch (InterruptedException e) {
+            return LoginResult.LOGIN_FAILED_SERVER_ERROR;
+        } finally {
+            lock.unlock();
+        }
     }
 
     @Override
-    public LogoutResult logout(String playerID) {
-        // ensure that the player is known by and in the cave
-        PlayerRecord player = storage.getPlayerByID(playerID);
+    public LogoutResult logout(final String playerID) {
+        try {
+            lock.tryLock(5, TimeUnit.SECONDS);
 
-        if (!player.isInCave()) {
-            return LogoutResult.PLAYER_NOT_IN_CAVE;
+            final PlayerRecord player = storage.getPlayerByID(playerID);
+
+            if (!player.isInCave()) {
+                return LogoutResult.PLAYER_NOT_IN_CAVE;
+            }
+
+            // reset the session  to indicate the player is no longer around
+            PlayerRecord playerRecordCreated = new PlayerRecord(player.getPlayerID(),
+                    player.getPlayerName(),
+                    player.getGroupName(),
+                    player.getRegion(),
+                    player.getPositionAsString(),
+                    null);
+
+            // and update the record in the storage
+            storage.updatePlayerRecord(playerRecordCreated);
+            sessionCache.remove(playerID);
+
+            return LogoutResult.SUCCESS;
+        } catch (InterruptedException e) {
+            return LogoutResult.SERVER_FAILURE;
+        } finally {
+            lock.unlock();
         }
-
-        // reset the session  to indicate the player is no longer around
-        player.setSessionId(null);
-
-        // and update the record in the storage
-        storage.updatePlayerRecord(player);
-
-        // and clean up the cache
-        sessionCache.remove(playerID);
-
-        return LogoutResult.SUCCESS;
     }
 
     @Override

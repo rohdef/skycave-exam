@@ -85,30 +85,25 @@ public class Config {
      * @return the value of the variable in the environment
      * @throws CaveConfigurationNotSetException in case the variable is not set
      */
-    public static String failFastRead(
-            EnvironmentReaderStrategy environmentReader, String environmentVariable) {
+    public static String failFastRead(EnvironmentReaderStrategy environmentReader, String environmentVariable) {
         String value = environmentReader.getEnv(environmentVariable);
         if (value == null || value.equals("")) {
             throw new CaveConfigurationNotSetException(
                     "ConfigurationError: The configuration is not defined because"
-                            + " the environment variable '" + environmentVariable
-                            + "' is not set.");
+                            + " the environment variable '" + environmentVariable + "' is not set.");
         }
         return value;
     }
 
     /**
-     * Generic method to load and instantiate object of type T which is on the
-     * path given by environment variable envVariable.
+     * Generic method to load and instantiate object of type T which is on the path given by environment variable
+     * envVariable.
      *
-     * @param <T>               type parameter defining the class type of the object to
-     *                          instantiate
+     * @param <T>               type parameter defining the class type of the object to instantiate
      * @param environmentReader the strategy for reading the environment variable
-     * @param envVariable       the environment variable that holds the full path to the class to
-     *                          load
+     * @param envVariable       the environment variable that holds the full path to the class to load
      * @param theObject         actually a dummy but its type tells the method the generic type
-     * @return object of type T loaded from the fully qualified type name given by
-     * the environment variable envVariabl
+     * @return object of type T loaded from the fully qualified type name given by the environment variable envVariabl
      */
     @SuppressWarnings({"unchecked", "ParameterCanBeLocal"})
     public static <T> T loadAndInstantiate(EnvironmentReaderStrategy environmentReader,
@@ -116,25 +111,23 @@ public class Config {
                                            T theObject) {
         // read full path of class to load
         String qualifiedNameOfType;
-        qualifiedNameOfType =
-                Config.failFastRead(environmentReader, envVariable);
+        qualifiedNameOfType = Config.failFastRead(environmentReader, envVariable);
 
         // Use java reflection to read in the class
-        Class<?> theClass = null;
+        Class<?> theClass;
         try {
             theClass = Class.forName(qualifiedNameOfType);
         } catch (ClassNotFoundException e) {
-            throw new CaveClassNotFoundException("EnvironmentFactory: Class '"
-                    + qualifiedNameOfType + "' is not found." +
-                    "Environment Variable : " + envVariable);
+            throw new CaveClassNotFoundException("EnvironmentFactory: Class '" + qualifiedNameOfType + "' is not found."
+                    + "Environment Variable : " + envVariable);
         }
 
         // Next, instantiate object from the class
         try {
             theObject = (T) theClass.newInstance();
         } catch (InstantiationException | IllegalAccessException e) {
-            throw new CaveClassInstantiationException("EnvironmentFactory: Class '"
-                    + qualifiedNameOfType + "' could not be instantiated!", e);
+            throw new CaveClassInstantiationException("EnvironmentFactory: Class '" + qualifiedNameOfType
+                    + "' could not be instantiated!", e);
         }
 
         return theObject;

@@ -10,7 +10,6 @@ import cloud.cave.domain.Direction;
  * @author Henrik Baerbak Christensen, Aarhus University.
  */
 public class Point3 {
-
     private int x;
     private int y;
     private int z;

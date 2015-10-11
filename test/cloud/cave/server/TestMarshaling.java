@@ -83,8 +83,7 @@ public class TestMarshaling {
     @Test
     public void shouldTestPlayerRecordObjectMethods() {
 
-        PlayerRecord pr = new PlayerRecord(
-                new SubscriptionRecord("u2", "bimse", "grp01", Region.AARHUS), "(0,0,0)", "session-123");
+        PlayerRecord pr = new PlayerRecord("u2", "bimse", "grp01", Region.AARHUS, "(0,0,0)", "session-123");
         assertThat(pr.toString(),
                 is("PlayerRecord [playerID=u2, playerName=bimse, groupName=grp01, region=AARHUS, positionAsString=(0,0,0), sessionID=session-123]"));
         assertThat(pr.hashCode(), is(not(0)));

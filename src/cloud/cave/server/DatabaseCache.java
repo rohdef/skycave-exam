@@ -30,7 +30,7 @@ public class DatabaseCache implements PlayerSessionCache {
 
     @Override
     public Player get(String playerID) {
-        StandardServerPlayer player = new StandardServerPlayer(playerID, storage, weatherService, this);
+        final StandardServerPlayer player = new StandardServerPlayer(playerID, storage, weatherService, this);
         if (Strings.isNullOrEmpty(player.getSessionID()))
             return null;
         else

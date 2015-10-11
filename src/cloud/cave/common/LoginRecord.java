@@ -8,9 +8,8 @@ import cloud.cave.domain.*;
  * @author Henrik Baerbak Christensen, Aarhus University
  */
 public class LoginRecord implements Login {
-
-    private Player player;
-    private LoginResult errorCode;
+    private final Player player;
+    private final LoginResult errorCode;
 
     /**
      * Create a login result representing a CORRECT login

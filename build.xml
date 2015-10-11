@@ -298,6 +298,24 @@
         </java>
     </target>
 
+    <!-- load-cave is used to generate random user traffic on the app
+     server tier.
+     cp = number of players to put into cave;
+     iter = number of 'explorations' of each in cave;
+-->
+    <property name="cp" value="20"/>
+    <property name="iter" value="10"/>
+    <target name="load.cave"
+            depends="build.all"
+            description="--> * Execute the app server tier load generator">
+        <java classpathref="run.path.id"
+              fork="true"
+              classname="cloud.cave.manual.LoadGenerateCave">
+            <arg value="${cp}"/> <!-- count player -->
+            <arg value="${iter}"/> <!-- iterations in cave -->
+        </java>
+    </target>
+
     <!-- Tasks relevant for the Crunch system, not really
          interesting for the student's solution work. KEEP THEM -->
 

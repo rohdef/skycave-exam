@@ -4,6 +4,7 @@ import java.util.List;
 
 import cloud.cave.common.CaveStorageException;
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableList;
 import org.json.simple.*;
 
 import cloud.cave.common.PlayerSessionExpiredException;
@@ -17,7 +18,7 @@ import cloud.cave.ipc.*;
  * @author Henrik Baerbak Christensen, Aarhus University.
  */
 public class PlayerDispatcher implements Dispatcher {
-    private PlayerSessionCache cache;
+    private final PlayerSessionCache cache;
 
     public PlayerDispatcher(Cave cave) {
         //
@@ -28,24 +29,22 @@ public class PlayerDispatcher implements Dispatcher {
     }
 
     @Override
-    public JSONObject dispatch(String methodKey, String playerID,
-                               String sessionID, String parameter1, JSONArray parameterList) {
-        JSONObject reply = null;
+    public JSONObject dispatch(final String methodKey,
+                               final String playerID,
+                               final String sessionID,
+                               final String parameter1,
+                               final JSONArray parameterList) {
+        JSONObject reply;
         try {
             // Fetch the server side player object from cache
-            Player player = cache.get(playerID);
+            final Player player = cache.get(playerID);
 
-            // Access control of the 'Blizzard' variant: the last
-            // login (= session) is the one winning. If the session id
-            // coming from the client differs from the one cached here
-            // in the server means two different clients are accessing
-            // the same player object. However we assign a new session
-            // id upon each login thus if they differ, the client
-            // calling us has the 'old session' and must thus be
-            // told that he/she cannot control the avatar any more.
+            // Access control of the 'Blizzard' variant: the last login (= session) is the one winning. If the session id
+            // coming from the client differs from the one cached here in the server means two different clients are accessing
+            // the same player object. However we assign a new session id upon each login thus if they differ, the client
+            // calling us has the 'old session' and must thus be told that he/she cannot control the avatar any more.
             if (!sessionID.equals(player.getSessionID())) {
-                throw new PlayerSessionExpiredException(
-                        "PlayerDispatcher: The session for player " + player.getID()
+                throw new PlayerSessionExpiredException("PlayerDispatcher: The session for player " + player.getID()
                                 + " is no longer valid (Client session=" + sessionID + "/Server cached session="
                                 + player.getSessionID() + ").");
             }
@@ -53,35 +52,35 @@ public class PlayerDispatcher implements Dispatcher {
             // === SHORT ROOM
             switch (methodKey) {
                 case MarshalingKeys.GET_SHORT_ROOM_DESCRIPTION_METHOD_KEY:
-                    reply = Marshaling.createValidReplyWithReturnValue(player
-                            .getShortRoomDescription());
+                    reply = Marshaling.createValidReplyWithReturnValue(player.getShortRoomDescription());
                     break;
                 // === LONG ROOM
                 case MarshalingKeys.GET_LONG_ROOM_DESCRIPTION_METHOD_KEY:
+                    final int offset;
                     if (Strings.isNullOrEmpty(parameter1))
-                        parameter1 = "0";
-                    int offset = Integer.parseInt(parameter1);
-                    reply = Marshaling.createValidReplyWithReturnValue(player
-                            .getLongRoomDescription(offset));
+                        offset = 0;
+                    else
+                        offset = Integer.parseInt(parameter1);
+
+                    reply = Marshaling.createValidReplyWithReturnValue(player.getLongRoomDescription(offset));
                     break;
                 // === REGION
                 case MarshalingKeys.GET_REGION_METHOD_KEY:
-                    reply = Marshaling.createValidReplyWithReturnValue(player.getRegion()
-                            .toString());
+                    reply = Marshaling.createValidReplyWithReturnValue(player.getRegion().toString());
                     break;
                 // === POSITION
                 case MarshalingKeys.GET_POSITION_METHOD_KEY:
-                    reply = Marshaling
-                            .createValidReplyWithReturnValue(player.getPosition());
+                    reply = Marshaling.createValidReplyWithReturnValue(player.getPosition());
                     break;
                 // === PLAYERS HERE
                 case MarshalingKeys.GET_PLAYERS_HERE_METHOD_KEY: {
                     if (Strings.isNullOrEmpty(parameter1))
-                        parameter1 = "0";
-                    offset = Integer.parseInt(parameter1);
-                    List<String> playersHere = player.getPlayersHere(offset);
-                    String[] asArray = new String[playersHere.size()];
-                    playersHere.toArray(asArray);
+                        offset = 0;
+                    else
+                        offset = Integer.parseInt(parameter1);
+
+                    final ImmutableList<String> playersHere = ImmutableList.copyOf(player.getPlayersHere(offset));
+                    final String[] asArray = playersHere.toArray(new String[playersHere.size()]);
 
                     // It is easier to not use the HEAD and just put the array in the TAIL
                     // of the answer
@@ -90,39 +89,38 @@ public class PlayerDispatcher implements Dispatcher {
                 }
                 // === EXIT SET
                 case MarshalingKeys.GET_EXITSET_METHOD_KEY: {
-                    List<Direction> exitSet = player.getExitSet();
-                    String[] asArray = new String[exitSet.size()];
+                    final ImmutableList<Direction> exitSet = ImmutableList.copyOf(player.getExitSet());
+                    final String[] asArray = new String[exitSet.size()];
                     int i = 0;
                     // Convert each enum to string representation
                     for (Direction d : exitSet) {
                         asArray[i++] = d.toString();
                     }
-                    // It is easier to not use the HEAD and just put the array in the TAIL
-                    // of the answer
+                    // It is easier to not use the HEAD and just put the array in the TAIL of the answer
                     reply = Marshaling.createValidReplyWithReturnValue("notused", asArray);
                     break;
                 }
                 // === MOVE
                 case MarshalingKeys.MOVE_METHOD_KEY: {
                     // move(direction)
-                    Direction direction = Direction.valueOf(parameter1);
-                    boolean isValid = player.move(direction);
+                    final Direction direction = Direction.valueOf(parameter1);
+                    final boolean isValid = player.move(direction);
 
                     reply = Marshaling.createValidReplyWithReturnValue("" + isValid);
                     break;
                 }
                 // === DIG
                 case MarshalingKeys.DIG_ROOM_METHOD_KEY: {
-                    Direction direction = Direction.valueOf(parameter1);
-                    String description = parameterList.get(0).toString();
-                    boolean isValid = player.digRoom(direction, description);
+                    final Direction direction = Direction.valueOf(parameter1);
+                    final String description = parameterList.get(0).toString();
+                    final boolean isValid = player.digRoom(direction, description);
 
                     reply = Marshaling.createValidReplyWithReturnValue("" + isValid);
                     break;
                 }
                 // === EXECUTE
                 case MarshalingKeys.EXECUTE_METHOD_KEY: {
-                    String[] parameters = new String[3];
+                    final String[] parameters = new String[3];
                     int i = 0;
                     for (Object obj : parameterList) {
                         parameters[i] = obj.toString();
@@ -134,15 +132,13 @@ public class PlayerDispatcher implements Dispatcher {
                 }
                 // == WEATHER
                 case MarshalingKeys.GET_WEATHER_METHOD_KEY: {
-                    reply = Marshaling
-                            .createValidReplyWithReturnValue(player.getWeather());
+                    reply = Marshaling.createValidReplyWithReturnValue(player.getWeather());
                     break;
                 }
                 // == MESSAGES
                 case MarshalingKeys.GET_MESSAGE_LIST_METHOD_KEY: {
-                    List<String> messageList = player.getMessageList();
-                    String[] messageArray = new String[messageList.size()];
-                    messageArray = messageList.toArray(messageArray);
+                    final ImmutableList<String> messageList = ImmutableList.copyOf(player.getMessageList());
+                    final String[] messageArray = messageList.toArray(new String[messageList.size()]);
                     reply = Marshaling.createValidReplyWithReturnValue("notused", messageArray);
                     break;
                 }
@@ -152,14 +148,19 @@ public class PlayerDispatcher implements Dispatcher {
                     reply = Marshaling.createValidReplyWithReturnValue(StatusCode.OK);
                     break;
                 }
+                default:
+                    // Unknown response
+                    reply = Marshaling.createInvalidReplyWithExplantion(StatusCode.SERVER_UNKNOWN_METHOD_FAILURE,
+                            "Cannot find the specified method: " + methodKey);
+                    break;
             }
         } catch (PlayerSessionExpiredException exc) {
             reply = Marshaling.createInvalidReplyWithExplantion(StatusCode.SERVER_PLAYER_SESSION_EXPIRED_FAILURE,
                     exc.getMessage());
         } catch (CaveStorageException e) {
-            reply = Marshaling.createInvalidReplyWithExplantion(StatusCode.SERVER_STORAGE_UNAVAILABLE,
-                    e.getMessage());
+            reply = Marshaling.createInvalidReplyWithExplantion(StatusCode.SERVER_STORAGE_UNAVAILABLE, e.getMessage());
         }
+
         return reply;
     }
 }

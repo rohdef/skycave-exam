@@ -147,7 +147,9 @@ public class TestStorage {
 
     private void addPlayerRecordToStorageForSubscription(SubscriptionRecord sub01,
                                                          String sessionid) {
-        PlayerRecord rec1 = new PlayerRecord(sub01, "(0,0,0)", sessionid);
+        PlayerRecord rec1 = new PlayerRecord(sub01.getPlayerID(),
+                sub01.getPlayerName(), sub01.getGroupName(),
+                sub01.getRegion(), "(0,0,0)", sessionid);
         storage.updatePlayerRecord(rec1);
     }
 
@@ -161,8 +163,13 @@ public class TestStorage {
 
         // end session for player one
         PlayerRecord rec1 = storage.getPlayerByID(id1);
-        rec1.setSessionId(null);
-        storage.updatePlayerRecord(rec1);
+        PlayerRecord rec2 = new PlayerRecord(rec1.getPlayerID(),
+                rec1.getPlayerName(),
+                rec1.getGroupName(),
+                rec1.getRegion(),
+                rec1.getPositionAsString(),
+                null);
+        storage.updatePlayerRecord(rec2);
 
         // now only one left
         assertThat(storage.computeCountOfActivePlayers(), is(1l));
