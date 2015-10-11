@@ -288,6 +288,15 @@
         </java>
     </target>
 
+    <!-- load.mongo is used to generate load on the storage tier -->
+    <target name="load.mongo"
+            depends="build.all"
+            description="--> * Execute the storage tier load generator">
+        <java classpathref="run.path.id"
+              classname="cloud.cave.manual.LoadGenerateStorageWrite">
+        </java>
+    </target>
+
     <!-- Tasks relevant for the Crunch system, not really
          interesting for the student's solution work. KEEP THEM -->
 

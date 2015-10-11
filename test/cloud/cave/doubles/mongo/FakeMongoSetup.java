@@ -27,7 +27,7 @@ public class FakeMongoSetup implements IMongoSetup {
             case ServerCaveStorage.COLLECTION_PLAYERS:
                 return null;
             case ServerCaveStorage.COLLECTION_ROOMS:
-                return null;
+                return new RoomMongoCollection();
             default:
                 return null;
         }
