@@ -1,9 +1,10 @@
 package cloud.cave.client;
 
+import cloud.cave.server.common.Point3;
 import org.junit.*;
 
 import static org.junit.Assert.*;
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.Matchers.*;
 
 import cloud.cave.common.CommonCaveTests;
 import cloud.cave.domain.*;
@@ -21,7 +22,6 @@ import cloud.cave.server.StandardInvoker;
  * @author Henrik Baerbak Christensen, Aarhus University.
  */
 public class TestNetworkLoad {
-
     private PlayerProxy player;
     private LoadSpyClientRequestHandler spy;
 
@@ -58,4 +58,69 @@ public class TestNetworkLoad {
         assertThat(spy.getSent(), is(166));
     }
 
+    @Test
+    public void shouldCacheWeather() throws InterruptedException {
+        player.setWeatherTimeout(1000);
+        String weather1, weather2;
+
+        spy.reset();
+        weather1 = player.getWeather();
+        assertThat(spy.getSent(), is(greaterThan(0)));
+        assertThat(spy.getReived(), is(greaterThan(0)));
+
+        spy.reset();
+        weather2 = player.getWeather();
+        assertThat(spy.getSent(), is(0));
+        assertThat(spy.getReived(), is(0));
+        assertThat(weather1, is(weather2));
+
+        Thread.sleep(500);
+
+        spy.reset();
+        weather2 = player.getWeather();
+        assertThat(spy.getSent(), is(0));
+        assertThat(spy.getReived(), is(0));
+        assertThat(weather1, is(weather2));
+
+        Thread.sleep(400);
+        spy.reset();
+        weather2 = player.getWeather();
+        assertThat(spy.getSent(), is(0));
+        assertThat(spy.getReived(), is(0));
+        assertThat(weather1, is(weather2));
+
+        Thread.sleep(200);
+        spy.reset();
+        player.getWeather();
+        assertThat(spy.getSent(), is(greaterThan(0)));
+        assertThat(spy.getReived(), is(greaterThan(0)));
+    }
+
+    @Test
+    public void shouldNotHaveTrafficOnKnownValues() {
+        testTraffic();;
+
+        player.move(Direction.EAST);
+        testTraffic();
+
+        player.execute("HomeCommand", "bar");
+        testTraffic();
+    }
+
+    private void testTraffic() {
+        spy.reset();
+        final String description = player.getShortRoomDescription();
+        assertThat(spy.getSent(), is(0));
+        assertThat(spy.getReived(), is(0));
+        assertThat(description, is(notNullValue()));
+        assertThat(description.length(), is(greaterThan(0)));
+
+        spy.reset();
+        final String position = player.getPosition();
+        assertThat(spy.getSent(), is(0));
+        assertThat(spy.getReived(), is(0));
+        assertThat(position, is(notNullValue()));
+        assertThat(position.length(), is(greaterThan(0)));
+        assertThat(Point3.parseString(position), is(notNullValue()));
+    }
 }
