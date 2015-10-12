@@ -82,7 +82,7 @@ public class TestLoadBalancing {
         // Verify that requests are forwarded to server 1
         assertThat(crh.toString(), containsString("server 1"));
         // Verify that method calls runs smoothly to the server
-        assertThat(player.getLongRoomDescription(0), containsString("[0] Mikkel"));
+        assertThat(player.getLongRoomDescription(0), containsString("Mikkel"));
 
         // now we simulate that the next request will be forwarded to server 2
         // by the load balancing of the SkyCave system
@@ -94,7 +94,7 @@ public class TestLoadBalancing {
         try {
             String d = player.getLongRoomDescription(0);
 
-            assertThat(d, containsString("[0] Mikkel"));
+            assertThat(d, containsString("Mikkel"));
         } catch (NullPointerException exc) {
             // In a proper scalable implementation, session state
             // must be available across all servers. This is 
