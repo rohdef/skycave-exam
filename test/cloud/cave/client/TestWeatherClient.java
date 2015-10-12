@@ -47,6 +47,7 @@ public class TestWeatherClient {
         Login loginResult = caveProxy.login("mikkel_aarskort", "123");
 
         player = (PlayerProxy) loginResult.getPlayer();
+        player.setWeatherTimeout(-1);
     }
 
     @Test
