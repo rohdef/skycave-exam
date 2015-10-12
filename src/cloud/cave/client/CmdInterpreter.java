@@ -156,6 +156,8 @@ public class CmdInterpreter {
                 JSONObject response = player.execute(tokens[1], parameters);
                 systemOut.println("You executed command:" + tokens[1]);
                 systemOut.println("  Response as JSON: " + response);
+                systemOut.println();
+                systemOut.println(player.getShortRoomDescription());
             } else {
                 systemOut.println("Exec commands require at least one parameter. Set it to null if irrelevant");
             }

@@ -33,16 +33,19 @@ import org.slf4j.LoggerFactory;
  * @author Henrik Baerbak Christensen, Aarhus University
  */
 public class PlayerProxy implements Player {
-    private ClientRequestHandler crh;
+    private final ClientRequestHandler crh;
 
-    private String playerID;
-    private String playerName;
-    private String sessionID;
+    private final String playerID;
+    private final String playerName;
+    private final String sessionID;
+    private final Region region;
     private int countCallsForLongRoomDescription;
 
     private JSONObject requestJson;
 
-    private static Logger logger = LoggerFactory.getLogger(PlayerProxy.class);
+    private static final Logger logger = LoggerFactory.getLogger(PlayerProxy.class);
+    private String shortRoomDescription;
+    private String position;
 
     /**
      * DO NOT USE THIS CONSTRUCTOR DIRECTLY (except in unit tests perhaps). Create
@@ -55,13 +58,16 @@ public class PlayerProxy implements Player {
      * @param playerName name of the player
      * @param sessionID  id of the session initiated by this player's login
      */
-    PlayerProxy(ClientRequestHandler crh,
-                String playerID, String playerName, String sessionID) {
+    PlayerProxy(ClientRequestHandler crh, String playerID, String playerName, String sessionID,
+                String shortRoomDescription, Region region, String position) {
         this.playerID = playerID;
         this.playerName = playerName;
         this.sessionID = sessionID;
         this.crh = crh;
         this.countCallsForLongRoomDescription = 0;
+        this.shortRoomDescription = shortRoomDescription;
+        this.region = region;
+        this.position = position;
     }
 
     @Override
@@ -72,12 +78,7 @@ public class PlayerProxy implements Player {
     @Override
     public String getShortRoomDescription() {
         this.countCallsForLongRoomDescription = 0;
-        // Build the request object
-        requestJson = createRequestObject(MarshalingKeys.GET_SHORT_ROOM_DESCRIPTION_METHOD_KEY, "");
-        // send the request over the connector and retrieve the reply object
-        JSONObject replyJson = requestAndAwaitReply(requestJson);
-        // and finally, demarshal the returned value
-        return replyJson.get(MarshalingKeys.RETURNVALUE_HEAD_KEY).toString();
+        return this.shortRoomDescription;
     }
 
     @Override
@@ -114,11 +115,8 @@ public class PlayerProxy implements Player {
     @Override
     public Region getRegion() {
         this.countCallsForLongRoomDescription = 0;
-        requestJson = createRequestObject(MarshalingKeys.GET_REGION_METHOD_KEY,
-                "");
-        JSONObject replyJson = requestAndAwaitReply(requestJson);
-        String asString = replyJson.get(MarshalingKeys.RETURNVALUE_HEAD_KEY).toString();
-        return Region.valueOf(asString);
+
+        return this.region;
     }
 
     @Override
@@ -126,8 +124,10 @@ public class PlayerProxy implements Player {
         this.countCallsForLongRoomDescription = 0;
         requestJson = createRequestObject(MarshalingKeys.MOVE_METHOD_KEY,
                 direction.toString());
-        JSONObject replyJson = requestAndAwaitReply(requestJson);
-        String asString = replyJson.get(MarshalingKeys.RETURNVALUE_HEAD_KEY).toString();
+        final JSONObject replyJson = requestAndAwaitReply(requestJson);
+        final String asString = replyJson.get(MarshalingKeys.RETURNVALUE_HEAD_KEY).toString();
+        this.shortRoomDescription = (String) replyJson.get("shortRoomDescription");
+        this.position = (String) replyJson.get("position");
         return Boolean.parseBoolean(asString);
     }
 
@@ -148,10 +148,7 @@ public class PlayerProxy implements Player {
     @Override
     public String getPosition() {
         this.countCallsForLongRoomDescription = 0;
-        requestJson = createRequestObject(MarshalingKeys.GET_POSITION_METHOD_KEY, null);
-        JSONObject replyJson = requestAndAwaitReply(requestJson);
-
-        return replyJson.get(MarshalingKeys.RETURNVALUE_HEAD_KEY).toString();
+        return this.position;
     }
 
     @Override
@@ -219,21 +216,37 @@ public class PlayerProxy implements Player {
         return contents;
     }
 
+    private String weather;
+    private long weatherTimeout = 1000*60*30;
+    private long nextWeatherReadingTime = 0;
     @Override
     public String getWeather() {
         this.countCallsForLongRoomDescription = 0;
-        JSONObject requestJson = Marshaling.createRequestObject(playerID, sessionID, MarshalingKeys.GET_WEATHER_METHOD_KEY, null);
-        JSONObject replyJson = requestAndAwaitReply(requestJson);
+        if (nextWeatherReadingTime < new Date().getTime()) {
+            final JSONObject requestJson = Marshaling.createRequestObject(playerID, sessionID,
+                    MarshalingKeys.GET_WEATHER_METHOD_KEY, null);
+            final JSONObject replyJson = requestAndAwaitReply(requestJson);
+            weather = replyJson.get(MarshalingKeys.RETURNVALUE_HEAD_KEY).toString();
+            nextWeatherReadingTime = new Date().getTime()+weatherTimeout;
+        }
+        return weather;
+    }
 
-        return replyJson.get(MarshalingKeys.RETURNVALUE_HEAD_KEY).toString();
+    public void setWeatherTimeout(long timeout) {
+        this.weatherTimeout = timeout;
     }
 
     @Override
     public JSONObject execute(String commandName, String... parameters) {
         this.countCallsForLongRoomDescription = 0;
-        JSONObject requestJson =
-                Marshaling.createRequestObject(playerID, sessionID, MarshalingKeys.EXECUTE_METHOD_KEY, commandName, parameters);
-        return requestAndAwaitReply(requestJson);
+        final JSONObject requestJson = Marshaling.createRequestObject(playerID, sessionID,
+                MarshalingKeys.EXECUTE_METHOD_KEY, commandName, parameters);
+        final JSONObject replyJson = requestAndAwaitReply(requestJson);
+        this.shortRoomDescription = (String) replyJson.get("shortRoomDescription");
+        replyJson.remove("shortRoomDescription");
+        this.position = (String) replyJson.get("position");
+        replyJson.remove("position");
+        return replyJson;
     }
 
     @Override

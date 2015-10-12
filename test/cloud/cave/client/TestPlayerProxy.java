@@ -348,21 +348,7 @@ public class TestPlayerProxy {
 
         // Verify the other methods that do not cache things locally - sigh - cannot avoid a lot of duplicated code...
         try {
-            p2.getPosition();
-            fail("The first client must throw an exception when attempting any further calls");
-        } catch (PlayerSessionExpiredException e) {
-            assertThat(e.getMessage(), containsString("The session for player user-003 is no longer valid"));
-        }
-
-        try {
-            p2.getShortRoomDescription();
-            fail("The first client must throw an exception when attempting any further calls");
-        } catch (PlayerSessionExpiredException e) {
-            assertThat(e.getMessage(), containsString("The session for player user-003 is no longer valid"));
-        }
-
-        try {
-            p2.getLongRoomDescription(-1);
+            p2.getLongRoomDescription(0);
             fail("The first client must throw an exception when attempting any further calls");
         } catch (PlayerSessionExpiredException e) {
             assertThat(e.getMessage(), containsString("The session for player user-003 is no longer valid"));
@@ -383,7 +369,7 @@ public class TestPlayerProxy {
         }
 
         try {
-            p2.getRegion();
+            p2.getLongRoomDescription(-1);
             fail("The first client must throw an exception when attempting any further calls");
         } catch (PlayerSessionExpiredException e) {
             assertThat(e.getMessage(), containsString("The session for player user-003 is no longer valid"));
