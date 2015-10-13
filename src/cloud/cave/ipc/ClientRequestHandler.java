@@ -1,9 +1,7 @@
 package cloud.cave.ipc;
 
-import cloud.cave.domain.Region;
-import org.json.simple.JSONObject;
-
 import cloud.cave.server.common.ServerConfiguration;
+import org.json.simple.JSONObject;
 
 /**
  * A Client Request Handler (Pattern-oriented Software Architecture, vol 4, p

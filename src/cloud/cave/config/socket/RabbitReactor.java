@@ -51,7 +51,7 @@ public class RabbitReactor implements Reactor {
         try {
             Connection connection = connectionFactory.newConnection();
             Channel channel = connection.createChannel();
-            channel.queueDeclare(RabbitMQConfig.RPC_QUEUE_NAME, false, false, false, null);
+            channel.queueDeclare(RabbitMQConfig.RPC_QUEUE_NAME, true, false, false, null);
 
             QueueingConsumer consumer = new QueueingConsumer(channel);
             channel.basicConsume(RabbitMQConfig.RPC_QUEUE_NAME, false, consumer);
