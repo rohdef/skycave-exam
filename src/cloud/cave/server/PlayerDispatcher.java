@@ -107,6 +107,8 @@ public class PlayerDispatcher implements Dispatcher {
                     final boolean isValid = player.move(direction);
 
                     reply = Marshaling.createValidReplyWithReturnValue("" + isValid);
+                    reply.put("shortRoomDescription", player.getShortRoomDescription());
+                    reply.put("position", player.getPosition());
                     break;
                 }
                 // === DIG
@@ -128,6 +130,8 @@ public class PlayerDispatcher implements Dispatcher {
                     }
 
                     reply = player.execute(parameter1, parameters);
+                    reply.put("shortRoomDescription", player.getShortRoomDescription());
+                    reply.put("position", player.getPosition());
                     break;
                 }
                 // == WEATHER

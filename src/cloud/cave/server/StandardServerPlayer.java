@@ -55,8 +55,7 @@ public class StandardServerPlayer implements Player {
      * @param weatherService the weather service connector
      * @param sessionCache   the cache of player sessions to use
      */
-    StandardServerPlayer(String playerID, CaveStorage storage,
-                         WeatherService weatherService, PlayerSessionCache sessionCache) {
+    StandardServerPlayer(String playerID, CaveStorage storage, WeatherService weatherService, PlayerSessionCache sessionCache) {
         super();
         this.ID = playerID;
         this.storage = storage;
@@ -66,140 +65,11 @@ public class StandardServerPlayer implements Player {
     }
 
     @Override
-    public String getName() {
-        return name;
-    }
-
-    public String getGroupName() {
-        return groupName;
-    }
-
-    @Override
-    public String getID() {
-        return ID;
-    }
-
-    @Override
-    public String getShortRoomDescription() {
-        return currentRoom.description;
-    }
-
-    @Override
-    public String getLongRoomDescription(int offset) {
-        if (offset == -1) offset = 0;
-
-        String allOfIt = getShortRoomDescription() + "\nThere are exits in directions:\n";
-        for (Direction dir : getExitSet()) {
-            allOfIt += "  " + dir + " ";
-        }
-        allOfIt += "\nYou see other players:\n";
-        List<String> playerNameList = getPlayersHere(offset);
-        int count = 0;
-        for (String p : playerNameList) {
-            allOfIt += "  [" + count + "] " + p + "\n";
-            count++;
-        }
-
-        if (offset == 0 && count < 10)
-            allOfIt += " *** End of player list *** \n";
-        else if (offset > 0 && count < 20)
-            allOfIt += " *** End of player list *** \n";
-
-        return allOfIt;
-    }
-
-    @Override
-    public List<Direction> getExitSet() {
-        return storage.getSetOfExitsFromRoom(position);
-    }
-
-    @Override
-    public Region getRegion() {
-        return region;
-    }
-
-    @Override
-    public String getPosition() {
-        return storage.getPlayerByID(getID()).getPositionAsString();
-    }
-
-    @Override
-    public List<String> getPlayersHere(int offset) {
-        List<PlayerRecord> playerList = storage.computeListOfPlayersAt(getPosition(), offset);
-        List<String> playerNameList = new ArrayList<>();
-        for (PlayerRecord record : playerList) {
-            playerNameList.add(record.getPlayerName());
-        }
-        return playerNameList;
-    }
-
-    @Override
-    public String getSessionID() {
-        return sessionId;
-    }
-
-    @Override
     public void addMessage(String message) {
         final String formattedMessage = String.format("[%s] %s", this.name, message.trim());
         currentRoom.addMessage(formattedMessage);
     }
 
-    @Override
-    public List<String> getMessageList() {
-        return currentRoom.getMessageList();
-    }
-
-    @Override
-    public String getWeather() {
-        JSONObject weatherAsJson = weatherService.requestWeather(getGroupName(), getID(), getRegion());
-
-        // Prevent null pointer crashes etc.
-        String errorMessage = Strings.nullToEmpty((String) weatherAsJson.get("errorMessage"));
-        String authenticated = Strings.nullToEmpty((String) weatherAsJson.get("authenticated"));
-
-        if (errorMessage.equals(ServerWeatherService.ERROR_MESSAGE_OK))
-            return convertToFormattedString(weatherAsJson);
-        else if (errorMessage.equals(ServerWeatherService.ERROR_MESSAGE_UNAVAILABLE_CLOSED))
-            return "*** Sorry - weather information is not available ***";
-        else if (errorMessage.equals(ServerWeatherService.ERROR_MESSAGE_UNAVAILABLE_OPEN))
-            return "*** Sorry - no weather (open circuit) ***";
-        else if (authenticated.equals("false"))
-            return "The weather service failed with message: " + errorMessage;
-        else {
-            logger.error("An unknow error status was received in getWeather. The JSON received was: " +
-                    weatherAsJson.toJSONString());
-            return "Unrecognized error message recieved";
-        }
-    }
-
-    /**
-     * Convert a JSON object that represents weather in the format of the cave
-     * weather service into the string representation defined for the cave UI.
-     *
-     * @param currentObservation weather information formatted as JSON
-     * @return formatted string describing the weather
-     */
-    private String convertToFormattedString(JSONObject currentObservation) {
-        final String temperature = currentObservation.get("temperature").toString();
-        final double tempDouble = Double.parseDouble(temperature);
-
-        final String feelslike = currentObservation.get("feelslike").toString();
-        final double feelDouble = Double.parseDouble(feelslike);
-
-        final String winddir = currentObservation.get("winddirection").toString();
-
-        final String windspeed = currentObservation.get("windspeed").toString();
-        final double windSpDouble = Double.parseDouble(windspeed);
-
-        final String weather = currentObservation.get("weather").toString();
-
-        final String time = currentObservation.get("time").toString();
-
-        return String.format(Locale.US,
-                "The weather in %s is %s, temperature %.1fC (feelslike %.1fC). Wind: %.1f m/s, direction %s. " +
-                        "This report is dated: %s.",
-                getRegion().toString(), weather, tempDouble, feelDouble, windSpDouble, winddir, time);
-    }
 
     private final ReentrantLock lock = new ReentrantLock();
     @Override
@@ -299,6 +169,141 @@ public class StandardServerPlayer implements Player {
         }
 
         return reply;
+    }
+
+    //
+    // Only getters below here, no mutable
+    //
+
+    @Override
+    public List<Direction> getExitSet() {
+        return storage.getSetOfExitsFromRoom(position);
+    }
+
+    @Override
+    public Region getRegion() {
+        return region;
+    }
+
+    @Override
+    public String getPosition() {
+        return storage.getPlayerByID(getID()).getPositionAsString();
+    }
+
+    @Override
+    public List<String> getPlayersHere(int offset) {
+        List<PlayerRecord> playerList = storage.computeListOfPlayersAt(getPosition(), offset);
+        List<String> playerNameList = new ArrayList<>();
+        for (PlayerRecord record : playerList) {
+            playerNameList.add(record.getPlayerName());
+        }
+        return playerNameList;
+    }
+
+    @Override
+    public String getSessionID() {
+        return sessionId;
+    }
+
+    @Override
+    public List<String> getMessageList() {
+        return currentRoom.getMessageList();
+    }
+
+
+    @Override
+    public String getName() {
+        return name;
+    }
+
+    public String getGroupName() {
+        return groupName;
+    }
+
+    @Override
+    public String getID() {
+        return ID;
+    }
+
+    @Override
+    public String getShortRoomDescription() {
+        return currentRoom.description;
+    }
+
+    @Override
+    public String getLongRoomDescription(int offset) {
+        if (offset == -1) offset = 0;
+
+        String allOfIt = getShortRoomDescription() + "\nThere are exits in directions:\n";
+        for (Direction dir : getExitSet()) {
+            allOfIt += "  " + dir + " ";
+        }
+        allOfIt += "\nYou see other players:\n";
+        List<String> playerNameList = getPlayersHere(offset);
+        int count = 0;
+        for (String p : playerNameList) {
+            allOfIt += "  [" + count + "] " + p + "\n";
+            count++;
+        }
+
+        if (offset == 0 && count < 10)
+            allOfIt += " *** End of player list *** \n";
+        else if (offset > 0 && count < 20)
+            allOfIt += " *** End of player list *** \n";
+
+        return allOfIt;
+    }
+
+    @Override
+    public String getWeather() {
+        JSONObject weatherAsJson = weatherService.requestWeather(getGroupName(), getID(), getRegion());
+
+        // Prevent null pointer crashes etc.
+        String errorMessage = Strings.nullToEmpty((String) weatherAsJson.get("errorMessage"));
+        String authenticated = Strings.nullToEmpty((String) weatherAsJson.get("authenticated"));
+
+        if (errorMessage.equals(ServerWeatherService.ERROR_MESSAGE_OK))
+            return convertToFormattedString(weatherAsJson);
+        else if (errorMessage.equals(ServerWeatherService.ERROR_MESSAGE_UNAVAILABLE_CLOSED))
+            return "*** Sorry - weather information is not available ***";
+        else if (errorMessage.equals(ServerWeatherService.ERROR_MESSAGE_UNAVAILABLE_OPEN))
+            return "*** Sorry - no weather (open circuit) ***";
+        else if (authenticated.equals("false"))
+            return "The weather service failed with message: " + errorMessage;
+        else {
+            logger.error("An unknow error status was received in getWeather. The JSON received was: " +
+                    weatherAsJson.toJSONString());
+            return "Unrecognized error message recieved";
+        }
+    }
+
+    /**
+     * Convert a JSON object that represents weather in the format of the cave
+     * weather service into the string representation defined for the cave UI.
+     *
+     * @param currentObservation weather information formatted as JSON
+     * @return formatted string describing the weather
+     */
+    private String convertToFormattedString(JSONObject currentObservation) {
+        final String temperature = currentObservation.get("temperature").toString();
+        final double tempDouble = Double.parseDouble(temperature);
+
+        final String feelslike = currentObservation.get("feelslike").toString();
+        final double feelDouble = Double.parseDouble(feelslike);
+
+        final String winddir = currentObservation.get("winddirection").toString();
+
+        final String windspeed = currentObservation.get("windspeed").toString();
+        final double windSpDouble = Double.parseDouble(windspeed);
+
+        final String weather = currentObservation.get("weather").toString();
+
+        final String time = currentObservation.get("time").toString();
+
+        return String.format(Locale.US,
+                "The weather in %s is %s, temperature %.1fC (feelslike %.1fC). Wind: %.1f m/s, direction %s. " +
+                        "This report is dated: %s.",
+                getRegion().toString(), weather, tempDouble, feelDouble, windSpDouble, winddir, time);
     }
 
     private void refreshFromStorage() {

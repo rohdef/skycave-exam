@@ -28,11 +28,13 @@ public class CaveDispatcher implements Dispatcher {
                 final String playerName = result.getPlayer().getName();
                 final String sessionId = result.getPlayer().getSessionID();
                 final String region = result.getPlayer().getRegion().toString();
+                final String roomDescription = result.getPlayer().getShortRoomDescription();
                 // add the player to the cache
                 // cache.add(sessionId, result.getPlayer());
                 reply = Marshaling.createValidReplyWithReturnValue(result.getResultCode().toString(), playerId,
-                        playerName, sessionId);
+                        playerName, sessionId, roomDescription);
                 reply.put("player-region", region);
+                reply.put("position", result.getPlayer().getPosition());
             } else {
                 // The player id is set to "" as we do not know
                 reply = Marshaling.createValidReplyWithReturnValue(result.getResultCode().toString());

@@ -48,18 +48,15 @@ public class SocketClientRequestHandler implements ClientRequestHandler {
         try {
             clientSocket = new Socket(hostName, portNumber);
             out = new PrintWriter(clientSocket.getOutputStream(), true);
-            in = new BufferedReader(new InputStreamReader(
-                    clientSocket.getInputStream()));
+            in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 
             // Send the JSON request as a string to the app server
             out.println(requestJson.toString());
 
             // Block until a reply is received, and parse it into JSON
-            String reply;
+            final String reply = in.readLine();
 
-            reply = in.readLine();
-
-            JSONParser parser = new JSONParser();
+            final JSONParser parser = new JSONParser();
             replyJson = (JSONObject) parser.parse(reply);
         } catch (UnknownHostException e) {
             e.printStackTrace();

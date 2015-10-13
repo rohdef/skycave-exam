@@ -63,20 +63,23 @@ public class CaveProxy implements Cave {
         } else {
             // extract the reply and convert into client side objects; note
             // that in case of unsuccessful login the return JSON has no tail part!
-            String loginResultAsString = replyJson.get(
-                    MarshalingKeys.RETURNVALUE_HEAD_KEY).toString();
+            String loginResultAsString = replyJson.get(MarshalingKeys.RETURNVALUE_HEAD_KEY).toString();
             LoginResult loginResult = LoginResult.valueOf(loginResultAsString);
             boolean validLogin = LoginResult.isValidLogin(loginResult);
 
             if (validLogin) {
-                JSONArray returnValueArray = (JSONArray) replyJson
-                        .get(MarshalingKeys.RETURNVALUE_TAIL_KEY);
+                final JSONArray returnValueArray = (JSONArray) replyJson.get(MarshalingKeys.RETURNVALUE_TAIL_KEY);
 
-                String playerID = returnValueArray.get(0).toString();
-                String playerName = returnValueArray.get(1).toString();
-                String sessionId = returnValueArray.get(2).toString();
+                final String playerID = returnValueArray.get(0).toString();
+                final String playerName = returnValueArray.get(1).toString();
+                final String sessionId = returnValueArray.get(2).toString();
+                final String shortRoomDescription = returnValueArray.get(3).toString();
 
-                Player player = new PlayerProxy(crh, playerID, playerName, sessionId);
+                final String region = (String) replyJson.get("player-region");
+                final String position = (String) replyJson.get("position");
+
+                Player player = new PlayerProxy(crh, playerID, playerName, sessionId, shortRoomDescription,
+                        Region.valueOf(region), position);
                 result = new LoginRecord(player, loginResult);
             } else {
                 result = new LoginRecord(loginResult);
