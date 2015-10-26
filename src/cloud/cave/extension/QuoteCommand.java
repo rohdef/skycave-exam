@@ -27,7 +27,7 @@ public class QuoteCommand extends AbstractCommand implements Command {
     @Override
     public JSONObject execute(String... parameters) {
         this.restRequest = new RestRequester();
-        this.host = "localhost";
+        this.host = "winston";
         this.port = 6745;
 
         String quote, id;
